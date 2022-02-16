@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="../../.gradle/caches/transforms-3/75c6b37b5d5928d4f5c9d73a1a6b930b/transformed/jetified-camera-core-1.0.0/res/drawable/border_white.xml" value="0.134375" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.375" />
+        <entry key="app/src/main/res/layout/item_live_detection_result.xml" value="0.25" />
+        <entry key="camera-core/src/main/res/drawable/border_dash.xml" value="0.55" />
+        <entry key="camera-core/src/main/res/drawable/border_white.xml" value="0.134375" />
+        <entry key="camera-core/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
+        <entry key="core/src/main/res/layout/activity_base_camera.xml" value="0.1" />
+        <entry key="face-detection/src/main/res/drawable/ekyc_face.xml" value="0.55" />
+        <entry key="face-detection/src/main/res/drawable/ic_arrow_back_fill.xml" value="0.2520833333333333" />
+        <entry key="face-detection/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
+        <entry key="face-detection/src/main/res/layout/activity_liveness_detection.xml" value="0.335" />
+        <entry key="face-detection/src/main/res/layout/activity_selfie_with_ktp.xml" value="0.335" />
+        <entry key="face-detection/src/main/res/layout/activity_splash.xml" value="0.2359375" />
+        <entry key="identification-core/src/main/res/drawable-v24/border_white.xml" value="0.12135416666666667" />
+        <entry key="identification-core/src/main/res/drawable/ic_switch.xml" value="0.12135416666666667" />
+        <entry key="identification-core/src/main/res/layout/activity_base_camera.xml" value="0.203125" />
+        <entry key="identification-core/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.12135416666666667" />
+        <entry key="liveness-detection/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.12135416666666667" />
+        <entry key="liveness-detection/src/main/res/drawable/ic_baseline_volume_off_24.xml" value="0.23333333333333334" />
+        <entry key="liveness-detection/src/main/res/drawable/selector_mute.xml" value="0.23333333333333334" />
+        <entry key="liveness-detection/src/main/res/layout/activity_liveness_detection.xml" value="0.25" />
+        <entry key="liveness-detection/src/main/res/layout/activity_selfie_with_ktp.xml" value="0.25" />
+        <entry key="ocr/src/main/res/drawable/border_white.xml" value="0.12135416666666667" />
+        <entry key="ocr/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.12135416666666667" />
+        <entry key="ocr/src/main/res/layout/activity_capture_ktp.xml" value="0.125" />
+        <entry key="ocr/src/main/res/layout/activity_scan_ktpactivity.xml" value="0.125" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

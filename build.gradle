@@ -1,0 +1,40 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext.camerax_version = "1.1.0-beta01"
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.0.3"
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    apply plugin: 'maven-publish'
+
+    project.ext {
+        appVersionString = "1.0.0" //String
+        appVersionCode = 1 //Integer
+    }
+
+    ext {
+        groupId = 'id.mncinnovation'
+        versionId = '1.0.0-SNAPSHOT'
+        gitProjectUrl = ""
+        gitUrl = ""
+    }
+
+    group = groupId  // Maven Group ID for the artifact
+    version = versionId
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+

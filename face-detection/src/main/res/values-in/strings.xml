@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="liveness_please_blink">Silahkan Berkedip</string>
+    <string name="liveness_please_open_mouth">Silahkan buka mulut anda dan kemudian tutup kembali</string>
+    <string name="liveness_please_shake_head"><![CDATA[Silahkan gelengkan kepala anda kekiri atau kekanan]]></string>
+    <string name="liveness_please_smile">Silahkan Tersenyum</string>
+    <string name="lbl_hold_still_instruction">Tahan wajah anda didalam frame kamera</string>
+    <string name="lbl_put_face_to_the_frame">Pertama, gerakan wajah anda ke dalam frame kamera</string>
+    <string name="lbl_too_far">Terlalu jauh</string>
+    <string name="lbl_too_close">Terlalu dekat</string>
+</resources>

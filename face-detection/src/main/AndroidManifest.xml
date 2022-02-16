@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="id.mncinnovation.face_detection">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application>
+        <activity
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:name=".SplashActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SelfieWithKtpActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LivenessDetectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+    </application>
+
+</manifest>

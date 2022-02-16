@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CaptureKtpActivity">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="20dp"
+        app:layout_constraintDimensionRatio="16:10"
+        android:background="@drawable/border_white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <ImageButton
+        android:id="@+id/camera_switch_button"
+        android:layout_width="@dimen/round_button_medium"
+        android:layout_height="@dimen/round_button_medium"
+        android:layout_marginBottom="@dimen/margin_xlarge"
+        android:layout_marginStart="@dimen/margin_small"
+        android:padding="@dimen/spacing_small"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        app:srcCompat="@drawable/ic_switch"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageButton
+        android:id="@+id/camera_capture_button"
+        android:layout_width="@dimen/round_button_large"
+        android:layout_height="@dimen/round_button_large"
+        android:layout_marginBottom="@dimen/shutter_button_margin"
+        android:scaleType="fitCenter"
+        android:background="@drawable/ic_shutter"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
