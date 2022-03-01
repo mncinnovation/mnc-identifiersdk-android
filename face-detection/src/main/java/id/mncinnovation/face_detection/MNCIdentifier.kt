@@ -2,11 +2,26 @@ package id.mncinnovation.face_detection
 
 import android.content.Context
 import android.content.Intent
+import id.mncinnovation.face_detection.analyzer.DetectionMode
 import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 
 object MNCIdentifier {
     private var attempt = 0
+    var detectionMode = listOf(
+        DetectionMode.HOLD_STILL,
+        DetectionMode.OPEN_MOUTH,
+        DetectionMode.BLINK,
+        DetectionMode.SHAKE_HEAD,
+        DetectionMode.SMILE
+    )
+
+    @JvmStatic
+    fun setDetectionModeSequence(shuffle: Boolean, detectionMode: List<DetectionMode>){
+        MNCIdentifier.detectionMode = detectionMode.run {
+            if (shuffle) shuffled() else this
+        }
+    }
 
     @JvmStatic
     fun getLivenessIntent(context: Context): Intent {

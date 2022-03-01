@@ -42,6 +42,7 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
 
     private var timer: Timer? = null
     private var countdownTime = COUNTDOWN_TIME
+    private var currentDetection: DetectionMode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,14 +103,14 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
     override fun startCamera(cameraProvider: ProcessCameraProvider, previewView: PreviewView) {
         val offset = 50
         val analysisUseCase = ImageAnalysis.Builder().build().also {
-            it.setAnalyzer(cameraExecutor, LivenessDetectionAnalyzer(this,
-                listOf(
-                    DetectionMode.HOLD_STILL,
-                    DetectionMode.OPEN_MOUTH,
-                    DetectionMode.BLINK,
-                    DetectionMode.SHAKE_HEAD,
-                    DetectionMode.SMILE
-                ), Rect(ivFace.left - offset*2, ivFace.top - offset, ivFace.right + offset*2, ivFace.bottom + offset), graphicOverlay,false, this))
+            it.setAnalyzer(cameraExecutor,
+                LivenessDetectionAnalyzer(
+                    this,
+                    MNCIdentifier.detectionMode,
+                    Rect(ivFace.left - offset*2, ivFace.top - offset, ivFace.right + offset*2, ivFace.bottom + offset),
+                    graphicOverlay,
+                    false,
+                    this))
         }
 
         val previewUseCase = Preview.Builder().build()
@@ -161,7 +162,10 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
     }
 
     override fun onStartDetection(detectionMode: DetectionMode) {
-        restartTime()
+        if(currentDetection != detectionMode) {
+            currentDetection = detectionMode
+            restartTime()
+        }
         when(detectionMode){
             DetectionMode.HOLD_STILL ->{
                 tvInstruction.text = getString(R.string.lbl_hold_still_instruction)
