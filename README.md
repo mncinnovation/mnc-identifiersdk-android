@@ -69,7 +69,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 ```
 
 ## Customize Detection Sequence
-Default detection sequence is HOLD_STILL > BLINK > OPEN_MOUTH> SMILE > SHAKE_HEAD. You can cutomize detection sequence using following method
+Default detection sequence is HOLD_STILL > BLINK > OPEN_MOUTH > SHAKE_HEAD > SMILE. You can cutomize detection sequence using following method
 
 ```kotlin
 //the first boolean value indicates if the given detection sequence should be shuffled.
