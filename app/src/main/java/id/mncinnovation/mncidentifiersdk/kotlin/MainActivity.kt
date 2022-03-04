@@ -25,12 +25,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        MNCIdentifier.setDetectionModeSequence(true, listOf(
-            DetectionMode.HOLD_STILL,
-            DetectionMode.BLINK,
-            DetectionMode.OPEN_MOUTH,
-            DetectionMode.SMILE,
-            DetectionMode.SHAKE_HEAD))
         with(binding){
             btnScanKtp.setOnClickListener {
                 startActivityForResult(Intent(this@MainActivity, ScanKTPActivity::class.java), SCAN_KTP_REQUEST_CODE)
