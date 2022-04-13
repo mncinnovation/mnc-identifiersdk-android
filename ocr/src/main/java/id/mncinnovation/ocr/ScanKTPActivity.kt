@@ -14,6 +14,7 @@ import androidx.camera.view.PreviewView
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
+import id.mncinnovation.ocr.analyzer.PrespectiveAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpListener
 import id.mncinnovation.ocr.analyzer.Status
@@ -26,6 +27,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        System.loadLibrary("opencv_java4")
         binding = ActivityScanKtpactivityBinding.inflate(layoutInflater, rootView, true)
         binding.ivBack.setOnClickListener {
             onBackPressed()
@@ -41,7 +43,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
 
 
         val analysisUseCase = ImageAnalysis.Builder().build().also {
-            it.setAnalyzer(cameraExecutor,ScanKtpAnalyzer(this))
+            it.setAnalyzer(cameraExecutor,PrespectiveAnalyzer(binding.graphicOverlay))
         }
 
         // Must unbind the use-cases before rebinding them
