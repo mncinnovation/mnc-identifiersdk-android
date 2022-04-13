@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="id.mncinnovation.mncidentifiersdk" >
+    package="id.mncinnovation.mncidentifiersdk">
 
     <application
         android:allowBackup="true"
@@ -8,16 +8,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MNCIdentifierSDK" >
+        android:theme="@style/Theme.MNCIdentifierSDK">
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="face, ocr" />
+
         <activity
             android:name=".java.MainActivity"
             android:exported="false" />
         <activity
             android:name=".kotlin.MainActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

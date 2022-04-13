@@ -7,7 +7,7 @@ import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.mncidentifiersdk.databinding.ItemLiveDetectionResultBinding
 
-class LivenessResultAdapter(val items: List<LivenessResult.DetectionResult>): RecyclerView.Adapter<LivenessResultAdapter.DetectionResultViewHolder>(){
+class LivenessResultAdapter(val livenessResult: LivenessResult): RecyclerView.Adapter<LivenessResultAdapter.DetectionResultViewHolder>(){
     inner class DetectionResultViewHolder(val binding: ItemLiveDetectionResultBinding): RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetectionResultViewHolder {
@@ -20,19 +20,21 @@ class LivenessResultAdapter(val items: List<LivenessResult.DetectionResult>): Re
     }
 
     override fun onBindViewHolder(holder: DetectionResultViewHolder, position: Int) {
-        with(holder.binding){
-            val item = items[position]
-            tvTitle.text = item.detectionMode.name
-            tvTime.text = item.timeMilis?.toString()
-            item.image?.let {
-                BitmapUtils.getBitmapFromContentUri(holder.itemView.context.contentResolver, it)
-            }?.let {
-                ivResult.setImageBitmap(it)
+        livenessResult.detectionResult?.get(position)?.let { item ->
+            with(holder.binding){
+                tvTitle.text = item.detectionMode.name
+                tvTime.text = item.timeMilis?.toString()
+                item.image?.let {
+                    livenessResult.getBitmap(holder.itemView.context, item.detectionMode)
+                }?.let {
+                    ivResult.setImageBitmap(it)
+                }
             }
         }
+
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return livenessResult.detectionResult?.size?: 0
     }
 }

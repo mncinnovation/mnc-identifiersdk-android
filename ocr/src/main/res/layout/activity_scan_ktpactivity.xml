@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".ScanKTPActivity">
 
+    <id.mncinnovation.identification.core.GraphicOverlay
+        android:id="@+id/graphic_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 
     <Button
         android:visibility="gone"
@@ -33,6 +42,7 @@
         app:tint="@android:color/white" />
 
     <View
+        android:visibility="invisible"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_margin="20dp"
@@ -53,6 +63,7 @@
         app:layout_constraintBottom_toTopOf="@id/progress_bar"/>
 
     <ProgressBar
+        android:visibility="invisible"
         android:id="@+id/progress_bar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"

@@ -22,9 +22,11 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import id.mncinnovation.face_detection.analyzer.FaceDetectionAnalyzer
 import id.mncinnovation.face_detection.analyzer.FaceDetectionListener
+import id.mncinnovation.face_detection.model.SelfieWithKtpResult
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_IMAGE_URI
 import id.mncinnovation.identification.core.common.EXTRA_LIST_IMAGE_URI
+import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import java.io.File
 import java.util.*
@@ -155,9 +157,9 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
                     }
                 }
                 .addOnCompleteListener {
+                    val selfieResult = SelfieWithKtpResult(true,"Success", uri, faceImages)
                     val intent = Intent().apply {
-                        putExtra(EXTRA_IMAGE_URI, uri)
-                        putParcelableArrayListExtra(EXTRA_LIST_IMAGE_URI, ArrayList(faceImages))
+                        putExtra(EXTRA_RESULT, selfieResult)
                     }
                     setResult(RESULT_OK, intent)
                     hideProgressDialog()

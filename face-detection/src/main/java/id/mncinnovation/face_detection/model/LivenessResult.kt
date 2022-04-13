@@ -12,11 +12,11 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class LivenessResult(
-    override val isSuccess: Boolean,
-    override val errorMessage: String?,
+    val isSuccess: Boolean,
+    val errorMessage: String?,
     val totalTimeMilis: Long? = null,
     val detectionResult: List<DetectionResult>? = null,
-    var attempt: Int = 0): Result(), Parcelable{
+    var attempt: Int = 0): Parcelable{
 
     @Parcelize
     data class DetectionResult(

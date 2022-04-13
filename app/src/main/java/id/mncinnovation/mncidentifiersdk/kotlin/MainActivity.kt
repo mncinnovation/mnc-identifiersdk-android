@@ -8,13 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
-import id.mncinnovation.face_detection.analyzer.DetectionMode
-import id.mncinnovation.identification.core.common.EXTRA_IMAGE_URI
-import id.mncinnovation.identification.core.common.EXTRA_KTP
-import id.mncinnovation.identification.core.common.EXTRA_LIST_IMAGE_URI
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
 import id.mncinnovation.ocr.CaptureKtpActivity
+import id.mncinnovation.ocr.MNCIdentifierOCR
 import id.mncinnovation.ocr.ScanKTPActivity
 import id.mncinnovation.ocr.model.Ktp
 
@@ -49,27 +46,24 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == RESULT_OK){
             when(requestCode){
                 CAPTURE_EKTP_REQUEST_CODE -> {
-                    val imageUri = data?.getParcelableExtra<Uri>(EXTRA_IMAGE_URI)
-                    val ktp = data?.getParcelableExtra<Ktp>(EXTRA_KTP)
-                    imageUri?.let { uri ->
-                        val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
-                        imageBitmap?.let { bitmap ->
-                            binding.ivKtpCapture.setImageBitmap(bitmap)
+                    val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                    captureKtpResult?.let { result ->
+                        result.getBitmapImage(this)?.let {
+                            binding.ivKtpCapture.setImageBitmap(it)
                         }
+                        binding.tvCaptureKtp.text = result.ktp.toString()
                     }
-                    binding.tvCaptureKtp.text = ktp.toString()
+
                 }
 
                 SCAN_KTP_REQUEST_CODE -> {
-                    val imageUri = data?.getParcelableExtra<Uri>(EXTRA_IMAGE_URI)
-                    val ktp = data?.getParcelableExtra<Ktp>(EXTRA_KTP)
-                    imageUri?.let { uri ->
-                        val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
-                        imageBitmap?.let { bitmap ->
-                            binding.ivKtp.setImageBitmap(bitmap)
+                    val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                    captureKtpResult?.let { result ->
+                        result.getBitmapImage(this)?.let {
+                            binding.ivKtp.setImageBitmap(it)
                         }
+                        binding.tvScanKtp.text = captureKtpResult.toString()
                     }
-                    binding.tvScanKtp.text = ktp?.toString()?:""
                 }
 
                 LIVENESS_DETECTION_REQUEST_CODE -> {
@@ -79,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                             visibility = View.VISIBLE
                             text = "Attempt: ${it.attempt}"
                         }
-                        val livenessResultAdapter = LivenessResultAdapter(it.detectionResult?: emptyList())
+                        val livenessResultAdapter = LivenessResultAdapter(it)
                         binding.rvLiveness.apply {
                             layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL,false)
                             adapter = livenessResultAdapter
@@ -89,26 +83,23 @@ class MainActivity : AppCompatActivity() {
 
                 SELFIE_WITH_KTP_REQUEST_CODE -> {
                     binding.llResultSelfieWKtp.visibility = View.VISIBLE
-                    val imageUri = data?.getParcelableExtra<Uri>(EXTRA_IMAGE_URI)
-                    val listFaceUri = data?.getParcelableArrayListExtra<Uri>(EXTRA_LIST_IMAGE_URI)
-                    imageUri?.let { uri ->
-                        val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
-                        imageBitmap?.let { bitmap ->
-                            binding.ivSelfieWKtpOri.setImageBitmap(bitmap)
+                    val selfieResult = MNCIdentifier.getSelfieResult(data)
+                    selfieResult?.let { result ->
+                        result.getBitmap(this)?.let {
+                            binding.ivSelfieWKtpOri.setImageBitmap(it)
                         }
-                    }
-                    listFaceUri?.forEachIndexed { index, uri ->
-                        val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
-                        when(index){
-                            0 -> {
-                                binding.ivFace1.apply {
-                                    visibility = View.VISIBLE
-                                    setImageBitmap(imageBitmap)
+                        result.getListFaceBitmap(this).forEachIndexed { index, bitmap ->
+                            when(index){
+                                0 -> {
+                                    binding.ivFace1.apply {
+                                        visibility = View.VISIBLE
+                                        setImageBitmap(bitmap)
+                                    }
                                 }
-                            }
-                            1 -> binding.ivFace2.apply {
-                                 visibility = View.VISIBLE
-                                 setImageBitmap(imageBitmap)
+                                1 -> binding.ivFace2.apply {
+                                    visibility = View.VISIBLE
+                                    setImageBitmap(bitmap)
+                                }
                             }
                         }
                     }

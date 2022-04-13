@@ -22,10 +22,10 @@ import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.base.BaseCameraActivity
-import id.mncinnovation.identification.core.common.EXTRA_IMAGE_URI
-import id.mncinnovation.identification.core.common.EXTRA_KTP
+import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
+import id.mncinnovation.ocr.model.CaptureKtpResult
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
@@ -75,7 +75,7 @@ class CaptureKtpActivity : BaseCameraActivity() {
         previewView: PreviewView,
     ) {
         // CameraSelector
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build()
+        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview
         val previewUseCase = Preview.Builder().build()
@@ -106,7 +106,7 @@ class CaptureKtpActivity : BaseCameraActivity() {
         // Setup image capture metadata
         val metadata = ImageCapture.Metadata().apply {
             // Mirror image when using the front camera
-            isReversedHorizontal = true
+            isReversedHorizontal = false
         }
 
         // Create output options object which contains file + metadata
@@ -147,9 +147,9 @@ class CaptureKtpActivity : BaseCameraActivity() {
                     .addOnSuccessListener { text ->
                         val ekp = text.extractEktp()
                         val resultUri = saveBitmapToFile(filteredBitmap,filesDir.absolutePath,"ktpocr.jpg")
+                        val ocrResult = CaptureKtpResult(true,"Success", resultUri, ekp)
                         val intent = Intent().apply {
-                            putExtra(EXTRA_IMAGE_URI,resultUri)
-                            putExtra(EXTRA_KTP, ekp)
+                            putExtra(EXTRA_RESULT,ocrResult)
                         }
                         setResult(RESULT_OK, intent)
                         hideProgressDialog()
@@ -159,7 +159,9 @@ class CaptureKtpActivity : BaseCameraActivity() {
     }
 
     private fun showProgressDialog(){
-        progressDialog.show()
+        runOnUiThread {
+            progressDialog.show()
+        }
     }
     private fun hideProgressDialog(){
         progressDialog.dismiss()

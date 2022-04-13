@@ -4,7 +4,7 @@ MNC Identifier is a service to identify, and verify consumer with AI in it.
 ## Feature
 ### Liveness Detection
 <img src="screenshots/splash.jpg" width="256">
-Liveness Detection using mlkit face recognition to detect live person present at the point of capture is real.
+Liveness Detection using mlkit face recognition to detect live person present at the point of capture.
 
 ## Requirements
 - Min SDK 21

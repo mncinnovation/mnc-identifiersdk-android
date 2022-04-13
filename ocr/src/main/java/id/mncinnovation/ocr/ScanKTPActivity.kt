@@ -12,13 +12,13 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import id.mncinnovation.identification.core.base.BaseCameraActivity
-import id.mncinnovation.identification.core.common.EXTRA_IMAGE_URI
-import id.mncinnovation.identification.core.common.EXTRA_KTP
+import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
 import id.mncinnovation.ocr.analyzer.ScanKtpAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpListener
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.ActivityScanKtpactivityBinding
+import id.mncinnovation.ocr.model.CaptureKtpResult
 import id.mncinnovation.ocr.model.Ktp
 
 class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
@@ -34,7 +34,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
 
     override fun startCamera(cameraProvider: ProcessCameraProvider, previewView: PreviewView) {
         // CameraSelector
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_FRONT).build()
+        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview
         val previewUseCase = Preview.Builder().build()
@@ -87,11 +87,9 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
         ktp.bitmap?.let {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
+            val scanResult = CaptureKtpResult(true,"Success", bitmapuri, ktp.apply { bitmap = null })
             val intent = Intent().apply {
-                putExtra(EXTRA_KTP, ktp.apply {
-                    bitmap = null
-                })
-                putExtra(EXTRA_IMAGE_URI, bitmapuri)
+                putExtra(EXTRA_RESULT,scanResult)
             }
             setResult(RESULT_OK, intent)
             finish()

@@ -13,9 +13,9 @@
         <entry key="face-detection/src/main/res/drawable/ekyc_face.xml" value="0.55" />
         <entry key="face-detection/src/main/res/drawable/ic_arrow_back_fill.xml" value="0.2520833333333333" />
         <entry key="face-detection/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
-        <entry key="face-detection/src/main/res/layout/activity_liveness_detection.xml" value="0.335" />
+        <entry key="face-detection/src/main/res/layout/activity_liveness_detection.xml" value="0.3001555209953344" />
         <entry key="face-detection/src/main/res/layout/activity_selfie_with_ktp.xml" value="0.335" />
-        <entry key="face-detection/src/main/res/layout/activity_splash.xml" value="0.2359375" />
+        <entry key="face-detection/src/main/res/layout/activity_splash.xml" value="0.375" />
         <entry key="identification-core/src/main/res/drawable-v24/border_white.xml" value="0.12135416666666667" />
         <entry key="identification-core/src/main/res/drawable/ic_switch.xml" value="0.12135416666666667" />
         <entry key="identification-core/src/main/res/layout/activity_base_camera.xml" value="0.203125" />

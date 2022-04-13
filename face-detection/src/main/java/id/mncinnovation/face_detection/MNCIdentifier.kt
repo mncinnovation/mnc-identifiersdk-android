@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import id.mncinnovation.face_detection.analyzer.DetectionMode
 import id.mncinnovation.face_detection.model.LivenessResult
+import id.mncinnovation.face_detection.model.SelfieWithKtpResult
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 
 object MNCIdentifier {
@@ -35,4 +36,8 @@ object MNCIdentifier {
             attempt = MNCIdentifier.attempt
             if(isSuccess) MNCIdentifier.attempt = 0
         }
+
+    @JvmStatic
+    fun getSelfieResult(intent: Intent?) =
+        intent?.getParcelableExtra(EXTRA_RESULT) as SelfieWithKtpResult?
 }
