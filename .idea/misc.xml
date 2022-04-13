@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../.gradle/caches/transforms-3/75c6b37b5d5928d4f5c9d73a1a6b930b/transformed/jetified-camera-core-1.0.0/res/drawable/border_white.xml" value="0.134375" />
+        <entry key="app/src/main/res/layout/activity_kuama_scanner.xml" value="0.10052083333333334" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.375" />
         <entry key="app/src/main/res/layout/item_live_detection_result.xml" value="0.25" />
         <entry key="camera-core/src/main/res/drawable/border_dash.xml" value="0.55" />

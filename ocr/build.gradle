@@ -58,6 +58,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
     implementation "androidx.camera:camera-view:$camerax_version"
     implementation 'jp.co.cyberagent.android:gpuimage:2.0.4'
+    implementation 'com.github.zynkware:Tiny-OpenCV:4.4.0-4'
 }
 
 afterEvaluate {
