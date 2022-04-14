@@ -22,29 +22,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        with(binding){
+        with(binding) {
             btnScanKtp.setOnClickListener {
-                startActivityForResult(Intent(this@MainActivity, ScanKTPActivity::class.java), SCAN_KTP_REQUEST_CODE)
+                startActivityForResult(
+                    Intent(this@MainActivity, ScanKTPActivity::class.java),
+                    SCAN_KTP_REQUEST_CODE
+                )
             }
 
             btnCaptureKtp.setOnClickListener {
-                startActivityForResult(Intent(this@MainActivity, CaptureKtpActivity::class.java), CAPTURE_EKTP_REQUEST_CODE)
+                startActivityForResult(
+                    Intent(this@MainActivity, CaptureKtpActivity::class.java),
+                    CAPTURE_EKTP_REQUEST_CODE
+                )
             }
 
             btnLivenessDetection.setOnClickListener {
-                startActivityForResult(MNCIdentifier.getLivenessIntent(this@MainActivity), LIVENESS_DETECTION_REQUEST_CODE)
+                startActivityForResult(
+                    MNCIdentifier.getLivenessIntent(this@MainActivity),
+                    LIVENESS_DETECTION_REQUEST_CODE
+                )
             }
 
             btnSelfieWKtp.setOnClickListener {
-                startActivityForResult(Intent(this@MainActivity, SelfieWithKtpActivity::class.java), SELFIE_WITH_KTP_REQUEST_CODE)
+                startActivityForResult(
+                    Intent(this@MainActivity, SelfieWithKtpActivity::class.java),
+                    SELFIE_WITH_KTP_REQUEST_CODE
+                )
             }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK){
-            when(requestCode){
+        if (resultCode == RESULT_OK) {
+            when (requestCode) {
                 CAPTURE_EKTP_REQUEST_CODE -> {
                     val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
                     captureKtpResult?.let { result ->
@@ -75,7 +87,11 @@ class MainActivity : AppCompatActivity() {
                         }
                         val livenessResultAdapter = LivenessResultAdapter(it)
                         binding.rvLiveness.apply {
-                            layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL,false)
+                            layoutManager = LinearLayoutManager(
+                                this@MainActivity,
+                                LinearLayoutManager.HORIZONTAL,
+                                false
+                            )
                             adapter = livenessResultAdapter
                         }
                     }
@@ -89,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                             binding.ivSelfieWKtpOri.setImageBitmap(it)
                         }
                         result.getListFaceBitmap(this).forEachIndexed { index, bitmap ->
-                            when(index){
+                            when (index) {
                                 0 -> {
                                     binding.ivFace1.apply {
                                         visibility = View.VISIBLE
@@ -108,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    companion object{
+    companion object {
         const val LIVENESS_DETECTION_REQUEST_CODE = 101
         const val CAPTURE_EKTP_REQUEST_CODE = 102
         const val SCAN_KTP_REQUEST_CODE = 103

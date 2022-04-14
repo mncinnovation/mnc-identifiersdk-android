@@ -25,9 +25,13 @@
         <entry key="liveness-detection/src/main/res/drawable/selector_mute.xml" value="0.23333333333333334" />
         <entry key="liveness-detection/src/main/res/layout/activity_liveness_detection.xml" value="0.25" />
         <entry key="liveness-detection/src/main/res/layout/activity_selfie_with_ktp.xml" value="0.25" />
+        <entry key="ocr/src/main/res/drawable/bg_btn_solid.xml" value="0.151" />
+        <entry key="ocr/src/main/res/drawable/bg_edittext_readonly.xml" value="0.1" />
+        <entry key="ocr/src/main/res/drawable/bg_edittext_solid.xml" value="0.151" />
         <entry key="ocr/src/main/res/drawable/border_white.xml" value="0.12135416666666667" />
         <entry key="ocr/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.12135416666666667" />
         <entry key="ocr/src/main/res/layout/activity_capture_ktp.xml" value="0.125" />
+        <entry key="ocr/src/main/res/layout/activity_confirmation.xml" value="0.19610507246376813" />
         <entry key="ocr/src/main/res/layout/activity_scan_ktpactivity.xml" value="0.125" />
       </map>
     </option>

@@ -1,10 +1,12 @@
 package id.mncinnovation.ocr
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
@@ -34,14 +36,15 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
 
     override fun startCamera(cameraProvider: ProcessCameraProvider, previewView: PreviewView) {
         // CameraSelector
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+        val cameraSelector =
+            CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview
         val previewUseCase = Preview.Builder().build()
 
 
         val analysisUseCase = ImageAnalysis.Builder().build().also {
-            it.setAnalyzer(cameraExecutor,ScanKtpAnalyzer(this))
+            it.setAnalyzer(cameraExecutor, ScanKtpAnalyzer(this))
         }
 
         // Must unbind the use-cases before rebinding them
@@ -51,7 +54,8 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             cameraProvider.bindToLifecycle(
-                this, cameraSelector, previewUseCase, analysisUseCase)
+                this, cameraSelector, previewUseCase, analysisUseCase
+            )
             // Attach the viewfinder's surface provider to preview use case
             previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
         } catch (exc: Exception) {
@@ -87,12 +91,12 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
         ktp.bitmap?.let {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
-            val scanResult = CaptureKtpResult(true,"Success", bitmapuri, ktp.apply { bitmap = null })
-            val intent = Intent().apply {
-                putExtra(EXTRA_RESULT,scanResult)
+            val scanResult =
+                CaptureKtpResult(true, "Success", bitmapuri, ktp.apply { bitmap = it })
+            val intent = Intent(this@ScanKTPActivity, ConfirmationActivity::class.java).apply {
+                putExtra(EXTRA_RESULT, scanResult)
             }
-            setResult(RESULT_OK, intent)
-            finish()
+            resultLauncherConfirm.launch(intent)
         }
     }
 
@@ -100,6 +104,20 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
         Log.d(TAG, "onScanFailed ${exception.message}")
     }
 
+    private val resultLauncherConfirm =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                captureKtpResult?.let { scanResult ->
+                    val intent = Intent().apply {
+                        putExtra(EXTRA_RESULT, scanResult)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            }
+        }
 
     companion object {
         private const val TAG = "ScanKtpActivity"
