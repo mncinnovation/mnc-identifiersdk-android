@@ -47,21 +47,12 @@ class CaptureKtpAnalyzer(private val listener: CaptureKtpListener) :
                         )
                     ) {
                         listener.onStatusChanged(Status.SCANNING)
-                        val box = detectedObjects.first().boundingBox
-                        val croppedBitmap = Bitmap.createBitmap(
-                            originalBitmap,
-                            box.left,
-                            box.top,
-                            box.width(),
-                            box.height()
-                        )
-                        image.close()
                     } else {
                         listener.onStatusChanged(Status.NOT_FOUND)
-                        image.close()
                     }
                 }.addOnFailureListener {
                     listener.onCaptureFailed(it)
+                }.addOnCompleteListener {
                     image.close()
                 }
 
