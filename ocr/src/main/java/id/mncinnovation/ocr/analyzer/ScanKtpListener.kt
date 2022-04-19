@@ -1,6 +1,5 @@
 package id.mncinnovation.ocr.analyzer
 
-import android.graphics.Bitmap
 import id.mncinnovation.ocr.model.Ktp
 
 interface ScanKtpListener {
@@ -12,7 +11,6 @@ interface ScanKtpListener {
 
 interface CaptureKtpListener {
     fun onStatusChanged(status: Status)
-    fun onCaptureComplete(bitmap: Bitmap)
     fun onCaptureFailed(exception: Exception)
 }
 

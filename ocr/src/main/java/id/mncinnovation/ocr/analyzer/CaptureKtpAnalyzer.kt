@@ -29,48 +29,41 @@ class CaptureKtpAnalyzer(private val listener: CaptureKtpListener) :
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
         val originalBitmap = BitmapUtils.getBitmap(image)
-        Log.e(TAG, "MASUK ANALYZE")
         if (originalBitmap != null) {
-            Handler(Looper.getMainLooper()).postDelayed({
-                val inputImage = InputImage.fromMediaImage(
-                    image.image!!,
-                    image.imageInfo.rotationDegrees
-                )
-                objectDetector.process(inputImage)
-                    .addOnSuccessListener { detectedObjects ->
-                        Log.d(
-                            TAG,
-                            detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
-                                ?: "Label Not Found"
+            val inputImage = InputImage.fromMediaImage(
+                image.image!!,
+                image.imageInfo.rotationDegrees
+            )
+            objectDetector.process(inputImage)
+                .addOnSuccessListener { detectedObjects ->
+                    Log.d(
+                        TAG,
+                        detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
+                            ?: "Label Not Found"
+                    )
+                    if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
+                            "Driver's license",
+                            "Passport"
                         )
-                        if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
-                                "Driver's license",
-                                "Passport"
-                            )
-                        ) {
-                            listener.onStatusChanged(Status.SCANNING)
-                            val box = detectedObjects.first().boundingBox
-                            val croppedBitmap = Bitmap.createBitmap(
-                                originalBitmap,
-                                box.left,
-                                box.top,
-                                box.width(),
-                                box.height()
-                            )
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                listener.onCaptureComplete(bitmap = croppedBitmap)
-                                listener.onStatusChanged(Status.COMPLETE)
-                                image.close()
-                            }, 3000)
-                        } else {
-                            listener.onStatusChanged(Status.NOT_FOUND)
-                            image.close()
-                        }
-                    }.addOnFailureListener {
-                        listener.onCaptureFailed(it)
+                    ) {
+                        listener.onStatusChanged(Status.SCANNING)
+                        val box = detectedObjects.first().boundingBox
+                        val croppedBitmap = Bitmap.createBitmap(
+                            originalBitmap,
+                            box.left,
+                            box.top,
+                            box.width(),
+                            box.height()
+                        )
+                        image.close()
+                    } else {
+                        listener.onStatusChanged(Status.NOT_FOUND)
                         image.close()
                     }
-            }, 2000)
+                }.addOnFailureListener {
+                    listener.onCaptureFailed(it)
+                    image.close()
+                }
 
         }
     }
