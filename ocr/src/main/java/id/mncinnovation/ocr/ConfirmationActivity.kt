@@ -3,17 +3,25 @@ package id.mncinnovation.ocr
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.View.OnFocusChangeListener
+import android.widget.ArrayAdapter
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationBinding
+import id.mncinnovation.ocr.utils.GENDER_FEMALE
+import id.mncinnovation.ocr.utils.GENDER_MALE
+import id.mncinnovation.ocr.utils.showDatePickerAction
+import java.util.*
+
 
 class ConfirmationActivity : AppCompatActivity() {
     lateinit var binding: ActivityConfirmationBinding
     private var state = FILL_STATE
+    private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +34,12 @@ class ConfirmationActivity : AppCompatActivity() {
             llConfirmIdentity.visibility = View.GONE
             captureKtpResult?.let {
                 with(it.ktp) {
-                    ivIdentity.setImageBitmap(bitmap)
+
+                    if (bitmap != null) {
+                        ivIdentity.setImageBitmap(bitmap)
+                    } else {
+                        ivIdentity.setImageURI(it.imageUri)
+                    }
 
                     etNik.setText(nik)
                     etFullname.setText(nama)
@@ -48,12 +61,26 @@ class ConfirmationActivity : AppCompatActivity() {
                 }
             }
 
+            etBirthdate.setOnClickListener {
+                showDatePickerAction(initYear = 1990, maxDate = Date().time) { day, month, year ->
+                    val monthTxt = if (month < 10) "0$month" else month.toString()
+                    val dayTxt = if (day < 10) "0$day" else day.toString()
+                    val dateTxt = "$dayTxt-$monthTxt-$year"
+                    etBirthdate.setText(dateTxt)
+                }.show()
+            }
+            val arrayAdapter: ArrayAdapter<*> =
+                ArrayAdapter<Any?>(
+                    context,
+                    android.R.layout.simple_list_item_1,
+                    genders
+                )
+            etGender.setAdapter(arrayAdapter)
+            etGender.onFocusChangeListener =
+                OnFocusChangeListener { v, hasFocus -> if (hasFocus) etGender.showDropDown() }
+
             ivBack.setOnClickListener {
-                if (state == FILL_STATE) {
-                    onBackPressed()
-                } else {
-                    setStateUpdate(FILL_STATE)
-                }
+                onBackPressed()
             }
 
             btnNext.setOnClickListener {
@@ -87,6 +114,14 @@ class ConfirmationActivity : AppCompatActivity() {
                 }
 
             }
+        }
+    }
+
+    override fun onBackPressed() {
+        if (state == FILL_STATE) {
+            super.onBackPressed()
+        } else {
+            setStateUpdate(FILL_STATE)
         }
     }
 

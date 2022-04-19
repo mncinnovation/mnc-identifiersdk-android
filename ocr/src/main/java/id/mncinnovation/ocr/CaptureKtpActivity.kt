@@ -1,20 +1,21 @@
 package id.mncinnovation.ocr
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.objects.ObjectDetection
@@ -25,6 +26,11 @@ import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
+import id.mncinnovation.ocr.analyzer.CaptureKtpAnalyzer
+import id.mncinnovation.ocr.analyzer.CaptureKtpListener
+import id.mncinnovation.ocr.analyzer.ScanKtpAnalyzer
+import id.mncinnovation.ocr.analyzer.Status
+import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerBinding
 import id.mncinnovation.ocr.model.CaptureKtpResult
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
@@ -32,9 +38,14 @@ import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
 import java.io.File
 
 @Suppress("DEPRECATION")
-class CaptureKtpActivity : BaseCameraActivity() {
+class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
     private lateinit var btnCapture: ImageButton
+
+    private var hasLaunchSplash = false
+    private var bottomSheetDialog: BottomSheetDialog? = null
+    private var countdown: CountDownTimer? = null
+    private var bitmapUri: Uri? = null
 
     private val localModel =
         LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build()
@@ -55,15 +66,24 @@ class CaptureKtpActivity : BaseCameraActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!hasLaunchSplash)
+            resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
+
         gpuImage = GPUImage(this).apply {
-            setFilter(GPUImageColorMatrixFilter(1f,
-                floatArrayOf(
-                    0f,0f,1.3f,0f,
-                    0f,0f,1.3f,0f,
-                    0f,0f,1.3f,0f,
-                    0f,0f,0f,1f)))
+            setFilter(
+                GPUImageColorMatrixFilter(
+                    1f,
+                    floatArrayOf(
+                        0f, 0f, 1.3f, 0f,
+                        0f, 0f, 1.3f, 0f,
+                        0f, 0f, 1.3f, 0f,
+                        0f, 0f, 0f, 1f
+                    )
+                )
+            )
         }
-        uiContainer = LayoutInflater.from(this).inflate(R.layout.activity_capture_ktp, rootView, true)
+        uiContainer =
+            LayoutInflater.from(this).inflate(R.layout.activity_capture_ktp, rootView, true)
         btnCapture = uiContainer.findViewById(R.id.camera_capture_button)
         btnCapture.setOnClickListener {
             captureImage()
@@ -75,7 +95,8 @@ class CaptureKtpActivity : BaseCameraActivity() {
         previewView: PreviewView,
     ) {
         // CameraSelector
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+        val cameraSelector =
+            CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
         // Preview
         val previewUseCase = Preview.Builder().build()
@@ -86,6 +107,9 @@ class CaptureKtpActivity : BaseCameraActivity() {
         }.build()
 
 
+        val analysisUseCase = ImageAnalysis.Builder().build().also {
+            it.setAnalyzer(cameraExecutor, CaptureKtpAnalyzer(this))
+        }
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
 
@@ -93,7 +117,8 @@ class CaptureKtpActivity : BaseCameraActivity() {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             cameraProvider.bindToLifecycle(
-                this, cameraSelector, previewUseCase, captureUseCase)
+                this, cameraSelector, previewUseCase, analysisUseCase, captureUseCase
+            )
             // Attach the viewfinder's surface provider to preview use case
             previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
         } catch (exc: Exception) {
@@ -101,8 +126,8 @@ class CaptureKtpActivity : BaseCameraActivity() {
         }
     }
 
-    private fun captureImage(){
-        val photoFile = File.createTempFile("selfiektp",".jpg")
+    private fun captureImage() {
+        val photoFile = File.createTempFile("selfiektp", ".jpg")
         // Setup image capture metadata
         val metadata = ImageCapture.Metadata().apply {
             // Mirror image when using the front camera
@@ -123,51 +148,141 @@ class CaptureKtpActivity : BaseCameraActivity() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                    bitmapUri = savedUri
                     Log.d(TAG, "Photo capture succeeded: $savedUri")
                     extractDataKtp(savedUri)
                 }
             })
     }
 
-    private fun extractDataKtp(uri: Uri){
+    private fun extractDataKtp(uri: Uri) {
         showProgressDialog()
         val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
             ?: return
         objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
             .addOnSuccessListener { objects ->
                 val cropedBitmap = if (objects.isEmpty()) imageBitmap else
-                    Bitmap.createBitmap(imageBitmap,
+                    Bitmap.createBitmap(
+                        imageBitmap,
                         objects.first().boundingBox.left,
                         objects.first().boundingBox.top,
                         objects.first().boundingBox.width(),
-                        objects.first().boundingBox.height())
+                        objects.first().boundingBox.height()
+                    )
                 val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
 
-                textRecognizer.process(InputImage.fromBitmap(filteredBitmap,0))
+                textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
                     .addOnSuccessListener { text ->
                         val ekp = text.extractEktp()
-                        val resultUri = saveBitmapToFile(filteredBitmap,filesDir.absolutePath,"ktpocr.jpg")
-                        val ocrResult = CaptureKtpResult(true,"Success", resultUri, ekp)
-                        val intent = Intent().apply {
-                            putExtra(EXTRA_RESULT,ocrResult)
-                        }
+                        val resultUri =
+                            saveBitmapToFile(filteredBitmap, filesDir.absolutePath, "ktpocr.jpg")
+                        val ocrResult =
+                            CaptureKtpResult(true, "Success", bitmapUri ?: resultUri, ekp)
                         setResult(RESULT_OK, intent)
                         hideProgressDialog()
-                        finish()
+                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                            putExtra(EXTRA_RESULT, ocrResult)
+                        }
+                        resultLauncherConfirm.launch(intent)
                     }
             }
     }
 
-    private fun showProgressDialog(){
+    override fun onResume() {
+        super.onResume()
+        bitmapUri = null
+    }
+
+    private fun showProgressDialog() {
         runOnUiThread {
             progressDialog.show()
         }
     }
-    private fun hideProgressDialog(){
+
+    private fun hideProgressDialog() {
         progressDialog.dismiss()
     }
 
-    companion object{
+    private val resultLauncherSplash =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                hasLaunchSplash = true
+            }
+        }
+    private val resultLauncherConfirm =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                captureKtpResult?.let { scanResult ->
+                    val intent = Intent().apply {
+                        putExtra(EXTRA_RESULT, scanResult)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            }
+        }
+
+    //Listener of CaptureKtpListener
+    override fun onStatusChanged(status: Status) {
+        Log.e(TAG, "onStatusChanged ${status.name}")
+        if (status == Status.SCANNING) {
+            showPopupHoldScanDialog("Tahan selama waktu selesai")
+        }
+    }
+
+    override fun onCaptureComplete(bitmap: Bitmap) {
+        bottomSheetDialog?.dismiss()
+        if (bitmapUri == null) {
+            bitmapUri = saveBitmapToFile(bitmap, filesDir.absolutePath, "capturektp.jpg")
+            bitmapUri?.let { extractDataKtp(it) }
+        }
+        Log.d(TAG, "onCaptureComplete : $bitmapUri")
+    }
+
+    override fun onCaptureFailed(exception: Exception) {
+        exception.printStackTrace()
+    }
+
+    private fun showPopupHoldScanDialog(
+        message: String,
+        startAt: Long? = defaultStartAt
+    ) {
+        val bindingPopup = PopupBottomsheetScanTimerBinding.inflate(LayoutInflater.from(this))
+        var counter: Long = 3
+
+        bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogThemeOCR)
+        bindingPopup.apply {
+            tvInfoScan.text = message
+            countdown = object : CountDownTimer(startAt ?: defaultStartAt, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    tvCountdown.text = "$counter"
+                    counter--
+                }
+
+                override fun onFinish() {
+                    tvCountdown.text = "$counter"
+                    bottomSheetDialog?.dismiss()
+                }
+            }
+            countdown?.start()
+        }
+
+        bottomSheetDialog?.setOnDismissListener {
+            countdown?.cancel()
+        }
+
+        if (bottomSheetDialog?.isShowing == true) {
+            bottomSheetDialog?.dismiss()
+        }
+
+        bottomSheetDialog?.setContentView(bindingPopup.root)
+        bottomSheetDialog?.show()
+    }
+
+    companion object {
         const val TAG = "CaptureKtpActivity"
+        private const val defaultStartAt: Long = 3000
     }
 }

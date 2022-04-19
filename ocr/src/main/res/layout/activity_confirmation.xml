@@ -174,6 +174,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="8dp"
+                android:focusableInTouchMode="false"
+                android:clickable="false"
+                android:cursorVisible="false"
+                android:focusable="false"
                 android:background="@drawable/bg_edittext_solid"
                 android:drawableEnd="@drawable/ic_edit"
                 android:inputType="date"
@@ -190,7 +194,8 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputEditText
+
+            <AutoCompleteTextView
                 android:id="@+id/et_gender"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
