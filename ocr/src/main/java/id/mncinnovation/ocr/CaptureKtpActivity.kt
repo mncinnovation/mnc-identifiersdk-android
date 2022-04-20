@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
@@ -42,6 +43,7 @@ import kotlin.concurrent.fixedRateTimer
 class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
     private lateinit var btnCapture: ImageButton
+    private lateinit var gifLoading: LottieAnimationView
 
     private var hasLaunchSplash = false
     private var bottomSheetDialog: BottomSheetDialog? = null
@@ -60,10 +62,6 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
-
-    private val progressDialog: ProgressDialog by lazy {
-        ProgressDialog(this)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +84,8 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         uiContainer =
             LayoutInflater.from(this).inflate(R.layout.activity_capture_ktp, rootView, true)
         btnCapture = uiContainer.findViewById(R.id.camera_capture_button)
+        gifLoading = uiContainer.findViewById(R.id.gif_loading)
+        hideProgressDialog()
         btnCapture.setOnClickListener {
             captureImage()
         }
@@ -199,12 +199,12 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
 
     private fun showProgressDialog() {
         runOnUiThread {
-            progressDialog.show()
+            gifLoading.visibility = View.VISIBLE
         }
     }
 
     private fun hideProgressDialog() {
-        progressDialog.dismiss()
+        gifLoading.visibility = View.GONE
     }
 
     private val resultLauncherSplash =

@@ -86,9 +86,7 @@ class ConfirmationActivity : AppCompatActivity() {
 
             btnNext.setOnClickListener {
                 if (state == FILL_STATE) {
-                    if (isFormValid()) {
-                        setStateUpdate(CONFIRM_STATE)
-                    }
+                    setStateUpdate(CONFIRM_STATE)
                 } else {
                     captureKtpResult?.ktp?.apply {
                         nik = etNik.text.toString()
@@ -139,14 +137,14 @@ class ConfirmationActivity : AppCompatActivity() {
             val job = etJob.text.toString()
             val citizenship = etMaritalStatus.text.toString()
             val expiredDate = etExpiredDate.text.toString()
-//            if (nik.isEmpty() || fullname.isEmpty() || bornPlace.isEmpty() || birthDate.isEmpty() || gender.isEmpty() || address.isEmpty() || rt.isEmpty() || rw.isEmpty() || village.isEmpty() || district.isEmpty() || religion.isEmpty() || maritalStatus.isEmpty() || job.isEmpty() || citizenship.isEmpty() || expiredDate.isEmpty()) {
-//                Toast.makeText(
-//                    this@ConfirmationActivity,
-//                    "Oops, masih ada data yang terlewatkan, yuk lengkapi dulu.",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//                return false
-//            }
+            if (nik.isEmpty() || fullname.isEmpty() || bornPlace.isEmpty() || birthDate.isEmpty() || gender.isEmpty() || address.isEmpty() || rt.isEmpty() || rw.isEmpty() || village.isEmpty() || district.isEmpty() || religion.isEmpty() || maritalStatus.isEmpty() || job.isEmpty() || citizenship.isEmpty() || expiredDate.isEmpty()) {
+                Toast.makeText(
+                    this@ConfirmationActivity,
+                    "Oops, masih ada data yang terlewatkan, yuk lengkapi dulu.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return false
+            }
         }
 
         return true
