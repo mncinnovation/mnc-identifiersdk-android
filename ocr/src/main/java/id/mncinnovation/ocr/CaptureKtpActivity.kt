@@ -1,8 +1,13 @@
 package id.mncinnovation.ocr
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -14,6 +19,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.mlkit.common.model.LocalModel
@@ -24,6 +30,8 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.showCustomToast
+import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
 import id.mncinnovation.ocr.analyzer.CaptureKtpAnalyzer
@@ -37,17 +45,20 @@ import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
+import kotlin.math.roundToInt
 
 @Suppress("DEPRECATION")
 class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
-    private lateinit var btnCapture: ImageButton
+    private lateinit var btnFlash: ImageButton
     private lateinit var gifLoading: LottieAnimationView
 
     private var hasLaunchSplash = false
     private var bottomSheetDialog: BottomSheetDialog? = null
     private var timer: Timer? = null
     private var isCaptured = false
+    private var flashMode = ImageCapture.FLASH_MODE_OFF
+    private var camera: Camera? = null
 
     private val localModel =
         LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build()
@@ -62,10 +73,44 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
 
+    private var lightSensor: Sensor? = null
+
+    private val sensorManager: SensorManager by lazy {
+        getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    }
+
+    private val lightSensorEventListener = object : SensorEventListener {
+        override fun onSensorChanged(sensorEvent: SensorEvent?) {
+            if (sensorEvent?.sensor?.type == Sensor.TYPE_LIGHT) {
+                val currentLight: Int = sensorEvent.values[0].roundToInt()
+                Log.e(TAG, "current Light $currentLight")
+                val isLowLight = currentLight < 5
+                if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
+                    showCustomToast("Cahaya terlalu gelap, anda bisa menggunkan flash")
+                }
+                btnFlash.visibility = isLowLight.toVisibilityOrGone()
+            }
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!hasLaunchSplash)
             resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
+
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        lightSensor?.apply {
+            sensorManager.registerListener(
+                lightSensorEventListener,
+                lightSensor,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
 
         gpuImage = GPUImage(this).apply {
             setFilter(
@@ -82,11 +127,21 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         }
         uiContainer =
             LayoutInflater.from(this).inflate(R.layout.activity_capture_ktp, rootView, true)
-        btnCapture = uiContainer.findViewById(R.id.camera_capture_button)
+        btnFlash = uiContainer.findViewById(R.id.ib_flash_mode)
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
-        btnCapture.setOnClickListener {
-            captureImage()
+
+        btnFlash.setOnClickListener {
+            flashMode =
+                if (flashMode == ImageCapture.FLASH_MODE_OFF) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
+            val isTorchEnable = flashMode == ImageCapture.FLASH_MODE_ON
+            btnFlash.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this,
+                    if (isTorchEnable) R.drawable.ic_baseline_flash_off else R.drawable.ic_baseline_flash_on
+                )
+            )
+            camera?.cameraControl?.enableTorch(isTorchEnable)
         }
     }
 
@@ -116,7 +171,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         try {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
-            cameraProvider.bindToLifecycle(
+            camera = cameraProvider.bindToLifecycle(
                 this, cameraSelector, previewUseCase, analysisUseCase, captureUseCase
             )
             // Attach the viewfinder's surface provider to preview use case

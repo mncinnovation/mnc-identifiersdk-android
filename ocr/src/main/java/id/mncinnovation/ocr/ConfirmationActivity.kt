@@ -178,7 +178,7 @@ class ConfirmationActivity : AppCompatActivity() {
 
         val bgField: Drawable? = ContextCompat.getDrawable(
             context,
-            if (isConfirmState) R.drawable.bg_edittext_readonly else R.drawable.bg_edittext_solid
+            if (isConfirmState) R.drawable.bg_edittext_readonly else R.drawable.bg_white_corner_radius_solid
         )
 
         with(binding) {

@@ -9,7 +9,17 @@
         <entry key="camera-core/src/main/res/drawable/border_dash.xml" value="0.55" />
         <entry key="camera-core/src/main/res/drawable/border_white.xml" value="0.134375" />
         <entry key="camera-core/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
+        <entry key="core/src/main/res/drawable/border_white.xml" value="0.103" />
+        <entry key="core/src/main/res/drawable/ic_baseline_flash_off.xml" value="0.103" />
+        <entry key="core/src/main/res/drawable/ic_baseline_flash_on.xml" value="0.1165" />
+        <entry key="core/src/main/res/drawable/ic_baseline_flash_on_24.xml" value="0.1165" />
+        <entry key="core/src/main/res/drawable/ic_circle_bg_white.xml" value="0.103" />
+        <entry key="core/src/main/res/drawable/ic_shutter.xml" value="0.1165" />
+        <entry key="core/src/main/res/drawable/ic_splash.xml" value="0.1165" />
+        <entry key="core/src/main/res/drawable/ic_switch.xml" value="0.12" />
+        <entry key="core/src/main/res/drawable/ic_unsplash.xml" value="0.1165" />
         <entry key="core/src/main/res/layout/activity_base_camera.xml" value="0.1" />
+        <entry key="core/src/main/res/layout/toast_custom.xml" value="0.25" />
         <entry key="face-detection/src/main/res/drawable/ekyc_face.xml" value="0.55" />
         <entry key="face-detection/src/main/res/drawable/ic_arrow_back_fill.xml" value="0.2520833333333333" />
         <entry key="face-detection/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
