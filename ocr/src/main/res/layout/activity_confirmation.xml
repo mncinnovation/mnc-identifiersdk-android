@@ -41,6 +41,7 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
     <ScrollView
+        android:id="@+id/scrollview_content"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginVertical="@dimen/margin_xsmall"

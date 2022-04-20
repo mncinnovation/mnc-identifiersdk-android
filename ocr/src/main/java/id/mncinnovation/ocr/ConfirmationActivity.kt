@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.widget.ArrayAdapter
+import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -87,6 +88,7 @@ class ConfirmationActivity : AppCompatActivity() {
             btnNext.setOnClickListener {
                 if (state == FILL_STATE) {
                     setStateUpdate(CONFIRM_STATE)
+                    scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
                     captureKtpResult?.ktp?.apply {
                         nik = etNik.text.toString()
