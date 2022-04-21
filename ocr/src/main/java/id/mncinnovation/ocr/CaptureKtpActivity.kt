@@ -39,6 +39,8 @@ import id.mncinnovation.ocr.analyzer.CaptureKtpListener
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerBinding
 import id.mncinnovation.ocr.model.CaptureKtpResult
+import id.mncinnovation.ocr.utils.LightSensor
+import id.mncinnovation.ocr.utils.LightSensorListener
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
@@ -73,44 +75,23 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
 
-    private var lightSensor: Sensor? = null
-
-    private val sensorManager: SensorManager by lazy {
-        getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    }
-
-    private val lightSensorEventListener = object : SensorEventListener {
-        override fun onSensorChanged(sensorEvent: SensorEvent?) {
-            if (sensorEvent?.sensor?.type == Sensor.TYPE_LIGHT) {
-                val currentLight: Int = sensorEvent.values[0].roundToInt()
-                Log.e(TAG, "current Light $currentLight")
-                val isLowLight = currentLight < 5
-                if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
-                    showCustomToast("Cahaya terlalu gelap, anda bisa menggunkan flash")
-                }
-                btnFlash.visibility = isLowLight.toVisibilityOrGone()
-            }
-        }
-
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
-        }
-
-    }
+    private var lightSensor: LightSensor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!hasLaunchSplash)
             resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
 
-        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
-        lightSensor?.apply {
-            sensorManager.registerListener(
-                lightSensorEventListener,
-                lightSensor,
-                SensorManager.SENSOR_DELAY_UI
-            )
-        }
+
+        lightSensor = LightSensor(this, object : LightSensorListener {
+            override fun onCurrentLightChanged(value: Int) {
+                val isLowLight = value < 5
+                if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
+                    showCustomToast("Cahaya terlalu gelap, anda bisa menggunkan flash")
+                }
+                btnFlash.visibility = isLowLight.toVisibilityOrGone()
+            }
+        })
 
         gpuImage = GPUImage(this).apply {
             setFilter(
@@ -251,6 +232,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     override fun onDestroy() {
         super.onDestroy()
         stopTimer()
+        lightSensor?.closeSensor()
     }
 
     private fun showProgressDialog() {
