@@ -135,7 +135,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="textPersonName"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -156,7 +156,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -175,12 +175,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="8dp"
-                android:focusableInTouchMode="false"
+                android:background="@drawable/bg_white_corner_radius_solid"
                 android:clickable="false"
                 android:cursorVisible="false"
-                android:focusable="false"
-                android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 android:inputType="date"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
@@ -286,7 +286,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -307,7 +307,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -328,7 +328,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -349,7 +349,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -370,7 +370,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -391,7 +391,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -413,7 +413,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -435,7 +435,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
@@ -457,7 +457,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
-                android:inputType="text"
+                android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
                 android:textSize="14sp" />
