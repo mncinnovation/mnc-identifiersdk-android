@@ -31,7 +31,7 @@ android {
         jvmTarget = '1.8'
     }
 
-    buildFeatures{
+    buildFeatures {
         viewBinding true
     }
 }
@@ -44,6 +44,7 @@ dependencies {
 //    implementation "com.github.mncinnovation.mnc-identifiersdk-android:face-detection:1.0.1"
 //    implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.1"
 //    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.1"
+//    implementation(name: 'ocr-release2', ext: 'aar')
     implementation project(path: ':ocr')
     implementation project(path: ':core')
     implementation project(path: ':face-detection')

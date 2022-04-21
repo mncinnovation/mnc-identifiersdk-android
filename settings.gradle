@@ -8,6 +8,9 @@ dependencyResolutionManagement {
         jcenter()
         mavenLocal()
         maven { url "https://jitpack.io" }
+//        flatDir {
+//            dirs 'libs'
+//        }
     }
 }
 rootProject.name = "MNC Identifier SDK"

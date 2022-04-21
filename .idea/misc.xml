@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../.gradle/caches/transforms-3/cd8ba60c7fb6dc49876af45b430e7c88/transformed/jetified-ocr-release/res/layout/activity_capture_ktp.xml" value="0.1" />
         <entry key="../../.gradle/caches/transforms-3/75c6b37b5d5928d4f5c9d73a1a6b930b/transformed/jetified-camera-core-1.0.0/res/drawable/border_white.xml" value="0.134375" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.375" />
         <entry key="app/src/main/res/layout/item_live_detection_result.xml" value="0.25" />

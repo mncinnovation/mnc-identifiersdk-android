@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class id.mncinnovation.ocr.CaptureKtpActivity { *; }
+-keep class id.mncinnovation.ocr.ScanKTPActivity { *; }
+-keep class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
+-keepclassmembers class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
+
+-keep class id.mncinnovation.ocr.model.** { *; }
