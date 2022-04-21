@@ -225,19 +225,21 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
                     )
                 val resultUri = saveBitmapToFile(cropedBitmap, filesDir.absolutePath, "ktpocr.jpg")
                 val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
-
-                textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
-                    .addOnSuccessListener { text ->
-                        val ekp = text.extractEktp()
-                        val ocrResult =
-                            CaptureKtpResult(true, "Success", resultUri, ekp)
-                        setResult(RESULT_OK, intent)
-                        hideProgressDialog()
-                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
-                            putExtra(EXTRA_RESULT, ocrResult)
+                Handler().postDelayed({
+                    textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
+                        .addOnSuccessListener { text ->
+                            val ekp = text.extractEktp()
+                            val ocrResult =
+                                CaptureKtpResult(true, "Success", resultUri, ekp)
+                            setResult(RESULT_OK, intent)
+                            hideProgressDialog()
+                            val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                                putExtra(EXTRA_RESULT, ocrResult)
+                            }
+                            resultLauncherConfirm.launch(intent)
                         }
-                        resultLauncherConfirm.launch(intent)
-                    }
+                }, 1000)
+
             }
     }
 
@@ -313,14 +315,12 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
             timer = fixedRateTimer(initialDelay = 0, period = 1000) {
                 runOnUiThread {
                     tvCountdown.text = "$counter"
-                    counter--
                     if (counter == 0) {
-                        Handler().postDelayed({
-                            bottomSheetDialog?.dismiss()
-                            isCaptured = true
-                            captureImage()
-                        }, 1000)
+                        bottomSheetDialog?.dismiss()
+                        isCaptured = true
+                        captureImage()
                     }
+                    counter--
                 }
             }
         }
