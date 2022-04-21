@@ -21,8 +21,8 @@ import java.util.*
 
 
 class ConfirmationActivity : AppCompatActivity() {
-    lateinit var binding: ActivityConfirmationBinding
-    private var state = FILL_STATE
+    private lateinit var binding: ActivityConfirmationBinding
+    private var state = StateConfirm.FILL_STATE
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,8 +86,8 @@ class ConfirmationActivity : AppCompatActivity() {
             }
 
             btnNext.setOnClickListener {
-                if (state == FILL_STATE) {
-                    setStateUpdate(CONFIRM_STATE)
+                if (state == StateConfirm.FILL_STATE) {
+                    setStateUpdate(StateConfirm.CONFIRM_STATE)
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
                     captureKtpResult?.ktp?.apply {
@@ -153,14 +153,14 @@ class ConfirmationActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (state == FILL_STATE) {
+        if (state == StateConfirm.FILL_STATE) {
             super.onBackPressed()
         } else {
-            setStateUpdate(FILL_STATE)
+            setStateUpdate(StateConfirm.FILL_STATE)
         }
     }
 
-    private fun setStateUpdate(state: Int) {
+    private fun setStateUpdate(state: StateConfirm) {
         this.state = state
         val drawableEditField = ContextCompat.getDrawable(
             context,
@@ -171,7 +171,7 @@ class ConfirmationActivity : AppCompatActivity() {
             R.drawable.ic_baseline_keyboard_arrow_down_24
         )
 
-        val isConfirmState = state == CONFIRM_STATE
+        val isConfirmState = state == StateConfirm.CONFIRM_STATE
 
         val drawableEdit: Drawable? = if (isConfirmState) null else drawableEditField
         val drawableArrowDown: Drawable? = if (isConfirmState) null else drawableArrowDownField
@@ -361,9 +361,9 @@ class ConfirmationActivity : AppCompatActivity() {
 
     val context: Context
         get() = this@ConfirmationActivity
+}
 
-    companion object {
-        const val FILL_STATE = 0
-        const val CONFIRM_STATE = 1
-    }
+enum class StateConfirm {
+    FILL_STATE,
+    CONFIRM_STATE
 }
