@@ -1,16 +1,10 @@
 package id.mncinnovation.ocr
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +41,6 @@ import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
-import kotlin.math.roundToInt
 
 @Suppress("DEPRECATION")
 class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
