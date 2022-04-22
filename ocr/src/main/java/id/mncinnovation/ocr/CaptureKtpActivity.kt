@@ -206,21 +206,18 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
                     )
                 val resultUri = saveBitmapToFile(cropedBitmap, filesDir.absolutePath, "ktpocr.jpg")
                 val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
-                Handler().postDelayed({
-                    textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
-                        .addOnSuccessListener { text ->
-                            val ekp = text.extractEktp()
-                            val ocrResult =
-                                CaptureKtpResult(true, "Success", resultUri, ekp)
-                            setResult(RESULT_OK, intent)
-                            hideProgressDialog()
-                            val intent = Intent(this, ConfirmationActivity::class.java).apply {
-                                putExtra(EXTRA_RESULT, ocrResult)
-                            }
-                            resultLauncherConfirm.launch(intent)
+                textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
+                    .addOnSuccessListener { text ->
+                        val ekp = text.extractEktp()
+                        val ocrResult =
+                            CaptureKtpResult(true, "Success", resultUri, ekp)
+                        setResult(RESULT_OK, intent)
+                        hideProgressDialog()
+                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                            putExtra(EXTRA_RESULT, ocrResult)
                         }
-                }, 1000)
-
+                        resultLauncherConfirm.launch(intent)
+                    }
             }
     }
 
@@ -268,7 +265,6 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
 
     //Listener of CaptureKtpListener
     override fun onStatusChanged(status: Status) {
-        Log.e(TAG, "onStatusChanged ${status.name}")
         if (status == Status.SCANNING) {
             if (isCaptured) return
             showPopupHoldScanDialog()

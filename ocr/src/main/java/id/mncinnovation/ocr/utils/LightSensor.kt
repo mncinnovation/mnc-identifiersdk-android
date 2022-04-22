@@ -23,7 +23,6 @@ class LightSensor(
         override fun onSensorChanged(sensorEvent: SensorEvent?) {
             if (sensorEvent?.sensor?.type == Sensor.TYPE_LIGHT) {
                 val currentLight: Int = sensorEvent.values[0].roundToInt()
-                Log.e(CaptureKtpActivity.TAG, "current Light $currentLight")
                 listener.onCurrentLightChanged(currentLight)
             }
         }
