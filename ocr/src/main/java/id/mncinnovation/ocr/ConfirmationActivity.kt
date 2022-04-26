@@ -34,6 +34,14 @@ class ConfirmationActivity : AppCompatActivity() {
 
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
+            val arrayAdapter: ArrayAdapter<*> =
+                ArrayAdapter<Any?>(
+                    context,
+                    android.R.layout.simple_list_item_1,
+                    genders
+                )
+            spGender.adapter = arrayAdapter
+
             captureKtpResult?.let {
                 with(it.ktp) {
 
@@ -47,7 +55,11 @@ class ConfirmationActivity : AppCompatActivity() {
                     etFullname.setText(nama)
                     etBornPlace.setText(tempatLahir)
                     etBirthdate.setText(tglLahir)
-                    etGender.setText(jenisKelamin)
+                    if (jenisKelamin == GENDER_MALE) {
+                        spGender.setSelection(0)
+                    } else if (jenisKelamin == GENDER_FEMALE) {
+                        spGender.setSelection(1)
+                    }
                     etAddress.setText(alamat)
                     etRt.setText(rt)
                     etRw.setText(rw)
@@ -71,15 +83,6 @@ class ConfirmationActivity : AppCompatActivity() {
                     etBirthdate.setText(dateTxt)
                 }.show()
             }
-            val arrayAdapter: ArrayAdapter<*> =
-                ArrayAdapter<Any?>(
-                    context,
-                    android.R.layout.simple_list_item_1,
-                    genders
-                )
-            etGender.setAdapter(arrayAdapter)
-            etGender.onFocusChangeListener =
-                OnFocusChangeListener { v, hasFocus -> if (hasFocus) etGender.showDropDown() }
 
             ivBack.setOnClickListener {
                 onBackPressed()
@@ -95,7 +98,8 @@ class ConfirmationActivity : AppCompatActivity() {
                         nama = etFullname.text.toString()
                         tempatLahir = etBornPlace.text.toString()
                         tglLahir = etBirthdate.text.toString()
-                        jenisKelamin = etGender.text.toString()
+                        jenisKelamin =
+                            if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
                         alamat = etAddress.text.toString()
                         rt = etRt.text.toString()
                         rw = etRw.text.toString()
@@ -126,7 +130,7 @@ class ConfirmationActivity : AppCompatActivity() {
             val fullname = etFullname.text.toString()
             val bornPlace = etBornPlace.text.toString()
             val birthDate = etBirthdate.text.toString()
-            val gender = etGender.text.toString()
+            val gender = if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
             val address = etAddress.text.toString()
             val rt = etRt.text.toString()
             val rw = etRw.text.toString()
@@ -187,7 +191,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etNik.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -197,7 +201,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etFullname.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -207,7 +211,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etBornPlace.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -218,27 +222,23 @@ class ConfirmationActivity : AppCompatActivity() {
             etBirthdate.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
                     null
                 )
             }
-            etGender.apply {
-                isEnabled = !isConfirmState
-                background = bgField
-                setCompoundDrawables(
-                    null,
-                    null,
-                    drawableArrowDown,
-                    null
-                )
-            }
+            spGender.isEnabled = !isConfirmState
+
+            rlGender.background = bgField
+
+            ivDropdownGender.setImageDrawable(drawableArrowDown)
+
             etAddress.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -249,7 +249,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etRt.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -259,7 +259,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etRw.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -269,7 +269,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etVillage.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -279,7 +279,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etDistrict.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -289,7 +289,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etCity.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -299,7 +299,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etProvince.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -309,7 +309,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etReligion.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -319,7 +319,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etMaritalStatus.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -329,7 +329,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etJob.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -339,7 +339,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etCitizenship.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,
@@ -349,7 +349,7 @@ class ConfirmationActivity : AppCompatActivity() {
             etExpiredDate.apply {
                 isEnabled = !isConfirmState
                 background = bgField
-                setCompoundDrawables(
+                setCompoundDrawablesWithIntrinsicBounds(
                     null,
                     null,
                     drawableEdit,

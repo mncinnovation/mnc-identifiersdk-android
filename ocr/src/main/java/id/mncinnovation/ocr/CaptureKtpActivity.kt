@@ -184,6 +184,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun extractDataKtp(uri: Uri) {
+        lightSensor?.closeSensor()
         showProgressDialog()
         val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
             ?: return
@@ -217,6 +218,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     override fun onResume() {
         super.onResume()
         isCaptured = false
+        lightSensor?.startDetectingSensor()
     }
 
     override fun onDestroy() {

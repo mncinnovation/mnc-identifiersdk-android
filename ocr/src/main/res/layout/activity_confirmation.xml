@@ -196,16 +196,34 @@
                 android:textStyle="bold" />
 
 
-            <AutoCompleteTextView
-                android:id="@+id/et_gender"
+            <RelativeLayout
+                android:id="@+id/rl_gender"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
-                android:drawableEnd="@drawable/ic_baseline_keyboard_arrow_down_24"
-                android:paddingHorizontal="16dp"
+                android:orientation="horizontal"
                 android:paddingVertical="4dp"
-                android:textSize="14sp" />
+                android:paddingStart="2dp"
+                android:paddingEnd="8dp">
+
+                <ImageView
+                    android:id="@+id/iv_dropdown_gender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
+
+                <Spinner
+                    android:id="@+id/sp_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@android:color/transparent"
+                    android:spinnerMode="dropdown"
+                    android:textSize="14sp" />
+
+            </RelativeLayout>
 
             <TextView
                 android:layout_width="wrap_content"

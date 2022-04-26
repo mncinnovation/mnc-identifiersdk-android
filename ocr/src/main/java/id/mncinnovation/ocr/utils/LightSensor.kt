@@ -48,6 +48,13 @@ class LightSensor(
     fun closeSensor() {
         sensorManager.unregisterListener(lightSensorEventListener, lightSensor)
     }
+
+    fun startDetectingSensor() {
+        sensorManager.registerListener(
+            lightSensorEventListener, lightSensor,
+            SensorManager.SENSOR_DELAY_UI
+        )
+    }
 }
 
 interface LightSensorListener {

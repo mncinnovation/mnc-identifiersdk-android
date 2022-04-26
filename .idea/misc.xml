@@ -10,10 +10,13 @@
         <entry key="camera-core/src/main/res/drawable/border_dash.xml" value="0.55" />
         <entry key="camera-core/src/main/res/drawable/border_white.xml" value="0.134375" />
         <entry key="camera-core/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />
+        <entry key="core/src/main/res/drawable/bg_spinner.xml" value="0.1" />
+        <entry key="core/src/main/res/drawable/bg_white_corner_radius_solid.xml" value="0.1015" />
         <entry key="core/src/main/res/drawable/border_white.xml" value="0.103" />
         <entry key="core/src/main/res/drawable/ic_baseline_flash_off.xml" value="0.103" />
         <entry key="core/src/main/res/drawable/ic_baseline_flash_on.xml" value="0.1165" />
         <entry key="core/src/main/res/drawable/ic_baseline_flash_on_24.xml" value="0.1165" />
+        <entry key="core/src/main/res/drawable/ic_baseline_keyboard_arrow_down_24.xml" value="0.1015" />
         <entry key="core/src/main/res/drawable/ic_circle_bg_white.xml" value="0.103" />
         <entry key="core/src/main/res/drawable/ic_shutter.xml" value="0.1165" />
         <entry key="core/src/main/res/drawable/ic_splash.xml" value="0.1165" />
@@ -42,8 +45,9 @@
         <entry key="ocr/src/main/res/drawable/bg_popupstyle.xml" value="0.1" />
         <entry key="ocr/src/main/res/drawable/border_white.xml" value="0.12135416666666667" />
         <entry key="ocr/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.12135416666666667" />
+        <entry key="ocr/src/main/res/drawable/ic_edit.xml" value="0.1" />
         <entry key="ocr/src/main/res/layout/activity_capture_ktp.xml" value="0.125" />
-        <entry key="ocr/src/main/res/layout/activity_confirmation.xml" value="0.125" />
+        <entry key="ocr/src/main/res/layout/activity_confirmation.xml" value="0.25" />
         <entry key="ocr/src/main/res/layout/activity_scan_ktpactivity.xml" value="0.125" />
         <entry key="ocr/src/main/res/layout/activity_splash.xml" value="0.25" />
         <entry key="ocr/src/main/res/layout/popup_bottomsheet_scan_timer.xml" value="0.1" />
