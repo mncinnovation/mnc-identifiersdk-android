@@ -14,7 +14,7 @@ class SplashOCRActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
             setResult(Activity.RESULT_OK)
             finish()
-            this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }, 800)
     }
 }

@@ -65,7 +65,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
             .build()
     private val objectDetector = ObjectDetection.getClient(option)
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    lateinit var gpuImage: GPUImage
+    private lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
 
     private var lightSensor: LightSensor? = null

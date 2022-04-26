@@ -5,10 +5,8 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
-import android.view.View.OnFocusChangeListener
 import android.widget.ArrayAdapter
 import android.widget.ScrollView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
@@ -122,38 +120,6 @@ class ConfirmationActivity : AppCompatActivity() {
 
             }
         }
-    }
-
-    private fun isFormValid(): Boolean {
-        with(binding) {
-            val nik = etNik.text.toString()
-            val fullname = etFullname.text.toString()
-            val bornPlace = etBornPlace.text.toString()
-            val birthDate = etBirthdate.text.toString()
-            val gender = if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
-            val address = etAddress.text.toString()
-            val rt = etRt.text.toString()
-            val rw = etRw.text.toString()
-            val village = etVillage.text.toString()
-            val district = etDistrict.text.toString()
-            val province = etProvince.text.toString()
-            val city = etCity.text.toString()
-            val religion = etReligion.text.toString()
-            val maritalStatus = etMaritalStatus.text.toString()
-            val job = etJob.text.toString()
-            val citizenship = etMaritalStatus.text.toString()
-            val expiredDate = etExpiredDate.text.toString()
-            if (nik.isEmpty() || fullname.isEmpty() || bornPlace.isEmpty() || birthDate.isEmpty() || gender.isEmpty() || address.isEmpty() || rt.isEmpty() || rw.isEmpty() || village.isEmpty() || district.isEmpty() || religion.isEmpty() || maritalStatus.isEmpty() || job.isEmpty() || citizenship.isEmpty() || expiredDate.isEmpty()) {
-                Toast.makeText(
-                    this@ConfirmationActivity,
-                    "Oops, masih ada data yang terlewatkan, yuk lengkapi dulu.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return false
-            }
-        }
-
-        return true
     }
 
     override fun onBackPressed() {

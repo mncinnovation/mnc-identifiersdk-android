@@ -199,13 +199,14 @@
             <RelativeLayout
                 android:id="@+id/rl_gender"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:orientation="horizontal"
-                android:paddingVertical="4dp"
                 android:paddingStart="2dp"
-                android:paddingEnd="8dp">
+                android:paddingTop="2dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="2dp">
 
                 <ImageView
                     android:id="@+id/iv_dropdown_gender"
@@ -218,7 +219,7 @@
                 <Spinner
                     android:id="@+id/sp_gender"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="match_parent"
                     android:background="@android:color/transparent"
                     android:spinnerMode="dropdown"
                     android:textSize="14sp" />
