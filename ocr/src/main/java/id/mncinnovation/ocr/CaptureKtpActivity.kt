@@ -80,9 +80,8 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
             override fun onCurrentLightChanged(value: Int) {
                 val isLowLight = value < 5
                 if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
-                    showCustomToast("Cahaya terlalu gelap, anda bisa menggunkan flash")
+                    showCustomToast("Cahaya terlalu gelap, silahkan mencari tempat yang lebih terang")
                 }
-                btnFlash.visibility = isLowLight.toVisibilityOrGone()
             }
         })
 
@@ -105,6 +104,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
 
+        btnFlash.visibility = View.GONE
         btnFlash.setOnClickListener {
             flashMode =
                 if (flashMode == ImageCapture.FLASH_MODE_OFF) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
