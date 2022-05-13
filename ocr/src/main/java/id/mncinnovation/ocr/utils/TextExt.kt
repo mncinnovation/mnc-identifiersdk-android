@@ -235,6 +235,8 @@ fun String.cleanse(text: String, ignoreCase: Boolean = true): String{
     return replace(text,"", ignoreCase).replace(":","").trim()
 }
 
+const val GENDER_MALE = "LAKI-LAKI"
+const val GENDER_FEMALE = "PEREMPUAN"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"

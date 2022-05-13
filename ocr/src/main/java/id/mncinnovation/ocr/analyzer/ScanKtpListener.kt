@@ -9,6 +9,11 @@ interface ScanKtpListener {
     fun onScanFailed(exception: Exception)
 }
 
+interface CaptureKtpListener {
+    fun onStatusChanged(status: Status)
+    fun onCaptureFailed(exception: Exception)
+}
+
 enum class Status {
     NOT_READY, NOT_FOUND, SCANNING, COMPLETE
 }
