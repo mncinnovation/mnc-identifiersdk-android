@@ -93,6 +93,9 @@ MNCIdentifier.setDetectionModeSequence(false, listOf(
 <img src="screenshots/smile.jpg" width="256">
 
 ### OCR (Optical Character Recognition)
+<img src="screenshots/ocr_splash.jpeg" width="256">
+Optical Character Recognition using mlkit text recognition to detect text at the point of capture.
+
 #### Requirements
 - Min SDK 21
 
@@ -111,7 +114,7 @@ build.gradle (app)
 ```groovy
 dependencies{
 	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.2"
-    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.2"  
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.2"  
 }
 ```
 
