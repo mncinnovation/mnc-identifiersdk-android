@@ -91,3 +91,89 @@ MNCIdentifier.setDetectionModeSequence(false, listOf(
 <img src="screenshots/blink.jpg" width="256">
 <img src="screenshots/turn_head_left_or_right.jpg" width="256">
 <img src="screenshots/smile.jpg" width="256">
+
+### OCR (Optical Character Recognition)
+#### Requirements
+- Min SDK 21
+
+#### Setup
+
+build.gradle (root)
+
+```groovy
+repositories {
+	...
+	maven { url 'https://jitpack.io' }
+}
+```
+
+build.gradle (app)
+```groovy
+dependencies{
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.2"
+    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.2"  
+}
+```
+
+AndroidManifest.xml
+```xml
+  <application ...> 
+  ... 
+  <meta-data 
+	  android:name="com.google.mlkit.vision.DEPENDENCIES"
+	  android:value="ocr"  />  
+</application>
+```
+
+If you use face and ocr,
+AndroidManifest.xml
+```xml
+  <application ...> 
+  ... 
+  <meta-data 
+	  android:name="com.google.mlkit.vision.DEPENDENCIES"
+	  android:value="face, ocr"  />  
+</application>
+```
+
+#### How To Use
+Start liveness activity
+```kotlin
+startActivityForResult(
+    Intent(this@MainActivity, CaptureKtpActivity::class.java),
+    CAPTURE_EKTP_REQUEST_CODE
+)
+
+companion object{  
+    const val CAPTURE_EKTP_REQUEST_CODE = xxxx  
+}
+```
+
+Get Capture e-KTP Result
+```kotlin
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {  
+    super.onActivityResult(requestCode, resultCode, data)
+    if (resultCode == RESULT_OK) {
+        when (requestCode) {
+            CAPTURE_EKTP_REQUEST_CODE -> {
+                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                captureKtpResult?.let { result ->
+                    result.getBitmapImage(this)?.let {
+                        //get image result
+                        binding.ivKtpCapture.setImageBitmap(it)
+                    }
+                    //show all of data result
+                    binding.tvCaptureKtp.text = result.ktp.toString()
+                }
+
+            }
+        }
+    }
+}
+```
+#### Screenshoots
+<img src="screenshots/ocr_splash.jpeg" width="256">
+<img src="screenshots/ocr_scan.jpeg" width="256">
+<img src="screenshots/ocr_scanresult.jpeg" width="256">
+<img src="screenshots/ocr_confirm.jpeg" width="256">
+<img src="screenshots/ocr_result.jpeg" width="256">
