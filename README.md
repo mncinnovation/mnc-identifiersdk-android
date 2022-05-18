@@ -137,7 +137,7 @@ AndroidManifest.xml
 ```
 
 #### How To Use
-Start liveness activity
+Start scan to capture activity
 ```kotlin
 startActivityForResult(
     Intent(this@MainActivity, CaptureKtpActivity::class.java),
