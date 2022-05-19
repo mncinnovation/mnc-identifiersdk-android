@@ -1,7 +1,11 @@
 # MNC Identifier SDK
 MNC Identifier is a service to identify, and verify consumer with AI in it.
 
-## Feature
+## Features
+The following are the features of MNC Identifier:
+* <a href="#liveness-detection">Liveness Detection</a>
+* <a href="#ocr-optical-character-recognition">OCR</a>
+
 ### Liveness Detection
 <img src="screenshots/splash.jpg" width="256">
 Liveness Detection using mlkit face recognition to detect live person present at the point of capture.
