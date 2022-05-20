@@ -117,8 +117,8 @@ repositories {
 build.gradle (app)
 ```groovy
 dependencies{
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.2"
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.2"  
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.3"
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.3"  
 }
 ```
 
@@ -147,7 +147,12 @@ AndroidManifest.xml
 Start scan to capture activity
 ```kotlin
 startActivityForResult(
-    Intent(this@MainActivity, CaptureKtpActivity::class.java),
+    Intent(this@MainActivity, CaptureKtpActivity::class.java)
+        //optional extra to show button flash or no (the default is no)    
+        .putExtra(
+            EXTRA_WITH_FLASH,
+            true
+        ),
     CAPTURE_EKTP_REQUEST_CODE
 )
 
