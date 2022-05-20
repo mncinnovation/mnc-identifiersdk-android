@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ScrollView
@@ -12,9 +13,7 @@ import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationBinding
-import id.mncinnovation.ocr.utils.GENDER_FEMALE
-import id.mncinnovation.ocr.utils.GENDER_MALE
-import id.mncinnovation.ocr.utils.showDatePickerAction
+import id.mncinnovation.ocr.utils.*
 import java.util.*
 
 
@@ -22,6 +21,17 @@ class ConfirmationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityConfirmationBinding
     private var state = StateConfirm.FILL_STATE
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
+    private val maritalsStatus =
+        arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
+    private val bloodGroups = arrayOf("-", "A", "B", "AB", "O")
+    private val religions = arrayOf(
+        RELIGION_ISLAM,
+        RELIGION_KRISTEN,
+        RELIGION_KATOLIK,
+        RELIGION_HINDU,
+        RELIGION_BUDHA,
+        RELIGION_KONGHUCU
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,19 +39,33 @@ class ConfirmationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(intent)
-
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
-            val arrayAdapter: ArrayAdapter<*> =
-                ArrayAdapter<Any?>(
-                    context,
-                    android.R.layout.simple_list_item_1,
-                    genders
-                )
-            spGender.adapter = arrayAdapter
 
+            spGender.adapter = ArrayAdapter<Any?>(
+                context,
+                android.R.layout.simple_list_item_1,
+                genders
+            )
+            spReligion.adapter = ArrayAdapter<Any?>(
+                context,
+                android.R.layout.simple_list_item_1,
+                religions
+            )
+            spMaritalStatus.adapter = ArrayAdapter<Any?>(
+                context,
+                android.R.layout.simple_list_item_1,
+                maritalsStatus
+            )
+
+            spGolDarah.adapter = ArrayAdapter<Any?>(
+                context,
+                android.R.layout.simple_list_item_1,
+                bloodGroups
+            )
             captureKtpResult?.let {
                 with(it.ktp) {
+                    Log.e("TAGConfirm", "data : ${it.ktp.golDarah}")
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -58,6 +82,13 @@ class ConfirmationActivity : AppCompatActivity() {
                     } else if (jenisKelamin == GENDER_FEMALE) {
                         spGender.setSelection(1)
                     }
+                    when (golDarah) {
+                        "A" -> spGolDarah.setSelection(1)
+                        "B" -> spGolDarah.setSelection(2)
+                        "AB" -> spGolDarah.setSelection(3)
+                        "O" -> spGolDarah.setSelection(4)
+                        else -> spGolDarah.setSelection(0)
+                    }
                     etAddress.setText(alamat)
                     etRt.setText(rt)
                     etRw.setText(rw)
@@ -65,8 +96,24 @@ class ConfirmationActivity : AppCompatActivity() {
                     etDistrict.setText(kecamatan)
                     etCity.setText(kabKot)
                     etProvince.setText(provinsi)
-                    etReligion.setText(agama)
-                    etMaritalStatus.setText(statusPerkawinan)
+                    when (agama) {
+                        RELIGION_KRISTEN -> spReligion.setSelection(1)
+                        RELIGION_KATOLIK -> spReligion.setSelection(2)
+                        RELIGION_HINDU -> spReligion.setSelection(3)
+                        RELIGION_BUDHA -> spReligion.setSelection(4)
+                        RELIGION_KONGHUCU -> spReligion.setSelection(5)
+                        else -> spReligion.setSelection(0)
+                    }
+
+                    spMaritalStatus.setSelection(
+                        when (statusPerkawinan) {
+                            MARITAL_SINGLE -> 1
+                            MARITAL_DIVORCED -> 2
+                            MARITAL_DEATH_DIVORCE -> 3
+                            else -> 0
+                        }
+                    )
+
                     etJob.setText(pekerjaan)
                     etCitizenship.setText(kewarganegaraan)
                     etExpiredDate.setText(berlakuHingga)
@@ -98,6 +145,12 @@ class ConfirmationActivity : AppCompatActivity() {
                         tglLahir = etBirthdate.text.toString()
                         jenisKelamin =
                             if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
+                        golDarah = when (spGolDarah.selectedItemPosition) {
+                            1 -> "B"
+                            2 -> "AB"
+                            3 -> "O"
+                            else -> "A"
+                        }
                         alamat = etAddress.text.toString()
                         rt = etRt.text.toString()
                         rw = etRw.text.toString()
@@ -105,8 +158,21 @@ class ConfirmationActivity : AppCompatActivity() {
                         kecamatan = etDistrict.text.toString()
                         kabKot = etCity.text.toString()
                         provinsi = etProvince.text.toString()
-                        agama = etReligion.text.toString()
-                        statusPerkawinan = etMaritalStatus.text.toString()
+                        agama = when (spReligion.selectedItemPosition) {
+                            1 -> RELIGION_KRISTEN
+                            2 -> RELIGION_KATOLIK
+                            3 -> RELIGION_HINDU
+                            4 -> RELIGION_BUDHA
+                            5 -> RELIGION_KONGHUCU
+                            else -> RELIGION_ISLAM
+                        }
+                        statusPerkawinan =
+                            when (spMaritalStatus.selectedItemPosition) {
+                                1 -> MARITAL_SINGLE
+                                2 -> MARITAL_DIVORCED
+                                3 -> MARITAL_DEATH_DIVORCE
+                                else -> MARITAL_MERRIED
+                            }
                         pekerjaan = etJob.text.toString()
                         kewarganegaraan = etCitizenship.text.toString()
                         berlakuHingga = etExpiredDate.text.toString()
@@ -196,10 +262,12 @@ class ConfirmationActivity : AppCompatActivity() {
                 )
             }
             spGender.isEnabled = !isConfirmState
-
             rlGender.background = bgField
-
             ivDropdownGender.setImageDrawable(drawableArrowDown)
+
+            spGolDarah.isEnabled = !isConfirmState
+            rlGolDarah.background = bgField
+            ivDropdownGolDarah.setImageDrawable(drawableArrowDown)
 
             etAddress.apply {
                 isEnabled = !isConfirmState
@@ -272,26 +340,14 @@ class ConfirmationActivity : AppCompatActivity() {
                     null
                 )
             }
-            etReligion.apply {
-                isEnabled = !isConfirmState
-                background = bgField
-                setCompoundDrawablesWithIntrinsicBounds(
-                    null,
-                    null,
-                    drawableEdit,
-                    null
-                )
-            }
-            etMaritalStatus.apply {
-                isEnabled = !isConfirmState
-                background = bgField
-                setCompoundDrawablesWithIntrinsicBounds(
-                    null,
-                    null,
-                    drawableEdit,
-                    null
-                )
-            }
+            spReligion.isEnabled = !isConfirmState
+            rlReligion.background = bgField
+            ivDropdownReligion.setImageDrawable(drawableArrowDown)
+
+            spMaritalStatus.isEnabled = !isConfirmState
+            rlMaritalStatus.background = bgField
+            ivDropdownMaritalStatus.setImageDrawable(drawableArrowDown)
+
             etJob.apply {
                 isEnabled = !isConfirmState
                 background = bgField

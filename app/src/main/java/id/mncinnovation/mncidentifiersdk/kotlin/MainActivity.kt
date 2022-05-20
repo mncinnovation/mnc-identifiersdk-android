@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
+import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
 import id.mncinnovation.ocr.CaptureKtpActivity
@@ -32,7 +33,11 @@ class MainActivity : AppCompatActivity() {
 
             btnCaptureKtp.setOnClickListener {
                 startActivityForResult(
-                    Intent(this@MainActivity, CaptureKtpActivity::class.java),
+                    Intent(this@MainActivity, CaptureKtpActivity::class.java)
+                        .putExtra(
+                            EXTRA_WITH_FLASH,
+                            true
+                        ),
                     CAPTURE_EKTP_REQUEST_CODE
                 )
             }

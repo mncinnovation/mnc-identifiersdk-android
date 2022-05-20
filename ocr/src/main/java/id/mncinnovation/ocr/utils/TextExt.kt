@@ -1,5 +1,6 @@
 package id.mncinnovation.ocr.utils
 
+import android.util.Log
 import com.google.mlkit.vision.text.Text
 import id.mncinnovation.ocr.model.Ktp
 
@@ -12,18 +13,18 @@ fun Text.findAndClean(line: Text.Line, key: String): String? {
 }
 
 
-fun Text.findInline(line: Text.Line): Text.Line?{
-    val top = line.boundingBox?.top?: return null
-    val bottom = line.boundingBox?.bottom?: return null
+fun Text.findInline(line: Text.Line): Text.Line? {
+    val top = line.boundingBox?.top ?: return null
+    val bottom = line.boundingBox?.bottom ?: return null
     val result = mutableListOf<Text.Line>()
     textBlocks.forEach { blok ->
         blok.lines.forEach {
-            if(it.boundingBox?.centerY() in top..bottom && it.text != line.text){
+            if (it.boundingBox?.centerY() in top..bottom && it.text != line.text) {
                 result.add(it)
             }
         }
     }
-    return result.minByOrNull { it.boundingBox?.left?:0 }
+    return result.minByOrNull { it.boundingBox?.left ?: 0 }
 }
 
 
@@ -46,7 +47,7 @@ fun Text.extractEktp(): Ktp {
 
     textBlocks.forEach { textBlock ->
         textBlock.lines.forEach { line ->
-            when{
+            when {
                 line.text.startsWith("PROVINSI") -> {
                     ektp.confidence++
                     ektp.provinsi = line.text.cleanse("PROVINSI")
@@ -54,7 +55,7 @@ fun Text.extractEktp(): Ktp {
                 }
 
                 line.text.startsWith("KOTA") ||
-                        line.text.startsWith("KABUPATEN")-> {
+                        line.text.startsWith("KABUPATEN") || line.text.startsWith("JAKARTA") -> {
                     ektp.confidence++
                     if (ektp.kabKot.isNullOrEmpty())
                         ektp.kabKot = line.text
@@ -62,7 +63,7 @@ fun Text.extractEktp(): Ktp {
 
                 line.text.startsWith("NIK") -> {
                     ektp.confidence++
-                    ektp.nik = if (line.elements.size>1)
+                    ektp.nik = if (line.elements.size > 1)
                         line.elements.last().text
                     else
                         filterNik()
@@ -86,25 +87,31 @@ fun Text.extractEktp(): Ktp {
                     ektp.tglLahir?.let { ektp.confidence++ }
                 }
 
-                line.text.startsWith("Jenis",true) -> {
+                line.text.startsWith("Jenis", true) -> {
+                    //jenis kelamin allcaps
                     ektp.confidence++
-                    ektp.jenisKelamin = jk?.value?.takeIf { it == "PEREMPUAN" }?: "LAKI-LAKI"
+                    ektp.jenisKelamin = jk?.value?.takeIf { it == "PEREMPUAN" } ?: "LAKI-LAKI"
                     ektp.jenisKelamin?.let { ektp.confidence++ }
                 }
 
-                line.text.startsWith("Alamat",true) ||
-                        line.text.startsWith("Aiamat",true) -> {
+                line.text.contains("Gol.", true) || line.text.contains("Darah", true) -> {
+                    ektp.golDarah = line.text.cleanse("Gol. Darah")
+                    ektp.golDarah?.let { ektp.confidence++ }
+                }
+
+                line.text.startsWith("Alamat", true) ||
+                        line.text.startsWith("Aiamat", true) -> {
                     ektp.apply {
                         confidence++
-                        alamat = findAndClean(line,"Alamat")?.cleanse("Aiamat")
+                        alamat = findAndClean(line, "Alamat")?.cleanse("Aiamat")
                         alamat?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Kel",true)|| line.text.contains("Desa",true) -> {
+                line.text.startsWith("Kel", true) || line.text.contains("Desa", true) -> {
                     ektp.apply {
                         confidence++
-                        kelurahan = findAndClean(line,"Kel")?.apply {
+                        kelurahan = findAndClean(line, "Kel")?.apply {
                             cleanse("Desa")
                             cleanse("/")
                             cleanse("KeV")
@@ -113,52 +120,56 @@ fun Text.extractEktp(): Ktp {
                     }
                 }
 
-                line.text.startsWith("Kecamatan",true) ->{
+                line.text.startsWith("Kecamatan", true) -> {
                     ektp.apply {
                         confidence++
-                        kecamatan = findAndClean(line,"Kecamatan")
+                        kecamatan = findAndClean(line, "Kecamatan")
                         kecamatan?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Agama",true) -> {
+                line.text.startsWith("Agama", true) -> {
                     ektp.apply {
                         confidence++
-                        agama = findAndClean(line,"Agama")
+                        agama = findAndClean(line, "Agama")?.replace("1", "i")?.filterReligion()
                         agama?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Status Perkawinan",true) -> {
+                line.text.startsWith("Status Perkawinan", true) -> {
                     ektp.apply {
                         confidence++
-                        statusPerkawinan = findAndClean(line,"Status Perkawinan")
+                        statusPerkawinan = findAndClean(line, "Status Perkawinan")?.filterMaritalStatus()
+
                         statusPerkawinan?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Pekerjaan",true) -> {
+                line.text.startsWith("Pekerjaan", true) -> {
                     ektp.apply {
                         confidence++
-                        pekerjaan = findAndClean(line,"Pekerjaan")
+                        pekerjaan = findAndClean(line, "Pekerjaan")
                         pekerjaan?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Kewarganegaraan",true) ||
-                        line.text.startsWith("Kewarga negaraan",true)-> {
+                line.text.startsWith("Kewarganegaraan", true) ||
+                        line.text.startsWith("Kewarga negaraan", true) -> {
                     ektp.apply {
                         confidence++
-                        kewarganegaraan = findAndClean(line,"Kewarganegaraan")?.cleanse("Kewarga negaraan")
+                        kewarganegaraan =
+                            findAndClean(line, "Kewarganegaraan")?.cleanse("Kewarga negaraan")
                         kewarganegaraan?.let { confidence++ }
                     }
                 }
 
-                line.text.startsWith("Berlaku Hingga",true) ||
-                        line.text.startsWith("Beriaku Hingga",true) -> {
+                line.text.startsWith("Berlaku Hingga", true) ||
+                        line.text.startsWith("Beriaku Hingga", true) -> {
                     ektp.apply {
                         confidence++
-                        berlakuHingga = findAndClean(line,"Berlaku Hingga")?.cleanse("Beriaku Hingga")
+                        berlakuHingga =
+                            findAndClean(line, "Berlaku Hingga")?.cleanse("Beriaku Hingga")
+
                         berlakuHingga?.let { confidence++ }
                     }
                 }
@@ -168,14 +179,14 @@ fun Text.extractEktp(): Ktp {
     return ektp
 }
 
-fun Text.extractKtp(){
+fun Text.extractKtp() {
     val ktp = Ktp()
     var lastProcessedPosition = 0
     textBlocks.forEach { block ->
         block.lines.forEach { line ->
             val result = "[A-Z0-9-/ ]{3,}+".toRegex().find(line.text)
-            if (result != null){
-                when(lastProcessedPosition){
+            if (result != null) {
+                when (lastProcessedPosition) {
                     0 -> ktp.provinsi = result.value.cleanse("PROVINSI")
                     1 -> ktp.kabKot = result.value.cleanse("KOTA")
                     2 -> ktp.nik = result.value
@@ -210,16 +221,16 @@ fun Text.extractKtp(){
 }
 
 
-fun Text.filterNik(): String?{
+fun Text.filterNik(): String? {
     var matchElement: String? = null
     for (i in textBlocks.indices) {
         val blocks = textBlocks[i]
-        for (j in blocks.lines.indices){
+        for (j in blocks.lines.indices) {
             val lines = blocks.lines[j]
             val nik = lines.text.filter {
                 it.isDigit() || it == 'O' || it == 'I'
             }
-            if(nik.length >= 13) {
+            if (nik.length >= 13) {
                 matchElement = nik
                 break
             }
@@ -230,14 +241,92 @@ fun Text.filterNik(): String?{
     return matchElement
 }
 
-
-fun String.cleanse(text: String, ignoreCase: Boolean = true): String{
-    return replace(text,"", ignoreCase).replace(":","").trim()
+fun String?.filterMaritalStatus(): String? {
+    this?.let {
+        if (it.startsWith("KAW", true)) {
+            return MARITAL_MERRIED
+        }
+        if (it.startsWith("BEL", true)) {
+            return MARITAL_SINGLE
+        }
+        if ((it.contains("MATI", true) || it.contains("ATI")) && it.contains("CER")) {
+            return MARITAL_DEATH_DIVORCE
+        }
+        if ((it.contains("HID", true) || it.contains("DUP")) && it.contains("CER")) {
+            return MARITAL_DIVORCED
+        }
+    }
+    return null
 }
+
+fun String?.filterReligion(): String? {
+    this?.let {
+        if (it.startsWith("I") || it.contains("LAM", true) || it.contains(
+                "AM",
+                true
+            ) || it.contains("IS", true)
+        ) {
+            return RELIGION_ISLAM
+        } else if (it.startsWith("H", true) || it.contains(
+                "HIN",
+                true
+            ) || it.contains("NDU", true)
+        ) {
+            return RELIGION_HINDU
+        } else if (it.startsWith("B") || it.contains(
+                "BUD",
+                true
+            ) || it.contains("DHA", true)
+        ) {
+            return RELIGION_BUDHA
+        } else if (it.startsWith("KR") || it.contains(
+                "KRIS",
+                true
+            ) || it.contains("STEN", true)
+        ) {
+            return RELIGION_KRISTEN
+        } else if (it.startsWith("KA") || it.contains(
+                "KAT",
+                true
+            ) || it.contains("IK", true)
+        ) {
+            return RELIGION_KATOLIK
+        } else if (it.startsWith("KON") || it.contains(
+                "NGH",
+                true
+            ) || it.contains("UCU", true)
+        ) {
+            return RELIGION_KONGHUCU
+        }
+    }
+    return null
+}
+
+
+fun String.cleanse(text: String, ignoreCase: Boolean = true): String {
+    return replace(text, "", ignoreCase).replace(":", "").trim()
+}
+
+const val CITIZEN_WNI = "WNI"
+const val MARITAL_MERRIED = "KAWIN"
+const val MARITAL_SINGLE = "BELUM KAWIN"
+const val MARITAL_DEATH_DIVORCE = "CERAI MATI"
+const val MARITAL_DIVORCED = "CERAI HIDUP"
 
 const val GENDER_MALE = "LAKI-LAKI"
 const val GENDER_FEMALE = "PEREMPUAN"
+const val RELIGION_ISLAM = "ISLAM"
+const val RELIGION_KRISTEN = "KRISTEN"
+const val RELIGION_HINDU = "HINDU"
+const val RELIGION_KATOLIK = "KATOLIK"
+const val RELIGION_BUDHA = "BUDHA"
+const val RELIGION_KONGHUCU = "KONGHUCU"
+
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
+
+//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}+(\\:)+[A-Z]{1,2}"
+//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}"
+const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z\\:\\- ]{6,14}"

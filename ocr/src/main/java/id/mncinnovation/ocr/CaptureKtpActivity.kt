@@ -24,6 +24,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
 import id.mncinnovation.identification.core.common.showCustomToast
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.identification.core.utils.BitmapUtils
@@ -104,7 +105,8 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
 
-        btnFlash.visibility = View.GONE
+        btnFlash.visibility =
+            (intent?.getBooleanExtra(EXTRA_WITH_FLASH, false) ?: false).toVisibilityOrGone()
         btnFlash.setOnClickListener {
             flashMode =
                 if (flashMode == ImageCapture.FLASH_MODE_OFF) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
