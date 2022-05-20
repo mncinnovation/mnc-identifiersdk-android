@@ -8,6 +8,7 @@ import kotlinx.parcelize.Parcelize
 data class Ktp(var nik: String? = null,
                var nama: String? = null,
                var tempatLahir: String? = null,
+               var golDarah : String? = null,
                var tglLahir: String? = null,
                var jenisKelamin: String? = null,
                var alamat: String? = null,
