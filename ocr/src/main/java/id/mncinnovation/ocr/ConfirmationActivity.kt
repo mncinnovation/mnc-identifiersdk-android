@@ -24,14 +24,6 @@ class ConfirmationActivity : AppCompatActivity() {
     private val maritalsStatus =
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
     private val bloodGroups = arrayOf("-", "A", "B", "AB", "O")
-    private val religions = arrayOf(
-        RELIGION_ISLAM,
-        RELIGION_KRISTEN,
-        RELIGION_KATOLIK,
-        RELIGION_HINDU,
-        RELIGION_BUDHA,
-        RELIGION_KONGHUCU
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +39,6 @@ class ConfirmationActivity : AppCompatActivity() {
                 android.R.layout.simple_list_item_1,
                 genders
             )
-            spReligion.adapter = ArrayAdapter<Any?>(
-                context,
-                android.R.layout.simple_list_item_1,
-                religions
-            )
             spMaritalStatus.adapter = ArrayAdapter<Any?>(
                 context,
                 android.R.layout.simple_list_item_1,
@@ -65,7 +52,7 @@ class ConfirmationActivity : AppCompatActivity() {
             )
             captureKtpResult?.let {
                 with(it.ktp) {
-                    Log.e("TAGConfirm", "data : ${it.ktp.golDarah}")
+                    Log.e("TAGConfirm", "data : ${it.ktp.agama}")
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -96,14 +83,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     etDistrict.setText(kecamatan)
                     etCity.setText(kabKot)
                     etProvince.setText(provinsi)
-                    when (agama) {
-                        RELIGION_KRISTEN -> spReligion.setSelection(1)
-                        RELIGION_KATOLIK -> spReligion.setSelection(2)
-                        RELIGION_HINDU -> spReligion.setSelection(3)
-                        RELIGION_BUDHA -> spReligion.setSelection(4)
-                        RELIGION_KONGHUCU -> spReligion.setSelection(5)
-                        else -> spReligion.setSelection(0)
-                    }
+                    etReligion.setText(agama)
 
                     spMaritalStatus.setSelection(
                         when (statusPerkawinan) {
@@ -158,14 +138,7 @@ class ConfirmationActivity : AppCompatActivity() {
                         kecamatan = etDistrict.text.toString()
                         kabKot = etCity.text.toString()
                         provinsi = etProvince.text.toString()
-                        agama = when (spReligion.selectedItemPosition) {
-                            1 -> RELIGION_KRISTEN
-                            2 -> RELIGION_KATOLIK
-                            3 -> RELIGION_HINDU
-                            4 -> RELIGION_BUDHA
-                            5 -> RELIGION_KONGHUCU
-                            else -> RELIGION_ISLAM
-                        }
+                        agama = etReligion.text.toString()
                         statusPerkawinan =
                             when (spMaritalStatus.selectedItemPosition) {
                                 1 -> MARITAL_SINGLE
@@ -183,7 +156,6 @@ class ConfirmationActivity : AppCompatActivity() {
                     })
                     finish()
                 }
-
             }
         }
     }
@@ -340,9 +312,17 @@ class ConfirmationActivity : AppCompatActivity() {
                     null
                 )
             }
-            spReligion.isEnabled = !isConfirmState
-            rlReligion.background = bgField
-            ivDropdownReligion.setImageDrawable(drawableArrowDown)
+
+            etReligion.apply {
+                isEnabled = !isConfirmState
+                background = bgField
+                setCompoundDrawablesWithIntrinsicBounds(
+                    null,
+                    null,
+                    drawableEdit,
+                    null
+                )
+            }
 
             spMaritalStatus.isEnabled = !isConfirmState
             rlMaritalStatus.background = bgField

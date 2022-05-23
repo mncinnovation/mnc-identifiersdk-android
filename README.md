@@ -146,15 +146,15 @@ AndroidManifest.xml
 #### How To Use
 Start scan to capture activity
 ```kotlin
-startActivityForResult(
-    Intent(this@MainActivity, CaptureKtpActivity::class.java)
-        //optional extra to show button flash or no (the default is no)    
-        .putExtra(
-            EXTRA_WITH_FLASH,
-            true
-        ),
-    CAPTURE_EKTP_REQUEST_CODE
-)
+
+//start directly
+MNCIdentifierOCR.startCapture(this@MainActivity)
+
+//withFlash value
+MNCIdentifierOCR.startCapture(this@MainActivity, true)
+
+//or withFlash value and also requestCode value
+MNCIdentifierOCR.startCapture(this@MainActivity, true, CAPTURE_EKTP_REQUEST_CODE)
 
 companion object{  
     const val CAPTURE_EKTP_REQUEST_CODE = xxxx  

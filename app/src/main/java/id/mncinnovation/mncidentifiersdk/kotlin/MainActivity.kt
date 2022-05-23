@@ -32,14 +32,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnCaptureKtp.setOnClickListener {
-                startActivityForResult(
-                    Intent(this@MainActivity, CaptureKtpActivity::class.java)
-                        .putExtra(
-                            EXTRA_WITH_FLASH,
-                            true
-                        ),
-                    CAPTURE_EKTP_REQUEST_CODE
-                )
+                MNCIdentifierOCR.startCapture(this@MainActivity, true, CAPTURE_EKTP_REQUEST_CODE)
             }
 
             btnLivenessDetection.setOnClickListener {
