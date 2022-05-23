@@ -151,10 +151,11 @@ fun Text.extractEktp(): Ktp {
                     }
                 }
 
-                line.text.startsWith("Pekerjaan", true) -> {
+                line.text.startsWith("Pekerjaan", true) || line.text.contains("kerjaan", true) -> {
                     ektp.apply {
                         confidence++
-                        pekerjaan = findAndClean(line, "Pekerjaan")
+                        pekerjaan =
+                            findAndClean(line, "Pekerjaan")?.cleanse("ekerjaan")?.cleanse("kerjaan")
                         pekerjaan?.let { confidence++ }
                     }
                 }
@@ -276,7 +277,6 @@ fun String?.filterCitizenship(): String? {
 }
 
 fun String?.filterReligion(): String? {
-    Log.e("TAGTextExt", "agama : $this")
     this?.let {
         if ((it.startsWith("I", true) && it.contains("ISL", true)) || it.contains("LAM", true)
         ) {
@@ -305,10 +305,10 @@ fun String?.filterReligion(): String? {
             ) || it.contains("LIK", true) || it.contains("THO", true)
         ) {
             return RELIGION_KATHOLIK
-        } else if (it.startsWith("KON") || it.contains(
-                "NGH",
+        } else if (it.startsWith("KONG") || (it.contains(
+                "HU",
                 true
-            ) || it.contains("UCU", true)
+            ) && it.contains("CU", true))
         ) {
             return RELIGION_KONGHUCU
         }

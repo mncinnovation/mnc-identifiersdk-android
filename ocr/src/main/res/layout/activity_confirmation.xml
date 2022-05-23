@@ -420,35 +420,17 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <RelativeLayout
-                android:id="@+id/rl_religion"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_religion"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
-                android:orientation="horizontal"
-                android:paddingStart="2dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="2dp">
-
-                <ImageView
-                    android:id="@+id/iv_dropdown_religion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
-
-                <Spinner
-                    android:id="@+id/sp_religion"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:spinnerMode="dropdown"
-                    android:textSize="14sp" />
-
-            </RelativeLayout>
+                android:drawableEnd="@drawable/ic_edit"
+                android:inputType="textCapCharacters"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="4dp"
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="wrap_content"
