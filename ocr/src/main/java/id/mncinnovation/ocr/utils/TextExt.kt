@@ -94,8 +94,13 @@ fun Text.extractEktp(): Ktp {
                     ektp.jenisKelamin?.let { ektp.confidence++ }
                 }
 
-                line.text.contains("Gol.", true) || line.text.contains("Darah", true) -> {
-                    ektp.golDarah = line.text.cleanse("Gol. Darah")
+                line.text.contains("Gol", true) || line.text.contains(
+                    "Darah",
+                    true
+                ) || line.text.contains("Daah") -> {
+                    ektp.golDarah = findAndClean(line, "Gol. Darah")?.cleanse("Gol. Daah")?.cleanse(
+                        GENDER_MALE
+                    )?.cleanse(GENDER_FEMALE)
                     ektp.golDarah?.let { ektp.confidence++ }
                 }
 
@@ -131,7 +136,7 @@ fun Text.extractEktp(): Ktp {
                 line.text.startsWith("Agama", true) -> {
                     ektp.apply {
                         confidence++
-                        agama = findAndClean(line, "Agama")?.replace("1", "i")?.filterReligion()
+                        agama = findAndClean(line, "Agama")?.replace("1", "I")?.filterReligion()
                         agama?.let { confidence++ }
                     }
                 }
@@ -139,7 +144,8 @@ fun Text.extractEktp(): Ktp {
                 line.text.startsWith("Status Perkawinan", true) -> {
                     ektp.apply {
                         confidence++
-                        statusPerkawinan = findAndClean(line, "Status Perkawinan")?.filterMaritalStatus()
+                        statusPerkawinan =
+                            findAndClean(line, "Status Perkawinan")?.filterMaritalStatus()
 
                         statusPerkawinan?.let { confidence++ }
                     }
@@ -159,6 +165,7 @@ fun Text.extractEktp(): Ktp {
                         confidence++
                         kewarganegaraan =
                             findAndClean(line, "Kewarganegaraan")?.cleanse("Kewarga negaraan")
+                                ?.filterCitizenship()
                         kewarganegaraan?.let { confidence++ }
                     }
                 }
@@ -243,7 +250,7 @@ fun Text.filterNik(): String? {
 
 fun String?.filterMaritalStatus(): String? {
     this?.let {
-        if (it.startsWith("KAW", true)) {
+        if (it.startsWith("KAW", true) || it.contains("WIN", true)) {
             return MARITAL_MERRIED
         }
         if (it.startsWith("BEL", true)) {
@@ -256,15 +263,22 @@ fun String?.filterMaritalStatus(): String? {
             return MARITAL_DIVORCED
         }
     }
-    return null
+    return this
+}
+
+fun String?.filterCitizenship(): String? {
+    this?.let {
+        if (it.startsWith("WN")) {
+            return "WNI"
+        }
+    }
+    return this
 }
 
 fun String?.filterReligion(): String? {
+    Log.e("TAGTextExt", "agama : $this")
     this?.let {
-        if (it.startsWith("I") || it.contains("LAM", true) || it.contains(
-                "AM",
-                true
-            ) || it.contains("IS", true)
+        if ((it.startsWith("I", true) && it.contains("ISL", true)) || it.contains("LAM", true)
         ) {
             return RELIGION_ISLAM
         } else if (it.startsWith("H", true) || it.contains(
@@ -288,9 +302,9 @@ fun String?.filterReligion(): String? {
         } else if (it.startsWith("KA") || it.contains(
                 "KAT",
                 true
-            ) || it.contains("IK", true)
+            ) || it.contains("LIK", true) || it.contains("THO", true)
         ) {
-            return RELIGION_KATOLIK
+            return RELIGION_KATHOLIK
         } else if (it.startsWith("KON") || it.contains(
                 "NGH",
                 true
@@ -299,7 +313,7 @@ fun String?.filterReligion(): String? {
             return RELIGION_KONGHUCU
         }
     }
-    return null
+    return this
 }
 
 
@@ -318,9 +332,11 @@ const val GENDER_FEMALE = "PEREMPUAN"
 const val RELIGION_ISLAM = "ISLAM"
 const val RELIGION_KRISTEN = "KRISTEN"
 const val RELIGION_HINDU = "HINDU"
-const val RELIGION_KATOLIK = "KATOLIK"
+const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
 const val RELIGION_KONGHUCU = "KONGHUCU"
+const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
+const val RELIGION_KEPERCAYAAN_KPD_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
 
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"

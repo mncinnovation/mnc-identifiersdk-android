@@ -27,7 +27,7 @@ class ConfirmationActivity : AppCompatActivity() {
     private val religions = arrayOf(
         RELIGION_ISLAM,
         RELIGION_KRISTEN,
-        RELIGION_KATOLIK,
+        RELIGION_KATHOLIK,
         RELIGION_HINDU,
         RELIGION_BUDHA,
         RELIGION_KONGHUCU
@@ -65,7 +65,6 @@ class ConfirmationActivity : AppCompatActivity() {
             )
             captureKtpResult?.let {
                 with(it.ktp) {
-                    Log.e("TAGConfirm", "data : ${it.ktp.golDarah}")
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -98,7 +97,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     etProvince.setText(provinsi)
                     when (agama) {
                         RELIGION_KRISTEN -> spReligion.setSelection(1)
-                        RELIGION_KATOLIK -> spReligion.setSelection(2)
+                        RELIGION_KATHOLIK -> spReligion.setSelection(2)
                         RELIGION_HINDU -> spReligion.setSelection(3)
                         RELIGION_BUDHA -> spReligion.setSelection(4)
                         RELIGION_KONGHUCU -> spReligion.setSelection(5)
@@ -160,7 +159,7 @@ class ConfirmationActivity : AppCompatActivity() {
                         provinsi = etProvince.text.toString()
                         agama = when (spReligion.selectedItemPosition) {
                             1 -> RELIGION_KRISTEN
-                            2 -> RELIGION_KATOLIK
+                            2 -> RELIGION_KATHOLIK
                             3 -> RELIGION_HINDU
                             4 -> RELIGION_BUDHA
                             5 -> RELIGION_KONGHUCU
