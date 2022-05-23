@@ -250,7 +250,7 @@ fun Text.filterNik(): String? {
 
 fun String?.filterMaritalStatus(): String? {
     this?.let {
-        if (it.startsWith("KAW", true) || it.contains("WIN", true)) {
+        if (it.startsWith("KAW", true)) {
             return MARITAL_MERRIED
         }
         if (it.startsWith("BEL", true)) {
