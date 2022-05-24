@@ -3,9 +3,8 @@ package id.mncinnovation.ocr
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
-import androidx.fragment.app.Fragment
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
 import id.mncinnovation.ocr.model.CaptureKtpResult
@@ -13,7 +12,6 @@ import id.mncinnovation.ocr.model.CaptureKtpResult
 @Keep
 object MNCIdentifierOCR {
     private var CAPTURE_EKTP_REQUEST_CODE = 102
-
 
     /**
      * Start capture
@@ -79,27 +77,18 @@ object MNCIdentifierOCR {
     }
 
     /**
-     * Start capture from androidx.fragment.app.Fragment
+     * Start capture activity (you need to override onActivityResult)
      * @param context an Context
-     * @param fragment an androidx.fragment.app.Fragment
-     * @param activityResultOCR callback for activity result OCR
+     * @param activityResultLauncher an ActivityResultLauncher<Intent>
      * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      */
     @JvmStatic
     fun startCapture(
         context: Context,
-        fragment: Fragment,
-        activityResultOCR: ActivityResultOCR,
+        activityResultLauncher: ActivityResultLauncher<Intent>,
         withFlash: Boolean? = null
     ) {
-        fragment.registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val captureKtpResult = getCaptureKtpResult(result.data)
-                activityResultOCR.onCaptureResult(captureKtpResult)
-            }
-        }.launch(getIntent(context, withFlash))
+        activityResultLauncher.launch(getIntent(context, withFlash))
     }
 
     private fun getIntent(context: Context, withFlash: Boolean?): Intent {
@@ -109,8 +98,4 @@ object MNCIdentifierOCR {
                 withFlash
             )
     }
-}
-
-interface ActivityResultOCR {
-    fun onCaptureResult(captureKtpResult: CaptureKtpResult?)
 }
