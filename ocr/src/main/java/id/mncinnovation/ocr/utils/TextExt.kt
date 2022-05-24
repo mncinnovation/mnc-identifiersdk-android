@@ -342,7 +342,3 @@ const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
-
-//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}+(\\:)+[A-Z]{1,2}"
-//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}"
-const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z\\:\\- ]{6,14}"
