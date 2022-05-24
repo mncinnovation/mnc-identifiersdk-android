@@ -182,7 +182,25 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
         }
     }
 }
+
+//another option (using registerForActivityResult) 
+private val resultLauncherOcr =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+            captureKtpResult?.let { ktpResult ->
+                ktpResult.getBitmapImage(this)?.let {
+                    binding.ivKtp.setImageBitmap(it)
+                }
+                binding.tvScanKtp.text = captureKtpResult.toString()
+            }
+        }
+    }
+
+MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr, true)
 ```
+
 #### Screenshoots
 <img src="screenshots/ocr_splash.jpeg" width="256">
 <img src="screenshots/ocr_scan.jpeg" width="256">
