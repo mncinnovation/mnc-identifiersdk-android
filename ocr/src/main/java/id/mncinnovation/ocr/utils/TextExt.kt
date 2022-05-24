@@ -1,6 +1,5 @@
 package id.mncinnovation.ocr.utils
 
-import android.util.Log
 import com.google.mlkit.vision.text.Text
 import id.mncinnovation.ocr.model.Ktp
 
@@ -45,6 +44,7 @@ fun Text.extractEktp(): Ktp {
         ektp.jenisKelamin = it
     }
 
+    var previousLine: Text.Line? = null
     textBlocks.forEach { textBlock ->
         textBlock.lines.forEach { line ->
             when {
@@ -181,7 +181,26 @@ fun Text.extractEktp(): Ktp {
                         berlakuHingga?.let { confidence++ }
                     }
                 }
+
+                else -> {
+                    previousLine?.let {
+                        if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
+                                ?.equals(ektp.alamat) == true && ektp.alamat != null
+                        ) {
+                            ektp.apply {
+                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                            }
+                        }
+                        if (findAndClean(it, "Nama")?.equals(ektp.nama) == true && ektp.nama != null
+                        ) {
+                            ektp.apply {
+                                nama += " " + findAndClean(line, "Nama")
+                            }
+                        }
+                    }
+                }
             }
+            previousLine = line
         }
     }
     return ektp
@@ -270,7 +289,7 @@ fun String?.filterMaritalStatus(): String? {
 fun String?.filterCitizenship(): String? {
     this?.let {
         if (it.startsWith("WN")) {
-            return "WNI"
+            return CITIZEN_WNI
         }
     }
     return this
@@ -335,14 +354,8 @@ const val RELIGION_HINDU = "HINDU"
 const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
 const val RELIGION_KONGHUCU = "KONGHUCU"
-const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
-const val RELIGION_KEPERCAYAAN_KPD_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
-
+const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
-
-//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}+(\\:)+[A-Z]{1,2}"
-//const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z ]{6,9}"
-const val REGEX_GOL_DARAH = "[A-Za-z-]{3,3}+(\\.)+[A-Z-a-z\\:\\- ]{6,14}"

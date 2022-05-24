@@ -9,7 +9,7 @@ import android.os.Looper
 class SplashOCRActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        setContentView(R.layout.activity_splash_ocr)
 
         Handler(Looper.getMainLooper()).postDelayed({
             setResult(Activity.RESULT_OK)

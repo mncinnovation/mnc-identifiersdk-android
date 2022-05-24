@@ -47,9 +47,10 @@
         <entry key="ocr/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.12135416666666667" />
         <entry key="ocr/src/main/res/drawable/ic_edit.xml" value="0.1" />
         <entry key="ocr/src/main/res/layout/activity_capture_ktp.xml" value="0.125" />
-        <entry key="ocr/src/main/res/layout/activity_confirmation.xml" value="0.25" />
+        <entry key="ocr/src/main/res/layout/activity_confirmation.xml" value="0.21786833855799373" />
         <entry key="ocr/src/main/res/layout/activity_scan_ktpactivity.xml" value="0.125" />
         <entry key="ocr/src/main/res/layout/activity_splash.xml" value="0.25" />
+        <entry key="ocr/src/main/res/layout/activity_splash_ocr.xml" value="0.1" />
         <entry key="ocr/src/main/res/layout/popup_bottomsheet_scan_timer.xml" value="0.1" />
         <entry key="ocr/src/main/res/layout/popup_scan_timer.xml" value="0.25" />
       </map>

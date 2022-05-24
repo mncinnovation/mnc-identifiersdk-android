@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ScrollView
@@ -52,7 +51,6 @@ class ConfirmationActivity : AppCompatActivity() {
             )
             captureKtpResult?.let {
                 with(it.ktp) {
-                    Log.e("TAGConfirm", "data : ${it.ktp.agama}")
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
