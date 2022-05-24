@@ -45,6 +45,7 @@ fun Text.extractEktp(): Ktp {
         ektp.jenisKelamin = it
     }
 
+    var previousLine: Text.Line? = null
     textBlocks.forEach { textBlock ->
         textBlock.lines.forEach { line ->
             when {
@@ -181,7 +182,29 @@ fun Text.extractEktp(): Ktp {
                         berlakuHingga?.let { confidence++ }
                     }
                 }
+
+
+                else -> {
+                    Log.e(TAG_OCR, "prevLine ${previousLine?.text}")
+                    previousLine?.let {
+                        if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
+                                ?.equals(ektp.alamat) == true && ektp.alamat != null
+                        ) {
+                            ektp.apply {
+                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                            }
+                        }
+                        if (findAndClean(it, "Nama")?.equals(ektp.nama) == true && ektp.nama != null
+                        ) {
+                            ektp.apply {
+                                nama += " " + findAndClean(line, "Nama")
+                            }
+                        }
+                    }
+                }
             }
+            Log.e(TAG_OCR, "prevLine")
+            previousLine = line
         }
     }
     return ektp
@@ -337,7 +360,7 @@ const val RELIGION_BUDHA = "BUDHA"
 const val RELIGION_KONGHUCU = "KONGHUCU"
 const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
 const val RELIGION_KEPERCAYAAN_KPD_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
-
+const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
