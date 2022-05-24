@@ -1,6 +1,5 @@
 package id.mncinnovation.ocr.utils
 
-import android.util.Log
 import com.google.mlkit.vision.text.Text
 import id.mncinnovation.ocr.model.Ktp
 
@@ -183,9 +182,7 @@ fun Text.extractEktp(): Ktp {
                     }
                 }
 
-
                 else -> {
-                    Log.e(TAG_OCR, "prevLine ${previousLine?.text}")
                     previousLine?.let {
                         if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
                                 ?.equals(ektp.alamat) == true && ektp.alamat != null
@@ -203,7 +200,6 @@ fun Text.extractEktp(): Ktp {
                     }
                 }
             }
-            Log.e(TAG_OCR, "prevLine")
             previousLine = line
         }
     }
@@ -293,7 +289,7 @@ fun String?.filterMaritalStatus(): String? {
 fun String?.filterCitizenship(): String? {
     this?.let {
         if (it.startsWith("WN")) {
-            return "WNI"
+            return CITIZEN_WNI
         }
     }
     return this
@@ -358,8 +354,6 @@ const val RELIGION_HINDU = "HINDU"
 const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
 const val RELIGION_KONGHUCU = "KONGHUCU"
-const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
-const val RELIGION_KEPERCAYAAN_KPD_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
 const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
