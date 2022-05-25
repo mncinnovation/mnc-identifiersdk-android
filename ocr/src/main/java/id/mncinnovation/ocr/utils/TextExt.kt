@@ -2,6 +2,7 @@ package id.mncinnovation.ocr.utils
 
 import com.google.mlkit.vision.text.Text
 import id.mncinnovation.ocr.model.Ktp
+import org.json.JSONObject
 
 
 fun Text.findAndClean(line: Text.Line, key: String): String? {
@@ -269,18 +270,33 @@ fun Text.filterNik(): String? {
 }
 
 fun String?.filterMaritalStatus(): String? {
+    val objectJs = JSONObject(JSON_FILTERS)
+    val marriageStatus = objectJs.getJSONObject("marriageStatus")
+    val kawinArray = marriageStatus.getJSONArray("kawin")
+    val belumArray = marriageStatus.getJSONArray("belum")
+    val ceraiArray = marriageStatus.getJSONArray("cerai")
+    val hidupArray = marriageStatus.getJSONArray("hidup")
+
     this?.let {
-        if (it.startsWith("KAW", true)) {
-            return MARITAL_MERRIED
+        for (i in 0 until kawinArray.length()) {
+            if (it.contains(kawinArray.getString(i), true)) {
+                for (j in 0 until belumArray.length()) {
+                    if (it.contains(belumArray.getString(j), true)) {
+                        return MARITAL_SINGLE
+                    }
+                }
+                return MARITAL_MERRIED
+            }
         }
-        if (it.startsWith("BEL", true)) {
-            return MARITAL_SINGLE
-        }
-        if ((it.contains("MATI", true) || it.contains("ATI")) && it.contains("CER")) {
-            return MARITAL_DEATH_DIVORCE
-        }
-        if ((it.contains("HID", true) || it.contains("DUP")) && it.contains("CER")) {
-            return MARITAL_DIVORCED
+        for (i in 0 until ceraiArray.length()) {
+            if (it.contains(ceraiArray.getString(i), true)) {
+                for (j in 0 until hidupArray.length()) {
+                    if (it.contains(hidupArray.getString(j), true)) {
+                        return MARITAL_DIVORCED
+                    }
+                }
+                return MARITAL_DEATH_DIVORCE
+            }
         }
     }
     return this
@@ -296,41 +312,50 @@ fun String?.filterCitizenship(): String? {
 }
 
 fun String?.filterReligion(): String? {
+    val objectJs = JSONObject(JSON_FILTERS)
+    val religions = objectJs.getJSONObject("religions")
+    val islamArray = religions.getJSONArray("islam")
+    val kristenArray = religions.getJSONArray("kristen")
+    val katholikArray = religions.getJSONArray("katholik")
+    val budhaArray = religions.getJSONArray("budha")
+    val hinduArray = religions.getJSONArray("hindu")
+    val konghuchuArray = religions.getJSONArray("konghuchu")
+
     this?.let {
-        if ((it.startsWith("I", true) && it.contains("ISL", true)) || it.contains("LAM", true)
-        ) {
-            return RELIGION_ISLAM
-        } else if (it.startsWith("H", true) || it.contains(
-                "HIN",
-                true
-            ) || it.contains("NDU", true)
-        ) {
-            return RELIGION_HINDU
-        } else if (it.startsWith("B") || it.contains(
-                "BUD",
-                true
-            ) || it.contains("DHA", true)
-        ) {
-            return RELIGION_BUDHA
-        } else if (it.startsWith("KR") || it.contains(
-                "KRIS",
-                true
-            ) || it.contains("STEN", true)
-        ) {
-            return RELIGION_KRISTEN
-        } else if (it.startsWith("KA") || it.contains(
-                "KAT",
-                true
-            ) || it.contains("LIK", true) || it.contains("THO", true)
-        ) {
-            return RELIGION_KATHOLIK
-        } else if (it.startsWith("KONG") || (it.contains(
-                "HU",
-                true
-            ) && it.contains("CU", true))
-        ) {
-            return RELIGION_KONGHUCU
+        for (i in 0 until islamArray.length()) {
+            if (it.contains(islamArray.getString(i), true)) {
+                return RELIGION_ISLAM
+            }
         }
+        for (i in 0 until kristenArray.length()) {
+            if (it.contains(kristenArray.getString(i), true)) {
+                return RELIGION_KRISTEN
+            }
+        }
+        for (i in 0 until hinduArray.length()) {
+            if (it.contains(hinduArray.getString(i), true)) {
+                return RELIGION_HINDU
+            }
+        }
+
+        for (i in 0 until budhaArray.length()) {
+            if (it.contains(budhaArray.getString(i), true)) {
+                return RELIGION_BUDHA
+            }
+        }
+
+        for (i in 0 until katholikArray.length()) {
+            if (it.contains(katholikArray.getString(i), true)) {
+                return RELIGION_KATHOLIK
+            }
+        }
+
+        for (i in 0 until konghuchuArray.length()) {
+            if (it.contains(konghuchuArray.getString(i), true)) {
+                return RELIGION_KONGHUCU
+            }
+        }
+
     }
     return this
 }
@@ -359,3 +384,5 @@ const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
+const val JSON_FILTERS =
+    "{\"religions\":{\"islam\":[\"sl\",\"la\",\"am\",\"isl\",\"sla\",\"lam\",\"isla\",\"slam\",\"islam\"],\"kristen\":[\"kr\",\"ri\",\"st\",\"en\",\"kri\",\"ris\",\"ist\",\"ste\",\"ten\",\"kris\",\"rist\",\"iste\",\"sten\",\"krist\",\"riste\",\"isten\",\"kriste\",\"risten\",\"kristen\"],\"katholik\":[\"ka\",\"at\",\"to\",\"ol\",\"lh\",\"hi\",\"ik\",\"kat\",\"ath\",\"tho\",\"tol\",\"oli\",\"lik\",\"kath\",\"atho\",\"thol\",\"holi\",\"olik\",\"katho\",\"athol\",\"tholi\",\"holik\",\"kathol\",\"atholi\",\"tholik\",\"katholi\",\"atholik\",\"katholik\"],\"budha\":[\"bu\",\"ud\",\"dh\",\"ha\",\"bud\",\"udh\",\"dha\",\"budh\",\"udha\",\"budha\"],\"hindu\":[\"hi\",\"in\",\"nd\",\"du\",\"hin\",\"ind\",\"ndu\",\"hind\",\"indu\",\"hindu\"],\"konghuchu\":[\"ko\",\"on\",\"ng\",\"gh\",\"hu\",\"uc\",\"ch\",\"hu\",\"kon\",\"ong\",\"ngh\",\"ghu\",\"huc\",\"uch\",\"chu\",\"kong\",\"ongh\",\"nghu\",\"ghuc\",\"huch\",\"uchu\",\"kongh\",\"onghu\",\"nghuc\",\"ghuch\",\"huchu\",\"konghu\",\"onghuc\",\"nghuch\",\"ghuchu\",\"konghuc\",\"onghuch\",\"nghcuchu\",\"konghuch\",\"onghuchu\",\"konghuchu\"]},\"marriageStatus\":{\"kawin\":[\"ka\",\"aw\",\"wi\",\"in\",\"kaw\",\"awi\",\"win\",\"kawi\",\"awin\",\"kawin\"],\"belum\":[\"be\",\"el\",\"lu\",\"um\",\"bel\",\"elu\",\"lum\",\"belu\",\"elum\",\"belum\"],\"cerai\":[\"ce\",\"er\",\"ra\",\"ai\",\"cer\",\"era\",\"rai\",\"cera\",\"erai\",\"cerai\"],\"hidup\":[\"hi\",\"id\",\"du\",\"up\",\"hid\",\"idu\",\"dup\",\"hidu\",\"idup\",\"hidup\"]},\"numberValidation\":{\"0\":[\"o\",\"O\"],\"1\":[\"L\",\"I\",\"l\",\"i\",\"J\",\"j\"],\"2\":[\"Z\",\"z\"],\"3\":[\"B\"],\"4\":[\"A\"],\"5\":[\"S\",\"s\"],\"6\":[\"b\",\"G\"],\"7\":[\"T\"],\"8\":[\"R\"],\"9\":[\"g\",\"q\"]}}"
