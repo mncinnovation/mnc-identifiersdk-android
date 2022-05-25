@@ -186,13 +186,20 @@ fun Text.extractEktp(): Ktp {
                 else -> {
                     previousLine?.let {
                         if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
-                                ?.equals(ektp.alamat) == true && ektp.alamat != null
+                                ?.equals(ektp.alamat) == true && ektp.alamat != null && !line.text.contains(
+                                "/"
+                            ) && findAndClean(it, "Alamat")?.cleanse("Aiamat") != ektp.alamat
                         ) {
                             ektp.apply {
                                 alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
                             }
                         }
-                        if (findAndClean(it, "Nama")?.equals(ektp.nama) == true && ektp.nama != null
+                        if (findAndClean(
+                                it,
+                                "Nama"
+                            )?.equals(ektp.nama) == true && ektp.nama != null &&
+                            !line.text.contains("[0-9]".toRegex())
+                            && findAndClean(line, "Nama") != ektp.nama
                         ) {
                             ektp.apply {
                                 nama += " " + findAndClean(line, "Nama")
