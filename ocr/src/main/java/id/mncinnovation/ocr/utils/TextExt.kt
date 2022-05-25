@@ -327,6 +327,7 @@ fun String?.filterReligion(): String? {
     val budhaArray = religions.getJSONArray("budha")
     val hinduArray = religions.getJSONArray("hindu")
     val konghuchuArray = religions.getJSONArray("konghuchu")
+    val kepercayaanArray = religions.getJSONArray("kepercayaan")
 
     this?.let {
         for (i in 0 until islamArray.length()) {
@@ -359,7 +360,13 @@ fun String?.filterReligion(): String? {
 
         for (i in 0 until konghuchuArray.length()) {
             if (it.contains(konghuchuArray.getString(i), true)) {
-                return RELIGION_KONGHUCU
+                return RELIGION_KONGHUCHU
+            }
+        }
+
+        for (i in 0 until kepercayaanArray.length()) {
+            if (it.contains(kepercayaanArray.getString(i), true)) {
+                return RELIGION_KEPERCAYAAN
             }
         }
 
@@ -385,11 +392,12 @@ const val RELIGION_KRISTEN = "KRISTEN"
 const val RELIGION_HINDU = "HINDU"
 const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
-const val RELIGION_KONGHUCU = "KONGHUCU"
+const val RELIGION_KONGHUCHU = "KONGHUCHU"
+const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
 const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
 const val JSON_FILTERS =
-    "{\"religions\":{\"islam\":[\"sl\",\"la\",\"am\",\"isl\",\"sla\",\"lam\",\"isla\",\"slam\",\"islam\"],\"kristen\":[\"kr\",\"ri\",\"st\",\"en\",\"kri\",\"ris\",\"ist\",\"ste\",\"ten\",\"kris\",\"rist\",\"iste\",\"sten\",\"krist\",\"riste\",\"isten\",\"kriste\",\"risten\",\"kristen\"],\"katholik\":[\"ka\",\"at\",\"to\",\"ol\",\"lh\",\"hi\",\"ik\",\"kat\",\"ath\",\"tho\",\"tol\",\"oli\",\"lik\",\"kath\",\"atho\",\"thol\",\"holi\",\"olik\",\"katho\",\"athol\",\"tholi\",\"holik\",\"kathol\",\"atholi\",\"tholik\",\"katholi\",\"atholik\",\"katholik\"],\"budha\":[\"bu\",\"ud\",\"dh\",\"ha\",\"bud\",\"udh\",\"dha\",\"budh\",\"udha\",\"budha\"],\"hindu\":[\"hi\",\"in\",\"nd\",\"du\",\"hin\",\"ind\",\"ndu\",\"hind\",\"indu\",\"hindu\"],\"konghuchu\":[\"ko\",\"on\",\"ng\",\"gh\",\"hu\",\"uc\",\"ch\",\"hu\",\"kon\",\"ong\",\"ngh\",\"ghu\",\"huc\",\"uch\",\"chu\",\"kong\",\"ongh\",\"nghu\",\"ghuc\",\"huch\",\"uchu\",\"kongh\",\"onghu\",\"nghuc\",\"ghuch\",\"huchu\",\"konghu\",\"onghuc\",\"nghuch\",\"ghuchu\",\"konghuc\",\"onghuch\",\"nghcuchu\",\"konghuch\",\"onghuchu\",\"konghuchu\"]},\"marriageStatus\":{\"kawin\":[\"ka\",\"aw\",\"wi\",\"in\",\"kaw\",\"awi\",\"win\",\"kawi\",\"awin\",\"kawin\"],\"belum\":[\"be\",\"el\",\"lu\",\"um\",\"bel\",\"elu\",\"lum\",\"belu\",\"elum\",\"belum\"],\"cerai\":[\"ce\",\"er\",\"ra\",\"ai\",\"cer\",\"era\",\"rai\",\"cera\",\"erai\",\"cerai\"],\"hidup\":[\"hi\",\"id\",\"du\",\"up\",\"hid\",\"idu\",\"dup\",\"hidu\",\"idup\",\"hidup\"]},\"numberValidation\":{\"0\":[\"o\",\"O\"],\"1\":[\"L\",\"I\",\"l\",\"i\",\"J\",\"j\"],\"2\":[\"Z\",\"z\"],\"3\":[\"B\"],\"4\":[\"A\"],\"5\":[\"S\",\"s\"],\"6\":[\"b\",\"G\"],\"7\":[\"T\"],\"8\":[\"R\"],\"9\":[\"g\",\"q\"]}}"
+    "{\"religions\":{\"islam\":[\"sl\",\"la\",\"am\",\"isl\",\"sla\",\"lam\",\"isla\",\"slam\",\"islam\"],\"kristen\":[\"kr\",\"ri\",\"st\",\"en\",\"kri\",\"ris\",\"ist\",\"ste\",\"ten\",\"kris\",\"rist\",\"iste\",\"sten\",\"krist\",\"riste\",\"isten\",\"kriste\",\"risten\",\"kristen\"],\"katholik\":[\"ka\",\"at\",\"to\",\"ol\",\"lh\",\"hi\",\"ik\",\"kat\",\"ath\",\"tho\",\"tol\",\"oli\",\"lik\",\"kath\",\"atho\",\"thol\",\"holi\",\"olik\",\"katho\",\"athol\",\"tholi\",\"holik\",\"kathol\",\"atholi\",\"tholik\",\"katholi\",\"atholik\",\"katholik\"],\"budha\":[\"bu\",\"ud\",\"dh\",\"ha\",\"bud\",\"udh\",\"dha\",\"budh\",\"udha\",\"budha\"],\"hindu\":[\"hi\",\"in\",\"nd\",\"du\",\"hin\",\"ind\",\"ndu\",\"hind\",\"indu\",\"hindu\"],\"konghuchu\":[\"ko\",\"on\",\"ng\",\"gh\",\"hu\",\"uc\",\"ch\",\"hu\",\"kon\",\"ong\",\"ngh\",\"ghu\",\"huc\",\"uch\",\"chu\",\"kong\",\"ongh\",\"nghu\",\"ghuc\",\"huch\",\"uchu\",\"kongh\",\"onghu\",\"nghuc\",\"ghuch\",\"huchu\",\"konghu\",\"onghuc\",\"nghuch\",\"ghuchu\",\"konghuc\",\"onghuch\",\"nghcuchu\",\"konghuch\",\"onghuchu\",\"konghuchu\"],\"kepercayaan\":[\"ke\",\"ep\",\"pe\",\"er\",\"rc\",\"ca\",\"ay\",\"ya\",\"aa\",\"an\",\"kep\",\"epe\",\"per\",\"erc\",\"rca\",\"cay\",\"aya\",\"yaa\",\"aan\",\"kepe\",\"eper\",\"perc\",\"erca\",\"rcay\",\"caya\",\"ayaa\",\"yaan\",\"keper\",\"eperc\",\"perca\",\"ercay\",\"rcaya\",\"cayaa\",\"ayaan\",\"keperc\",\"eperca\",\"percay\",\"ercaya\",\"rcayaa\",\"cayaan\",\"keperca\",\"epercay\",\"percaya\",\"ercayaa\",\"rcayaan\",\"kepercay\",\"epercaya\",\"percayaa\",\"ercayaan\",\"kepercaya\",\"epercayaa\",\"percayaan\",\"kepercayaa\",\"epercayaan\",\"kepercayaan\"]},\"marriageStatus\":{\"kawin\":[\"ka\",\"aw\",\"wi\",\"in\",\"kaw\",\"awi\",\"win\",\"kawi\",\"awin\",\"kawin\"],\"belum\":[\"be\",\"el\",\"lu\",\"um\",\"bel\",\"elu\",\"lum\",\"belu\",\"elum\",\"belum\"],\"cerai\":[\"ce\",\"er\",\"ra\",\"ai\",\"cer\",\"era\",\"rai\",\"cera\",\"erai\",\"cerai\"],\"hidup\":[\"hi\",\"id\",\"du\",\"up\",\"hid\",\"idu\",\"dup\",\"hidu\",\"idup\",\"hidup\"]},\"numberValidation\":{\"0\":[\"o\",\"O\"],\"1\":[\"L\",\"I\",\"l\",\"i\",\"J\",\"j\"],\"2\":[\"Z\",\"z\"],\"3\":[\"B\"],\"4\":[\"A\"],\"5\":[\"S\",\"s\"],\"6\":[\"b\",\"G\"],\"7\":[\"T\"],\"8\":[\"R\"],\"9\":[\"g\",\"q\"]}}"
