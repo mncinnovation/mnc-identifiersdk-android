@@ -198,7 +198,7 @@ fun Text.extractEktp(): Ktp {
                                 it,
                                 "Nama"
                             )?.equals(ektp.nama) == true && ektp.nama != null &&
-                            !line.text.contains("[0-9]".toRegex())
+                            !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
                             && findAndClean(line, "Nama") != ektp.nama
                         ) {
                             ektp.apply {
@@ -366,6 +366,13 @@ fun String?.filterReligion(): String? {
 
         for (i in 0 until kepercayaanArray.length()) {
             if (it.contains(kepercayaanArray.getString(i), true)) {
+                if (it.contains("TERH", true) || it.contains("ADA", true) || it.contains(
+                        "ADAP",
+                        true
+                    )
+                ) {
+                    return RELIGION_KEPERCAYAAN_TERHADAP_TUHAN_YME
+                }
                 return RELIGION_KEPERCAYAAN
             }
         }
@@ -394,6 +401,7 @@ const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
 const val RELIGION_KONGHUCHU = "KONGHUCHU"
 const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
+const val RELIGION_KEPERCAYAAN_TERHADAP_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
 const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
 const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
