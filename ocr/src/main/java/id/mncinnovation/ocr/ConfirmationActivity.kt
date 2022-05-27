@@ -29,7 +29,7 @@ class ConfirmationActivity : AppCompatActivity() {
         binding = ActivityConfirmationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(intent)
+        val captureKtpResult = MNCIdentifierOCR.getCaptureOCRResult(intent)
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
 
@@ -50,7 +50,7 @@ class ConfirmationActivity : AppCompatActivity() {
                 bloodGroups
             )
             captureKtpResult?.let {
-                with(it.ktp) {
+                with(it.ocrValueID) {
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -64,7 +64,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     etBirthdate.setText(tglLahir)
                     if (jenisKelamin == GENDER_MALE) {
                         spGender.setSelection(0)
-                    } else if (jenisKelamin == GENDER_FEMALE) {
+                    } else if (jenisKelamin == GENDER_FEMALE || jenisKelamin == GENDER_FEMALE_2) {
                         spGender.setSelection(1)
                     }
                     when (golDarah) {
@@ -116,7 +116,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     setStateUpdate(StateConfirm.CONFIRM_STATE)
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
-                    captureKtpResult?.ktp?.apply {
+                    captureKtpResult?.ocrValueID?.apply {
                         nik = etNik.text.toString()
                         nama = etFullname.text.toString()
                         tempatLahir = etBornPlace.text.toString()

@@ -8,10 +8,10 @@ import id.mncinnovation.identification.core.utils.BitmapUtils
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class CaptureKtpResult(val isSuccess: Boolean,
+data class CaptureOCRResult(val isSuccess: Boolean,
                             val errorMessage: String?,
                             val imageUri: Uri,
-                            val ktp: Ktp
+                            val ocrValueID: OCRValueID
 ): Parcelable{
     fun getBitmapImage(context: Context): Bitmap? {
         return BitmapUtils.getBitmapFromContentUri(context.contentResolver, imageUri)
