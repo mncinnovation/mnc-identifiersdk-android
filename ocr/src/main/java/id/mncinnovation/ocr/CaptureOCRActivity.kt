@@ -32,7 +32,7 @@ import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
 import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
 import id.mncinnovation.ocr.analyzer.Status
-import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerBinding
+import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerOcrBinding
 import id.mncinnovation.ocr.model.CaptureOCRResult
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
@@ -249,7 +249,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureKtpResult = MNCIdentifierOCR.getCaptureOCRResult(data)
+                val captureKtpResult = MNCIdentifierOCR.getOCRResult(data)
                 captureKtpResult?.let { scanResult ->
                     val intent = Intent().apply {
                         putExtra(EXTRA_RESULT, scanResult)
@@ -282,7 +282,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     private fun showPopupHoldScanDialog() {
         if (timer != null) return
-        val bindingPopup = PopupBottomsheetScanTimerBinding.inflate(LayoutInflater.from(this))
+        val bindingPopup = PopupBottomsheetScanTimerOcrBinding.inflate(LayoutInflater.from(this))
         var counter = COUNTDOWN_TIME
 
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogThemeOCR)

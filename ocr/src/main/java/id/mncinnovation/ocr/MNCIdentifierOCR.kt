@@ -19,7 +19,7 @@ object MNCIdentifierOCR {
      * @return an CaptureOCRResult
      */
     @JvmStatic
-    fun getCaptureOCRResult(intent: Intent?): CaptureOCRResult? {
+    fun getOCRResult(intent: Intent?): CaptureOCRResult? {
         return intent?.getParcelableExtra(EXTRA_RESULT) as CaptureOCRResult?
     }
 

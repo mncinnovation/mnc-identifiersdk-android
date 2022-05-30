@@ -11,25 +11,26 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
-import id.mncinnovation.ocr.databinding.ActivityConfirmationBinding
+import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
 import id.mncinnovation.ocr.utils.*
 import java.util.*
 
 
 class ConfirmationActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityConfirmationBinding
+    private lateinit var binding: ActivityConfirmationOcrBinding
     private var state = StateConfirm.FILL_STATE
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
     private val maritalsStatus =
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
-    private val bloodGroups = arrayOf("-", "A", "B", "AB", "O")
+    private val bloodGroups =
+        arrayOf("-", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityConfirmationBinding.inflate(layoutInflater)
+        binding = ActivityConfirmationOcrBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val captureKtpResult = MNCIdentifierOCR.getCaptureOCRResult(intent)
+        val captureKtpResult = MNCIdentifierOCR.getOCRResult(intent)
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
 
@@ -50,7 +51,7 @@ class ConfirmationActivity : AppCompatActivity() {
                 bloodGroups
             )
             captureKtpResult?.let {
-                with(it.ocrValueID) {
+                with(it.ocrValue) {
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -72,6 +73,14 @@ class ConfirmationActivity : AppCompatActivity() {
                         "B" -> spGolDarah.setSelection(2)
                         "AB" -> spGolDarah.setSelection(3)
                         "O" -> spGolDarah.setSelection(4)
+                        "A+" -> spGolDarah.setSelection(5)
+                        "A-" -> spGolDarah.setSelection(6)
+                        "B+" -> spGolDarah.setSelection(7)
+                        "B-" -> spGolDarah.setSelection(8)
+                        "AB+" -> spGolDarah.setSelection(9)
+                        "AB-" -> spGolDarah.setSelection(10)
+                        "O+" -> spGolDarah.setSelection(11)
+                        "O-" -> spGolDarah.setSelection(12)
                         else -> spGolDarah.setSelection(0)
                     }
                     etAddress.setText(alamat)
@@ -116,7 +125,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     setStateUpdate(StateConfirm.CONFIRM_STATE)
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
-                    captureKtpResult?.ocrValueID?.apply {
+                    captureKtpResult?.ocrValue?.apply {
                         nik = etNik.text.toString()
                         nama = etFullname.text.toString()
                         tempatLahir = etBornPlace.text.toString()
@@ -124,10 +133,19 @@ class ConfirmationActivity : AppCompatActivity() {
                         jenisKelamin =
                             if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
                         golDarah = when (spGolDarah.selectedItemPosition) {
-                            1 -> "B"
-                            2 -> "AB"
-                            3 -> "O"
-                            else -> "A"
+                            1 -> "A"
+                            2 -> "B"
+                            3 -> "AB"
+                            4 -> "O"
+                            5 -> "A+"
+                            6 -> "A-"
+                            7 -> "B+"
+                            8 -> "B-"
+                            9 -> "AB+"
+                            10 -> "AB-"
+                            11 -> "O+"
+                            12 -> "O-"
+                            else -> "-"
                         }
                         alamat = etAddress.text.toString()
                         rt = etRt.text.toString()

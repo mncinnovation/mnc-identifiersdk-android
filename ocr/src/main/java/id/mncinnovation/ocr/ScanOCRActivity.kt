@@ -19,7 +19,7 @@ import id.mncinnovation.ocr.analyzer.ScanKtpListener
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.ActivityScanOcrBinding
 import id.mncinnovation.ocr.model.CaptureOCRResult
-import id.mncinnovation.ocr.model.OCRValueID
+import id.mncinnovation.ocr.model.OCRValue
 
 class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
     private lateinit var binding: ActivityScanOcrBinding
@@ -85,12 +85,12 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
         binding.progressBar.progress = progress
     }
 
-    override fun onScanComplete(OCRValueID: OCRValueID) {
-        OCRValueID.bitmap?.let {
+    override fun onScanComplete(ocrValue: OCRValue) {
+        ocrValue.bitmap?.let {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
             val scanResult =
-                CaptureOCRResult(true, "Success", bitmapuri, OCRValueID.apply { bitmap = it })
+                CaptureOCRResult(true, "Success", bitmapuri, ocrValue.apply { bitmap = it })
             val intent = Intent(this@ScanOCRActivity, ConfirmationActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }
@@ -106,7 +106,7 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureKtpResult = MNCIdentifierOCR.getCaptureOCRResult(data)
+                val captureKtpResult = MNCIdentifierOCR.getOCRResult(data)
                 captureKtpResult?.let { scanResult ->
                     val intent = Intent().apply {
                         putExtra(EXTRA_RESULT, scanResult)

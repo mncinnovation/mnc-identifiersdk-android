@@ -1,8 +1,7 @@
 package id.mncinnovation.ocr.utils
 
-import android.util.Log
 import com.google.mlkit.vision.text.Text
-import id.mncinnovation.ocr.model.OCRValueID
+import id.mncinnovation.ocr.model.OCRValue
 import org.json.JSONObject
 
 
@@ -29,8 +28,8 @@ fun Text.findInline(line: Text.Line): Text.Line? {
 }
 
 
-fun Text.extractEktp(): OCRValueID {
-    val ektp = OCRValueID()
+fun Text.extractEktp(): OCRValue {
+    val ektp = OCRValue()
     ektp.rawText = text
 
     val rtrw = REGEX_RT_RW.toRegex().find(text)
@@ -217,8 +216,6 @@ fun Text.extractEktp(): OCRValueID {
                                 break
                             }
                         }
-                        Log.e(TAG_OCR, "line is: ${line.text}")
-                        Log.e(TAG_OCR, "isContainLowerCase: $containLowerCase")
 
                         if (findAndClean(
                                 it,
@@ -232,10 +229,13 @@ fun Text.extractEktp(): OCRValueID {
                             }
                         }
 
-                        if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
-                                ?.equals(ektp.alamat) == true && ektp.alamat != null && (!line.text.contains(
-                                "/"
-                            ) && !line.text.contains("RT") && !line.text.contains("RW")) && findAndClean(
+                        if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                                it,
+                                "Alamat"
+                            )?.cleanse("Aiamat")
+                                ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
+                            !line.text.contains("RT") && !line.text.contains("RW") &&
+                            findAndClean(
                                 line,
                                 "Alamat"
                             )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
@@ -254,38 +254,38 @@ fun Text.extractEktp(): OCRValueID {
 }
 
 fun Text.extractKtp() {
-    val OCRValueID = OCRValueID()
+    val ocrValue = OCRValue()
     var lastProcessedPosition = 0
     textBlocks.forEach { block ->
         block.lines.forEach { line ->
             val result = "[A-Z0-9-/ ]{3,}+".toRegex().find(line.text)
             if (result != null) {
                 when (lastProcessedPosition) {
-                    0 -> OCRValueID.provinsi = result.value.cleanse("PROVINSI")
-                    1 -> OCRValueID.kabKot = result.value.cleanse("KOTA")
-                    2 -> OCRValueID.nik = result.value
-                    3 -> OCRValueID.nama = result.value
+                    0 -> ocrValue.provinsi = result.value.cleanse("PROVINSI")
+                    1 -> ocrValue.kabKot = result.value.cleanse("KOTA")
+                    2 -> ocrValue.nik = result.value
+                    3 -> ocrValue.nama = result.value
                     4 -> {
-                        OCRValueID.tempatLahir = result.groupValues.firstOrNull()
-                        OCRValueID.tglLahir = result.groupValues.elementAtOrNull(1)
+                        ocrValue.tempatLahir = result.groupValues.firstOrNull()
+                        ocrValue.tglLahir = result.groupValues.elementAtOrNull(1)
                     }
-                    5 -> OCRValueID.jenisKelamin = result.value
-                    6 -> OCRValueID.alamat = result.value
+                    5 -> ocrValue.jenisKelamin = result.value
+                    6 -> ocrValue.alamat = result.value
                     7 -> {
                         val rtrw = REGEX_RT_RW.toRegex().find(text)
                         rtrw?.value?.let {
-                            OCRValueID.rt = it.split("/").first()
-                            OCRValueID.rw = it.split("/").last()
+                            ocrValue.rt = it.split("/").first()
+                            ocrValue.rw = it.split("/").last()
                         }
-                        OCRValueID.rt = result.value
+                        ocrValue.rt = result.value
                     }
-                    8 -> OCRValueID.kelurahan = result.value
-                    9 -> OCRValueID.kecamatan = result.value
-                    10 -> OCRValueID.agama = result.value
-                    11 -> OCRValueID.statusPerkawinan = result.value
-                    12 -> OCRValueID.pekerjaan = result.value
-                    13 -> OCRValueID.kewarganegaraan = result.value
-                    14 -> OCRValueID.berlakuHingga = result.value
+                    8 -> ocrValue.kelurahan = result.value
+                    9 -> ocrValue.kecamatan = result.value
+                    10 -> ocrValue.agama = result.value
+                    11 -> ocrValue.statusPerkawinan = result.value
+                    12 -> ocrValue.pekerjaan = result.value
+                    13 -> ocrValue.kewarganegaraan = result.value
+                    14 -> ocrValue.berlakuHingga = result.value
                 }
                 lastProcessedPosition++
             }
@@ -451,7 +451,7 @@ const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
 const val RELIGION_KEPERCAYAAN_TERHADAP_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
 const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
-const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|WANITA|LAKI|LAKILAKI"
+const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|WANITA|PRIA|LAKI|LAKILAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
 const val JSON_FILTERS =

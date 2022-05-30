@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureOCRResult = MNCIdentifierOCR.getCaptureOCRResult(data)
+                val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { ktpResult ->
                     ktpResult.getBitmapImage(this)?.let {
                         binding.ivKtp.setImageBitmap(it)
