@@ -1,7 +1,8 @@
 package id.mncinnovation.ocr.utils
 
 import com.google.mlkit.vision.text.Text
-import id.mncinnovation.ocr.model.Ktp
+import id.mncinnovation.ocr.model.OCRValue
+import org.json.JSONObject
 
 
 fun Text.findAndClean(line: Text.Line, key: String): String? {
@@ -27,8 +28,8 @@ fun Text.findInline(line: Text.Line): Text.Line? {
 }
 
 
-fun Text.extractEktp(): Ktp {
-    val ektp = Ktp()
+fun Text.extractEktp(): OCRValue {
+    val ektp = OCRValue()
     ektp.rawText = text
 
     val rtrw = REGEX_RT_RW.toRegex().find(text)
@@ -75,7 +76,7 @@ fun Text.extractEktp(): Ktp {
                     ektp.nama?.let { ektp.confidence++ }
                 }
 
-                line.text.startsWith("Tempat", true) -> {
+                line.text.startsWith("Tempat", true) || line.text.contains("Lahir") -> {
                     ektp.confidence++
                     //tempat lahir allcaps
                     val ttl = REGEX_CAPS.toRegex().findAll(line.text)
@@ -90,7 +91,9 @@ fun Text.extractEktp(): Ktp {
                 line.text.startsWith("Jenis", true) -> {
                     //jenis kelamin allcaps
                     ektp.confidence++
-                    ektp.jenisKelamin = jk?.value?.takeIf { it == "PEREMPUAN" } ?: "LAKI-LAKI"
+                    ektp.jenisKelamin =
+                        jk?.value?.takeIf { it == GENDER_FEMALE || it == GENDER_FEMALE_2 }
+                            ?: GENDER_MALE
                     ektp.jenisKelamin?.let { ektp.confidence++ }
                 }
 
@@ -100,7 +103,7 @@ fun Text.extractEktp(): Ktp {
                 ) || line.text.contains("Daah") -> {
                     ektp.golDarah = findAndClean(line, "Gol. Darah")?.cleanse("Gol. Daah")?.cleanse(
                         GENDER_MALE
-                    )?.cleanse(GENDER_FEMALE)
+                    )?.cleanse(GENDER_FEMALE)?.filterBloodGroup()
                     ektp.golDarah?.let { ektp.confidence++ }
                 }
 
@@ -110,6 +113,24 @@ fun Text.extractEktp(): Ktp {
                         confidence++
                         alamat = findAndClean(line, "Alamat")?.cleanse("Aiamat")
                         alamat?.let { confidence++ }
+                    }
+                }
+
+                line.text.contains("RT", true) && line.text.contains(
+                    "RW",
+                    true
+                ) && (ektp.rt == null || ektp.rw == null) -> {
+                    ektp.apply {
+                        val rtrwLine = findAndClean(line, "RTRW")
+                        val rtrwSplit1 = rtrwLine?.split("/")
+                        val rtrwSplit2 = rtrwLine?.split(" ")
+                        if ((rtrwSplit1?.size ?: 0) > 1) {
+                            rt = rtrwSplit1?.first()?.cleanse(" ")
+                            rw = rtrwSplit1?.last()?.cleanse(" ")
+                        } else {
+                            rt = rtrwSplit2?.first()?.cleanse(" ")
+                            rw = rtrwSplit2?.last()?.cleanse(" ")
+                        }
                     }
                 }
 
@@ -141,11 +162,15 @@ fun Text.extractEktp(): Ktp {
                     }
                 }
 
-                line.text.startsWith("Status Perkawinan", true) -> {
+                line.text.startsWith("Status Perkawinan", true) || line.text.contains(
+                    "Status Perk",
+                    true
+                ) -> {
                     ektp.apply {
                         confidence++
                         statusPerkawinan =
-                            findAndClean(line, "Status Perkawinan")?.filterMaritalStatus()
+                            findAndClean(line, "Status Perkawinan")?.cleanse("Perkainan")
+                                ?.filterMaritalStatus()
 
                         statusPerkawinan?.let { confidence++ }
                     }
@@ -184,17 +209,39 @@ fun Text.extractEktp(): Ktp {
 
                 else -> {
                     previousLine?.let {
-                        if (findAndClean(it, "Alamat")?.cleanse("Aiamat")
-                                ?.equals(ektp.alamat) == true && ektp.alamat != null
-                        ) {
-                            ektp.apply {
-                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                        var containLowerCase = false
+                        for (c in line.text) {
+                            if (c.isLowerCase()) {
+                                containLowerCase = true
+                                break
                             }
                         }
-                        if (findAndClean(it, "Nama")?.equals(ektp.nama) == true && ektp.nama != null
+
+                        if (findAndClean(
+                                it,
+                                "Nama"
+                            )?.equals(ektp.nama) == true && ektp.nama != null &&
+                            !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
+                            && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
                         ) {
                             ektp.apply {
                                 nama += " " + findAndClean(line, "Nama")
+                            }
+                        }
+
+                        if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                                it,
+                                "Alamat"
+                            )?.cleanse("Aiamat")
+                                ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
+                            !line.text.contains("RT") && !line.text.contains("RW") &&
+                            findAndClean(
+                                line,
+                                "Alamat"
+                            )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
+                        ) {
+                            ektp.apply {
+                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
                             }
                         }
                     }
@@ -207,38 +254,38 @@ fun Text.extractEktp(): Ktp {
 }
 
 fun Text.extractKtp() {
-    val ktp = Ktp()
+    val ocrValue = OCRValue()
     var lastProcessedPosition = 0
     textBlocks.forEach { block ->
         block.lines.forEach { line ->
             val result = "[A-Z0-9-/ ]{3,}+".toRegex().find(line.text)
             if (result != null) {
                 when (lastProcessedPosition) {
-                    0 -> ktp.provinsi = result.value.cleanse("PROVINSI")
-                    1 -> ktp.kabKot = result.value.cleanse("KOTA")
-                    2 -> ktp.nik = result.value
-                    3 -> ktp.nama = result.value
+                    0 -> ocrValue.provinsi = result.value.cleanse("PROVINSI")
+                    1 -> ocrValue.kabKot = result.value.cleanse("KOTA")
+                    2 -> ocrValue.nik = result.value
+                    3 -> ocrValue.nama = result.value
                     4 -> {
-                        ktp.tempatLahir = result.groupValues.firstOrNull()
-                        ktp.tglLahir = result.groupValues.elementAtOrNull(1)
+                        ocrValue.tempatLahir = result.groupValues.firstOrNull()
+                        ocrValue.tglLahir = result.groupValues.elementAtOrNull(1)
                     }
-                    5 -> ktp.jenisKelamin = result.value
-                    6 -> ktp.alamat = result.value
+                    5 -> ocrValue.jenisKelamin = result.value
+                    6 -> ocrValue.alamat = result.value
                     7 -> {
                         val rtrw = REGEX_RT_RW.toRegex().find(text)
                         rtrw?.value?.let {
-                            ktp.rt = it.split("/").first()
-                            ktp.rw = it.split("/").last()
+                            ocrValue.rt = it.split("/").first()
+                            ocrValue.rw = it.split("/").last()
                         }
-                        ktp.rt = result.value
+                        ocrValue.rt = result.value
                     }
-                    8 -> ktp.kelurahan = result.value
-                    9 -> ktp.kecamatan = result.value
-                    10 -> ktp.agama = result.value
-                    11 -> ktp.statusPerkawinan = result.value
-                    12 -> ktp.pekerjaan = result.value
-                    13 -> ktp.kewarganegaraan = result.value
-                    14 -> ktp.berlakuHingga = result.value
+                    8 -> ocrValue.kelurahan = result.value
+                    9 -> ocrValue.kecamatan = result.value
+                    10 -> ocrValue.agama = result.value
+                    11 -> ocrValue.statusPerkawinan = result.value
+                    12 -> ocrValue.pekerjaan = result.value
+                    13 -> ocrValue.kewarganegaraan = result.value
+                    14 -> ocrValue.berlakuHingga = result.value
                 }
                 lastProcessedPosition++
             }
@@ -269,19 +316,41 @@ fun Text.filterNik(): String? {
 }
 
 fun String?.filterMaritalStatus(): String? {
+    val objectJs = JSONObject(JSON_FILTERS)
+    val marriageStatus = objectJs.getJSONObject("marriageStatus")
+    val kawinArray = marriageStatus.getJSONArray("kawin")
+    val belumArray = marriageStatus.getJSONArray("belum")
+    val ceraiArray = marriageStatus.getJSONArray("cerai")
+    val hidupArray = marriageStatus.getJSONArray("hidup")
+
     this?.let {
-        if (it.startsWith("KAW", true)) {
-            return MARITAL_MERRIED
+        for (i in 0 until kawinArray.length()) {
+            if (it.contains(kawinArray.getString(i), true)) {
+                for (j in 0 until belumArray.length()) {
+                    if (it.contains(belumArray.getString(j), true)) {
+                        return MARITAL_SINGLE
+                    }
+                }
+                return MARITAL_MERRIED
+            }
         }
-        if (it.startsWith("BEL", true)) {
-            return MARITAL_SINGLE
+        for (i in 0 until ceraiArray.length()) {
+            if (it.contains(ceraiArray.getString(i), true)) {
+                for (j in 0 until hidupArray.length()) {
+                    if (it.contains(hidupArray.getString(j), true)) {
+                        return MARITAL_DIVORCED
+                    }
+                }
+                return MARITAL_DEATH_DIVORCE
+            }
         }
-        if ((it.contains("MATI", true) || it.contains("ATI")) && it.contains("CER")) {
-            return MARITAL_DEATH_DIVORCE
-        }
-        if ((it.contains("HID", true) || it.contains("DUP")) && it.contains("CER")) {
-            return MARITAL_DIVORCED
-        }
+    }
+    return this
+}
+
+fun String?.filterBloodGroup(): String? {
+    this?.let {
+        return it.replace("8", "B").replace("0", "O").replace("4", "A")
     }
     return this
 }
@@ -296,41 +365,64 @@ fun String?.filterCitizenship(): String? {
 }
 
 fun String?.filterReligion(): String? {
+    val objectJs = JSONObject(JSON_FILTERS)
+    val religions = objectJs.getJSONObject("religions")
+    val islamArray = religions.getJSONArray("islam")
+    val kristenArray = religions.getJSONArray("kristen")
+    val katholikArray = religions.getJSONArray("katholik")
+    val budhaArray = religions.getJSONArray("budha")
+    val hinduArray = religions.getJSONArray("hindu")
+    val konghuchuArray = religions.getJSONArray("konghuchu")
+    val kepercayaanArray = religions.getJSONArray("kepercayaan")
+
     this?.let {
-        if ((it.startsWith("I", true) && it.contains("ISL", true)) || it.contains("LAM", true)
-        ) {
-            return RELIGION_ISLAM
-        } else if (it.startsWith("H", true) || it.contains(
-                "HIN",
-                true
-            ) || it.contains("NDU", true)
-        ) {
-            return RELIGION_HINDU
-        } else if (it.startsWith("B") || it.contains(
-                "BUD",
-                true
-            ) || it.contains("DHA", true)
-        ) {
-            return RELIGION_BUDHA
-        } else if (it.startsWith("KR") || it.contains(
-                "KRIS",
-                true
-            ) || it.contains("STEN", true)
-        ) {
-            return RELIGION_KRISTEN
-        } else if (it.startsWith("KA") || it.contains(
-                "KAT",
-                true
-            ) || it.contains("LIK", true) || it.contains("THO", true)
-        ) {
-            return RELIGION_KATHOLIK
-        } else if (it.startsWith("KONG") || (it.contains(
-                "HU",
-                true
-            ) && it.contains("CU", true))
-        ) {
-            return RELIGION_KONGHUCU
+        for (i in 0 until islamArray.length()) {
+            if (it.contains(islamArray.getString(i), true)) {
+                return RELIGION_ISLAM
+            }
         }
+        for (i in 0 until kristenArray.length()) {
+            if (it.contains(kristenArray.getString(i), true)) {
+                return RELIGION_KRISTEN
+            }
+        }
+        for (i in 0 until hinduArray.length()) {
+            if (it.contains(hinduArray.getString(i), true)) {
+                return RELIGION_HINDU
+            }
+        }
+
+        for (i in 0 until budhaArray.length()) {
+            if (it.contains(budhaArray.getString(i), true)) {
+                return RELIGION_BUDHA
+            }
+        }
+
+        for (i in 0 until katholikArray.length()) {
+            if (it.contains(katholikArray.getString(i), true)) {
+                return RELIGION_KATHOLIK
+            }
+        }
+
+        for (i in 0 until konghuchuArray.length()) {
+            if (it.contains(konghuchuArray.getString(i), true)) {
+                return RELIGION_KONGHUCHU
+            }
+        }
+
+        for (i in 0 until kepercayaanArray.length()) {
+            if (it.contains(kepercayaanArray.getString(i), true)) {
+                if (it.contains("TERH", true) || it.contains("ADA", true) || it.contains(
+                        "ADAP",
+                        true
+                    )
+                ) {
+                    return RELIGION_KEPERCAYAAN_TERHADAP_TUHAN_YME
+                }
+                return RELIGION_KEPERCAYAAN
+            }
+        }
+
     }
     return this
 }
@@ -348,14 +440,19 @@ const val MARITAL_DIVORCED = "CERAI HIDUP"
 
 const val GENDER_MALE = "LAKI-LAKI"
 const val GENDER_FEMALE = "PEREMPUAN"
+const val GENDER_FEMALE_2 = "WANITA"
 const val RELIGION_ISLAM = "ISLAM"
 const val RELIGION_KRISTEN = "KRISTEN"
 const val RELIGION_HINDU = "HINDU"
 const val RELIGION_KATHOLIK = "KATHOLIK"
 const val RELIGION_BUDHA = "BUDHA"
-const val RELIGION_KONGHUCU = "KONGHUCU"
+const val RELIGION_KONGHUCHU = "KONGHUCHU"
+const val RELIGION_KEPERCAYAAN = "KEPERCAYAAN"
+const val RELIGION_KEPERCAYAAN_TERHADAP_TUHAN_YME = "KEPERCAYAAN TERHADAP TUHAN YME"
 const val TAG_OCR = "OCRLibrary"
 const val REGEX_TGL_LAHIR = "\\d\\d-\\d\\d-\\d\\d\\d\\d"
-const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|LAKI"
+const val REGEX_JENIS_KELAMIN = "LAKI-LAKI|PEREMPUAN|WANITA|PRIA|LAKI|LAKILAKI"
 const val REGEX_RT_RW = "\\d\\d\\d\\/\\d\\d\\d"
 const val REGEX_CAPS = "[A-Z0-9-/ ]{3,}+"
+const val JSON_FILTERS =
+    "{\"religions\":{\"islam\":[\"sl\",\"la\",\"am\",\"isl\",\"sla\",\"lam\",\"isla\",\"slam\",\"islam\"],\"kristen\":[\"kr\",\"ri\",\"st\",\"en\",\"kri\",\"ris\",\"ist\",\"ste\",\"ten\",\"kris\",\"rist\",\"iste\",\"sten\",\"krist\",\"riste\",\"isten\",\"kriste\",\"risten\",\"kristen\"],\"katholik\":[\"ka\",\"at\",\"to\",\"ol\",\"lh\",\"hi\",\"ik\",\"kat\",\"ath\",\"tho\",\"tol\",\"oli\",\"lik\",\"kath\",\"atho\",\"thol\",\"holi\",\"olik\",\"katho\",\"athol\",\"tholi\",\"holik\",\"kathol\",\"atholi\",\"tholik\",\"katholi\",\"atholik\",\"katholik\"],\"budha\":[\"bu\",\"ud\",\"dh\",\"ha\",\"bud\",\"udh\",\"dha\",\"budh\",\"udha\",\"budha\"],\"hindu\":[\"hi\",\"in\",\"nd\",\"du\",\"hin\",\"ind\",\"ndu\",\"hind\",\"indu\",\"hindu\"],\"konghuchu\":[\"ko\",\"on\",\"ng\",\"gh\",\"hu\",\"uc\",\"ch\",\"hu\",\"kon\",\"ong\",\"ngh\",\"ghu\",\"huc\",\"uch\",\"chu\",\"kong\",\"ongh\",\"nghu\",\"ghuc\",\"huch\",\"uchu\",\"kongh\",\"onghu\",\"nghuc\",\"ghuch\",\"huchu\",\"konghu\",\"onghuc\",\"nghuch\",\"ghuchu\",\"konghuc\",\"onghuch\",\"nghcuchu\",\"konghuch\",\"onghuchu\",\"konghuchu\"],\"kepercayaan\":[\"ke\",\"ep\",\"pe\",\"er\",\"rc\",\"ca\",\"ay\",\"ya\",\"aa\",\"an\",\"kep\",\"epe\",\"per\",\"erc\",\"rca\",\"cay\",\"aya\",\"yaa\",\"aan\",\"kepe\",\"eper\",\"perc\",\"erca\",\"rcay\",\"caya\",\"ayaa\",\"yaan\",\"keper\",\"eperc\",\"perca\",\"ercay\",\"rcaya\",\"cayaa\",\"ayaan\",\"keperc\",\"eperca\",\"percay\",\"ercaya\",\"rcayaa\",\"cayaan\",\"keperca\",\"epercay\",\"percaya\",\"ercayaa\",\"rcayaan\",\"kepercay\",\"epercaya\",\"percayaa\",\"ercayaan\",\"kepercaya\",\"epercayaa\",\"percayaan\",\"kepercayaa\",\"epercayaan\",\"kepercayaan\"]},\"marriageStatus\":{\"kawin\":[\"ka\",\"aw\",\"wi\",\"in\",\"kaw\",\"awi\",\"win\",\"kawi\",\"awin\",\"kawin\"],\"belum\":[\"be\",\"el\",\"lu\",\"um\",\"bel\",\"elu\",\"lum\",\"belu\",\"elum\",\"belum\"],\"cerai\":[\"ce\",\"er\",\"ra\",\"ai\",\"cer\",\"era\",\"rai\",\"cera\",\"erai\",\"cerai\"],\"hidup\":[\"hi\",\"id\",\"du\",\"up\",\"hid\",\"idu\",\"dup\",\"hidu\",\"idup\",\"hidup\"]},\"numberValidation\":{\"0\":[\"o\",\"O\"],\"1\":[\"L\",\"I\",\"l\",\"i\",\"J\",\"j\"],\"2\":[\"Z\",\"z\"],\"3\":[\"B\"],\"4\":[\"A\"],\"5\":[\"S\",\"s\"],\"6\":[\"b\",\"G\"],\"7\":[\"T\"],\"8\":[\"R\"],\"9\":[\"g\",\"q\"]}}"

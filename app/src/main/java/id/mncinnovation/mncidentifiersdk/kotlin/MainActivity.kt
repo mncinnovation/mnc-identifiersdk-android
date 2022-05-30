@@ -2,7 +2,6 @@ package id.mncinnovation.mncidentifiersdk.kotlin
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,15 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
-import id.mncinnovation.identification.core.common.EXTRA_RESULT
-import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
-import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
-import id.mncinnovation.ocr.CaptureKtpActivity
 import id.mncinnovation.ocr.MNCIdentifierOCR
-import id.mncinnovation.ocr.ScanKTPActivity
-import id.mncinnovation.ocr.model.CaptureKtpResult
-import id.mncinnovation.ocr.model.Ktp
+import id.mncinnovation.ocr.ScanOCRActivity
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
@@ -29,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         with(binding) {
             btnScanKtp.setOnClickListener {
-                resultLauncherOcr.launch(Intent(this@MainActivity, ScanKTPActivity::class.java))
+                resultLauncherOcr.launch(Intent(this@MainActivity, ScanOCRActivity::class.java))
             }
 
             btnCaptureKtp.setOnClickListener {
@@ -55,12 +48,12 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
-                captureKtpResult?.let { ktpResult ->
+                val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
+                captureOCRResult?.let { ktpResult ->
                     ktpResult.getBitmapImage(this)?.let {
                         binding.ivKtp.setImageBitmap(it)
                     }
-                    binding.tvScanKtp.text = captureKtpResult.toString()
+                    binding.tvScanKtp.text = captureOCRResult.toString()
                 }
             }
         }

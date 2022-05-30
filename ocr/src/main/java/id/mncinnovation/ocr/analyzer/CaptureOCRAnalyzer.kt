@@ -10,7 +10,7 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import id.mncinnovation.identification.core.utils.BitmapUtils
 
-class CaptureKtpAnalyzer(private val listener: CaptureKtpListener) :
+class CaptureOCRAnalyzer(private val listener: CaptureKtpListener) :
     ImageAnalysis.Analyzer {
 
     private val localModel =

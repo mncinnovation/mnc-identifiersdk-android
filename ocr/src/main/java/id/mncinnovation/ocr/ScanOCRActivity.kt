@@ -2,33 +2,31 @@ package id.mncinnovation.ocr
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
-import id.mncinnovation.ocr.analyzer.ScanKtpAnalyzer
+import id.mncinnovation.ocr.analyzer.ScanOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpListener
 import id.mncinnovation.ocr.analyzer.Status
-import id.mncinnovation.ocr.databinding.ActivityScanKtpactivityBinding
-import id.mncinnovation.ocr.model.CaptureKtpResult
-import id.mncinnovation.ocr.model.Ktp
+import id.mncinnovation.ocr.databinding.ActivityScanOcrBinding
+import id.mncinnovation.ocr.model.CaptureOCRResult
+import id.mncinnovation.ocr.model.OCRValue
 
-class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
-    private lateinit var binding: ActivityScanKtpactivityBinding
+class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
+    private lateinit var binding: ActivityScanOcrBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityScanKtpactivityBinding.inflate(layoutInflater, rootView, true)
+        binding = ActivityScanOcrBinding.inflate(layoutInflater, rootView, true)
         binding.ivBack.setOnClickListener {
             onBackPressed()
         }
@@ -44,7 +42,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
 
 
         val analysisUseCase = ImageAnalysis.Builder().build().also {
-            it.setAnalyzer(cameraExecutor, ScanKtpAnalyzer(this))
+            it.setAnalyzer(cameraExecutor, ScanOCRAnalyzer(this))
         }
 
         // Must unbind the use-cases before rebinding them
@@ -59,7 +57,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
             // Attach the viewfinder's surface provider to preview use case
             previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
         } catch (exc: Exception) {
-            Log.e(CaptureKtpActivity.TAG, "Use case binding failed", exc)
+            Log.e(CaptureOCRActivity.TAG, "Use case binding failed", exc)
         }
     }
 
@@ -87,13 +85,13 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
         binding.progressBar.progress = progress
     }
 
-    override fun onScanComplete(ktp: Ktp) {
-        ktp.bitmap?.let {
+    override fun onScanComplete(ocrValue: OCRValue) {
+        ocrValue.bitmap?.let {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
             val scanResult =
-                CaptureKtpResult(true, "Success", bitmapuri, ktp.apply { bitmap = it })
-            val intent = Intent(this@ScanKTPActivity, ConfirmationActivity::class.java).apply {
+                CaptureOCRResult(true, "Success", bitmapuri, ocrValue.apply { bitmap = it })
+            val intent = Intent(this@ScanOCRActivity, ConfirmationActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }
             resultLauncherConfirm.launch(intent)
@@ -108,7 +106,7 @@ class ScanKTPActivity : BaseCameraActivity(), ScanKtpListener {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                val captureKtpResult = MNCIdentifierOCR.getOCRResult(data)
                 captureKtpResult?.let { scanResult ->
                     val intent = Intent().apply {
                         putExtra(EXTRA_RESULT, scanResult)

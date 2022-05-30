@@ -7,7 +7,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
-import id.mncinnovation.ocr.model.CaptureKtpResult
+import id.mncinnovation.ocr.model.CaptureOCRResult
 
 @Keep
 object MNCIdentifierOCR {
@@ -16,11 +16,11 @@ object MNCIdentifierOCR {
     /**
      * Start capture
      * @param intent an Intent data from activity result
-     * @return an CaptureKtpResult
+     * @return an CaptureOCRResult
      */
     @JvmStatic
-    fun getCaptureKtpResult(intent: Intent?): CaptureKtpResult? {
-        return intent?.getParcelableExtra(EXTRA_RESULT) as CaptureKtpResult?
+    fun getOCRResult(intent: Intent?): CaptureOCRResult? {
+        return intent?.getParcelableExtra(EXTRA_RESULT) as CaptureOCRResult?
     }
 
     /**
@@ -92,7 +92,7 @@ object MNCIdentifierOCR {
     }
 
     private fun getIntent(context: Context, withFlash: Boolean?): Intent {
-        return Intent(context, CaptureKtpActivity::class.java)
+        return Intent(context, CaptureOCRActivity::class.java)
             .putExtra(
                 EXTRA_WITH_FLASH,
                 withFlash

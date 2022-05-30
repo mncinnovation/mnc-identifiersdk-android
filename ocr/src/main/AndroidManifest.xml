@@ -14,10 +14,10 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
         <activity
-            android:name=".CaptureKtpActivity"
+            android:name=".CaptureOCRActivity"
             android:exported="false" />
         <activity
-            android:name=".ScanKTPActivity"
+            android:name=".ScanOCRActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
     </application>

@@ -20,8 +20,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class id.mncinnovation.ocr.CaptureKtpActivity { *; }
--keep class id.mncinnovation.ocr.ScanKTPActivity { *; }
+-keep class id.mncinnovation.ocr.CaptureOCRActivity { *; }
+-keep class id.mncinnovation.ocr.ScanOCRActivity { *; }
 -keep class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
 -keep class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
 -keepclassmembers class id.mncinnovation.ocr.MNCIdentifierOCR { *; }

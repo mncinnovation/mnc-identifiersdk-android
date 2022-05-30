@@ -29,11 +29,11 @@ import id.mncinnovation.identification.core.common.showCustomToast
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
-import id.mncinnovation.ocr.analyzer.CaptureKtpAnalyzer
+import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
 import id.mncinnovation.ocr.analyzer.Status
-import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerBinding
-import id.mncinnovation.ocr.model.CaptureKtpResult
+import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerOcrBinding
+import id.mncinnovation.ocr.model.CaptureOCRResult
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
 import id.mncinnovation.ocr.utils.extractEktp
@@ -44,7 +44,7 @@ import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 @Suppress("DEPRECATION")
-class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
+class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
     private lateinit var btnFlash: ImageButton
     private lateinit var gifLoading: LottieAnimationView
@@ -100,7 +100,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
             )
         }
         uiContainer =
-            LayoutInflater.from(this).inflate(R.layout.activity_capture_ktp, rootView, true)
+            LayoutInflater.from(this).inflate(R.layout.activity_capture_ocr, rootView, true)
         btnFlash = uiContainer.findViewById(R.id.ib_flash_mode)
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
@@ -139,7 +139,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
 
 
         val analysisUseCase = ImageAnalysis.Builder().build().also {
-            it.setAnalyzer(cameraExecutor, CaptureKtpAnalyzer(this))
+            it.setAnalyzer(cameraExecutor, CaptureOCRAnalyzer(this))
         }
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
@@ -206,7 +206,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
                     .addOnSuccessListener { text ->
                         val ekp = text.extractEktp()
                         val ocrResult =
-                            CaptureKtpResult(true, "Success", resultUri, ekp)
+                            CaptureOCRResult(true, "Success", resultUri, ekp)
                         setResult(RESULT_OK, intent)
                         hideProgressDialog()
                         val intent = Intent(this, ConfirmationActivity::class.java).apply {
@@ -249,7 +249,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
-                val captureKtpResult = MNCIdentifierOCR.getCaptureKtpResult(data)
+                val captureKtpResult = MNCIdentifierOCR.getOCRResult(data)
                 captureKtpResult?.let { scanResult ->
                     val intent = Intent().apply {
                         putExtra(EXTRA_RESULT, scanResult)
@@ -282,7 +282,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
 
     private fun showPopupHoldScanDialog() {
         if (timer != null) return
-        val bindingPopup = PopupBottomsheetScanTimerBinding.inflate(LayoutInflater.from(this))
+        val bindingPopup = PopupBottomsheetScanTimerOcrBinding.inflate(LayoutInflater.from(this))
         var counter = COUNTDOWN_TIME
 
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogThemeOCR)
@@ -309,7 +309,7 @@ class CaptureKtpActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     companion object {
-        const val TAG = "CaptureKtpActivity"
+        const val TAG = "CaptureOCRActivity"
         const val COUNTDOWN_TIME = 3
     }
 }
