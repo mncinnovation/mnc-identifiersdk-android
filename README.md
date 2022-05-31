@@ -143,16 +143,22 @@ AndroidManifest.xml
 
 ```xml
 
-<application ...>...<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
-android:value="ocr" /></application>
+<application ...>
+	...
+	<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
+		   android:value="ocr" />
+</application>
 ```
 
 If you use face and ocr, AndroidManifest.xml
 
 ```xml
 
-<application ...>...<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
-android:value="face, ocr" /></application>
+<application ...>
+	...
+	<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
+		   android:value="face, ocr" />
+</application>
 ```
 
 #### How To Use
@@ -183,7 +189,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
     if (resultCode == RESULT_OK) {
         when (requestCode) {
             CAPTURE_EKTP_REQUEST_CODE -> {
-                val captureOCRResult = MNCIdentifierOCR.getCaptureOCRResult(data)
+                val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { result ->
                     result.getBitmapImage(this)?.let {
                         //get image result
@@ -203,7 +209,7 @@ private val resultLauncherOcr =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data = result.data
-            val captureOCRResult = MNCIdentifierOCR.getCaptureOCRResult(data)
+            val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
             captureOCRResult?.let { ocrResult ->
                 ocrResult.getBitmapImage(this)?.let {
                     binding.ivKtp.setImageBitmap(it)
