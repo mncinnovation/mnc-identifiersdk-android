@@ -19,6 +19,7 @@
         app:tint="@android:color/white" />
 
     <TextView
+        android:id="@+id/tv_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_xsmall"

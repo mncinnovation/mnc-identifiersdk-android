@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.widget.doAfterTextChanged
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
@@ -19,7 +20,7 @@ import java.util.*
 
 class ConfirmationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityConfirmationOcrBinding
-    private var state = StateConfirm.FILL_STATE
+    private val viewModel = ConfirmationOCRViewModel()
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
     private val maritalsStatus =
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
@@ -105,6 +106,112 @@ class ConfirmationActivity : AppCompatActivity() {
                     etJob.setText(pekerjaan)
                     etCitizenship.setText(kewarganegaraan)
                     etExpiredDate.setText(berlakuHingga)
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etNik.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    nik = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etFullname.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    nama = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etBornPlace.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    tempatLahir = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etBirthdate.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    tglLahir = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etAddress.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    alamat = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etRt.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    rt = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etRw.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    rw = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etProvince.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    provinsi = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etCity.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    kabKot = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etVillage.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    kelurahan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etDistrict.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    kecamatan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etReligion.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    agama = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etJob.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    pekerjaan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etCitizenship.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    kewarganegaraan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etExpiredDate.doAfterTextChanged {
+                captureKtpResult?.ocrValue?.apply {
+                    berlakuHingga = it.toString()
+                    viewModel.checkValues(this)
                 }
             }
 
@@ -117,13 +224,13 @@ class ConfirmationActivity : AppCompatActivity() {
                 }.show()
             }
 
-            ivBack.setOnClickListener {
-                onBackPressed()
-            }
+            val backListener = View.OnClickListener { onBackPressed() }
+            ivBack.setOnClickListener(backListener)
+            tvBack.setOnClickListener(backListener)
 
             btnNext.setOnClickListener {
-                if (state == StateConfirm.FILL_STATE) {
-                    setStateUpdate(StateConfirm.CONFIRM_STATE)
+                if (viewModel.state.value == StateConfirm.FILL_STATE) {
+                    viewModel.updateState()
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
                     captureKtpResult?.ocrValue?.apply {
@@ -174,19 +281,27 @@ class ConfirmationActivity : AppCompatActivity() {
                     finish()
                 }
             }
+
+            viewModel.isShouldEnableBtnNext.observe(this@ConfirmationActivity) { enable ->
+                btnNext.isEnabled = enable
+                btnNext.alpha = if (enable) 1.0f else 0.3f
+            }
+
+            viewModel.state.observe(this@ConfirmationActivity) { state ->
+                setStateUpdate(state)
+            }
         }
     }
 
     override fun onBackPressed() {
-        if (state == StateConfirm.FILL_STATE) {
+        if (viewModel.state.value == StateConfirm.FILL_STATE) {
             super.onBackPressed()
         } else {
-            setStateUpdate(StateConfirm.FILL_STATE)
+            viewModel.updateState()
         }
     }
 
     private fun setStateUpdate(state: StateConfirm) {
-        this.state = state
         val drawableEditField = ContextCompat.getDrawable(
             context,
             R.drawable.ic_edit
@@ -380,9 +495,4 @@ class ConfirmationActivity : AppCompatActivity() {
 
     val context: Context
         get() = this@ConfirmationActivity
-}
-
-enum class StateConfirm {
-    FILL_STATE,
-    CONFIRM_STATE
 }
