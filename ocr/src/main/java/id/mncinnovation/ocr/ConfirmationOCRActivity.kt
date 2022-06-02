@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
@@ -56,7 +57,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
                     } else {
-                        ivIdentity.setImageURI(it.imageUri)
+                        ivIdentity.setImageURI(it.imagePath?.toUri())
                     }
 
                     etNik.setText(nik)

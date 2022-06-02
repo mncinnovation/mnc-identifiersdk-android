@@ -206,7 +206,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                     .addOnSuccessListener { text ->
                         val ekp = text.extractEktp()
                         val ocrResult =
-                            CaptureOCRResult(true, "Success", resultUri, ekp)
+                            CaptureOCRResult(true, "Success", resultUri.path, ekp)
                         setResult(RESULT_OK, intent)
                         hideProgressDialog()
                         val intent = Intent(this, ConfirmationActivity::class.java).apply {

@@ -90,7 +90,7 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
             val scanResult =
-                CaptureOCRResult(true, "Success", bitmapuri, ocrValue.apply { bitmap = it })
+                CaptureOCRResult(true, "Success", bitmapuri.path, ocrValue.apply { bitmap = it })
             val intent = Intent(this@ScanOCRActivity, ConfirmationActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }
