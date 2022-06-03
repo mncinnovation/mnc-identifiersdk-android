@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
+import id.mncinnovation.identification.core.common.CAPTURE_EKTP_REQUEST_CODE
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
 import id.mncinnovation.ocr.model.OCRResultModel
@@ -21,7 +22,6 @@ annotation class KeepDocumented
 
 @Keep
 object MNCIdentifierOCR {
-    private var CAPTURE_EKTP_REQUEST_CODE = 102
 
     /**
      * Start capture
