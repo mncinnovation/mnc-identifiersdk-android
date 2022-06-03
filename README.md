@@ -196,7 +196,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
                         binding.ivKtpCapture.setImageBitmap(it)
                     }
                     //show all of data result
-                    binding.tvCaptureKtp.text = result.ocrValue.toString()
+                    binding.tvCaptureKtp.text = result.ktpModel.toString()
                 }
 
             }

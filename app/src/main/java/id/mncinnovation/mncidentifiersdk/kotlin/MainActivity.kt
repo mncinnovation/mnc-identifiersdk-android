@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
                 val data = result.data
                 val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { ktpResult ->
-                    ktpResult.getBitmapImage(this)?.let {
+                    ktpResult.getBitmapImage()?.let {
                         binding.ivKtp.setImageBitmap(it)
                     }
                     binding.tvScanKtp.text = captureOCRResult.toString()

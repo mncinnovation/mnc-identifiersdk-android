@@ -5,22 +5,33 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
+import id.mncinnovation.identification.core.common.CAPTURE_EKTP_REQUEST_CODE
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
-import id.mncinnovation.ocr.model.CaptureOCRResult
+import id.mncinnovation.ocr.model.OCRResultModel
+
+
+@Retention(AnnotationRetention.SOURCE)
+@Target(
+    AnnotationTarget.CLASS, AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.EXPRESSION
+)
+@MustBeDocumented
+annotation class KeepDocumented
 
 @Keep
 object MNCIdentifierOCR {
-    private var CAPTURE_EKTP_REQUEST_CODE = 102
 
     /**
      * Start capture
      * @param intent an Intent data from activity result
-     * @return an CaptureOCRResult
+     * @return an OCRResultModel
      */
     @JvmStatic
-    fun getOCRResult(intent: Intent?): CaptureOCRResult? {
-        return intent?.getParcelableExtra(EXTRA_RESULT) as CaptureOCRResult?
+    @KeepDocumented
+    fun getOCRResult(@KeepDocumented intent: Intent?): OCRResultModel? {
+        return intent?.getParcelableExtra(EXTRA_RESULT) as OCRResultModel?
     }
 
     /**
@@ -28,8 +39,9 @@ object MNCIdentifierOCR {
      * @param activity an Activity
      */
     @JvmStatic
+    @KeepDocumented
     fun startCapture(
-        activity: Activity
+        @KeepDocumented activity: Activity
     ) {
         start(activity)
     }
@@ -40,9 +52,10 @@ object MNCIdentifierOCR {
      * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      */
     @JvmStatic
+    @KeepDocumented
     fun startCapture(
-        activity: Activity,
-        withFlash: Boolean? = false
+        @KeepDocumented activity: Activity,
+        @KeepDocumented withFlash: Boolean? = false
     ) {
         start(activity, withFlash)
     }
@@ -54,10 +67,11 @@ object MNCIdentifierOCR {
      * @param requestCode an unique request code for activity result
      */
     @JvmStatic
+    @KeepDocumented
     fun startCapture(
-        activity: Activity,
-        withFlash: Boolean? = false,
-        requestCode: Int? = CAPTURE_EKTP_REQUEST_CODE
+        @KeepDocumented activity: Activity,
+        @KeepDocumented withFlash: Boolean? = false,
+        @KeepDocumented requestCode: Int? = CAPTURE_EKTP_REQUEST_CODE
     ) {
         start(activity, withFlash, requestCode)
     }
@@ -69,7 +83,12 @@ object MNCIdentifierOCR {
      * @param requestCode an unique request code for activity result
      */
     @JvmStatic
-    fun start(activity: Activity, withFlash: Boolean? = null, requestCode: Int? = null) {
+    @KeepDocumented
+    fun start(
+        @KeepDocumented activity: Activity,
+        @KeepDocumented withFlash: Boolean? = null,
+        @KeepDocumented requestCode: Int? = null
+    ) {
         activity.startActivityForResult(
             getIntent(activity, withFlash),
             requestCode ?: CAPTURE_EKTP_REQUEST_CODE
@@ -83,10 +102,11 @@ object MNCIdentifierOCR {
      * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      */
     @JvmStatic
+    @KeepDocumented
     fun startCapture(
-        context: Context,
-        activityResultLauncher: ActivityResultLauncher<Intent>,
-        withFlash: Boolean? = null
+        @KeepDocumented context: Context,
+        @KeepDocumented activityResultLauncher: ActivityResultLauncher<Intent>,
+        @KeepDocumented withFlash: Boolean? = null
     ) {
         activityResultLauncher.launch(getIntent(context, withFlash))
     }

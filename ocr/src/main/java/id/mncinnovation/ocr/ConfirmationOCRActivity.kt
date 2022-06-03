@@ -9,6 +9,8 @@ import android.widget.ArrayAdapter
 import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.core.widget.doAfterTextChanged
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
@@ -18,7 +20,7 @@ import java.util.*
 
 class ConfirmationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityConfirmationOcrBinding
-    private var state = StateConfirm.FILL_STATE
+    private val viewModel = ConfirmationOCRViewModel()
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
     private val maritalsStatus =
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
@@ -51,15 +53,16 @@ class ConfirmationActivity : AppCompatActivity() {
                 bloodGroups
             )
             captureKtpResult?.let {
-                with(it.ocrValue) {
+                with(it.ktp) {
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
                     } else {
-                        ivIdentity.setImageURI(it.imageUri)
+                        ivIdentity.setImageURI(it.imagePath?.toUri())
                     }
 
                     etNik.setText(nik)
+                    checkNIK(nik ?: "")
                     etFullname.setText(nama)
                     etBornPlace.setText(tempatLahir)
                     etBirthdate.setText(tglLahir)
@@ -104,6 +107,113 @@ class ConfirmationActivity : AppCompatActivity() {
                     etJob.setText(pekerjaan)
                     etCitizenship.setText(kewarganegaraan)
                     etExpiredDate.setText(berlakuHingga)
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etNik.doAfterTextChanged {
+                checkNIK(it.toString())
+                captureKtpResult?.ktp?.apply {
+                    nik = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etFullname.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    nama = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etBornPlace.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    tempatLahir = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etBirthdate.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    tglLahir = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etAddress.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    alamat = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etRt.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    rt = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etRw.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    rw = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etProvince.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    provinsi = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etCity.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    kabKot = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etVillage.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    kelurahan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etDistrict.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    kecamatan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etReligion.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    agama = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etJob.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    pekerjaan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etCitizenship.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    kewarganegaraan = it.toString()
+                    viewModel.checkValues(this)
+                }
+            }
+
+            etExpiredDate.doAfterTextChanged {
+                captureKtpResult?.ktp?.apply {
+                    berlakuHingga = it.toString()
+                    viewModel.checkValues(this)
                 }
             }
 
@@ -116,16 +226,16 @@ class ConfirmationActivity : AppCompatActivity() {
                 }.show()
             }
 
-            ivBack.setOnClickListener {
-                onBackPressed()
-            }
+            val backListener = View.OnClickListener { onBackPressed() }
+            ivBack.setOnClickListener(backListener)
+            tvBack.setOnClickListener(backListener)
 
             btnNext.setOnClickListener {
-                if (state == StateConfirm.FILL_STATE) {
-                    setStateUpdate(StateConfirm.CONFIRM_STATE)
+                if (viewModel.state.value == StateConfirm.FILL_STATE) {
+                    viewModel.updateState()
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
-                    captureKtpResult?.ocrValue?.apply {
+                    captureKtpResult?.ktp?.apply {
                         nik = etNik.text.toString()
                         nama = etFullname.text.toString()
                         tempatLahir = etBornPlace.text.toString()
@@ -173,19 +283,31 @@ class ConfirmationActivity : AppCompatActivity() {
                     finish()
                 }
             }
+
+            viewModel.isShouldEnableBtnNext.observe(this@ConfirmationActivity) { enable ->
+                btnNext.isEnabled = enable
+                btnNext.alpha = if (enable) 1.0f else 0.3f
+            }
+
+            viewModel.state.observe(this@ConfirmationActivity) { state ->
+                setStateUpdate(state)
+            }
         }
     }
 
+    private fun checkNIK(value: String) {
+        binding.etNik.error = if (value.length < 16) "NIK harus 16 karakter" else null
+    }
+
     override fun onBackPressed() {
-        if (state == StateConfirm.FILL_STATE) {
+        if (viewModel.state.value == StateConfirm.FILL_STATE) {
             super.onBackPressed()
         } else {
-            setStateUpdate(StateConfirm.FILL_STATE)
+            viewModel.updateState()
         }
     }
 
     private fun setStateUpdate(state: StateConfirm) {
-        this.state = state
         val drawableEditField = ContextCompat.getDrawable(
             context,
             R.drawable.ic_edit
@@ -379,9 +501,4 @@ class ConfirmationActivity : AppCompatActivity() {
 
     val context: Context
         get() = this@ConfirmationActivity
-}
-
-enum class StateConfirm {
-    FILL_STATE,
-    CONFIRM_STATE
 }

@@ -18,8 +18,8 @@ import id.mncinnovation.ocr.analyzer.ScanOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpListener
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.ActivityScanOcrBinding
-import id.mncinnovation.ocr.model.CaptureOCRResult
-import id.mncinnovation.ocr.model.OCRValue
+import id.mncinnovation.ocr.model.OCRResultModel
+import id.mncinnovation.ocr.model.KTPModel
 
 class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
     private lateinit var binding: ActivityScanOcrBinding
@@ -85,12 +85,12 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
         binding.progressBar.progress = progress
     }
 
-    override fun onScanComplete(ocrValue: OCRValue) {
-        ocrValue.bitmap?.let {
+    override fun onScanComplete(ktpModel: KTPModel) {
+        ktpModel.bitmap?.let {
             val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
 
             val scanResult =
-                CaptureOCRResult(true, "Success", bitmapuri, ocrValue.apply { bitmap = it })
+                OCRResultModel(true, "Success", bitmapuri.path, ktpModel.apply { bitmap = it })
             val intent = Intent(this@ScanOCRActivity, ConfirmationActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }
