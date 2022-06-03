@@ -68,10 +68,10 @@ fun Text.extractEktp(): KTPModel {
 
                 line.text.startsWith("NIK") -> {
                     ektp.confidence++
-                    ektp.nik = (if (line.elements.size > 1)
+                    ektp.nik = ((if (line.elements.size > 1)
                         line.elements.last().text
                     else
-                        filterNik())?.cleanse("NIK")
+                        filterNik())?.cleanse("NIK"))?.replace("O", "0")
                 }
 
                 line.text.startsWith("Nama", true) -> {
