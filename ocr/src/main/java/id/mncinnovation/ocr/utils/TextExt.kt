@@ -1,7 +1,9 @@
 package id.mncinnovation.ocr.utils
 
+import android.util.Log
 import com.google.mlkit.vision.text.Text
-import id.mncinnovation.ocr.model.OCRValue
+import id.mncinnovation.ocr.BuildConfig
+import id.mncinnovation.ocr.model.KTPModel
 import org.json.JSONObject
 
 
@@ -28,9 +30,11 @@ fun Text.findInline(line: Text.Line): Text.Line? {
 }
 
 
-fun Text.extractEktp(): OCRValue {
-    val ektp = OCRValue()
-    ektp.rawText = text
+fun Text.extractEktp(): KTPModel {
+    val ektp = KTPModel()
+    if (BuildConfig.DEBUG) {
+        Log.d(TAG_OCR, "rawText : $text")
+    }
 
     val rtrw = REGEX_RT_RW.toRegex().find(text)
     rtrw?.value?.let {
@@ -64,10 +68,10 @@ fun Text.extractEktp(): OCRValue {
 
                 line.text.startsWith("NIK") -> {
                     ektp.confidence++
-                    ektp.nik = if (line.elements.size > 1)
+                    ektp.nik = (if (line.elements.size > 1)
                         line.elements.last().text
                     else
-                        filterNik()
+                        filterNik())?.cleanse("NIK")
                 }
 
                 line.text.startsWith("Nama", true) -> {
@@ -81,10 +85,10 @@ fun Text.extractEktp(): OCRValue {
                     //tempat lahir allcaps
                     val ttl = REGEX_CAPS.toRegex().findAll(line.text)
 
-                    ektp.tempatLahir = ttl.firstOrNull()?.value
+                    ektp.tempatLahir = ttl.firstOrNull()?.value?.trim()
                     ektp.tempatLahir?.let { ektp.confidence++ }
 
-                    ektp.tglLahir = ttl.elementAtOrNull(1)?.value
+                    ektp.tglLahir = ttl.elementAtOrNull(1)?.value?.trim()
                     ektp.tglLahir?.let { ektp.confidence++ }
                 }
 
@@ -254,38 +258,38 @@ fun Text.extractEktp(): OCRValue {
 }
 
 fun Text.extractKtp() {
-    val ocrValue = OCRValue()
+    val ktpModel = KTPModel()
     var lastProcessedPosition = 0
     textBlocks.forEach { block ->
         block.lines.forEach { line ->
             val result = "[A-Z0-9-/ ]{3,}+".toRegex().find(line.text)
             if (result != null) {
                 when (lastProcessedPosition) {
-                    0 -> ocrValue.provinsi = result.value.cleanse("PROVINSI")
-                    1 -> ocrValue.kabKot = result.value.cleanse("KOTA")
-                    2 -> ocrValue.nik = result.value
-                    3 -> ocrValue.nama = result.value
+                    0 -> ktpModel.provinsi = result.value.cleanse("PROVINSI")
+                    1 -> ktpModel.kabKot = result.value.cleanse("KOTA")
+                    2 -> ktpModel.nik = result.value
+                    3 -> ktpModel.nama = result.value
                     4 -> {
-                        ocrValue.tempatLahir = result.groupValues.firstOrNull()
-                        ocrValue.tglLahir = result.groupValues.elementAtOrNull(1)
+                        ktpModel.tempatLahir = result.groupValues.firstOrNull()
+                        ktpModel.tglLahir = result.groupValues.elementAtOrNull(1)
                     }
-                    5 -> ocrValue.jenisKelamin = result.value
-                    6 -> ocrValue.alamat = result.value
+                    5 -> ktpModel.jenisKelamin = result.value
+                    6 -> ktpModel.alamat = result.value
                     7 -> {
                         val rtrw = REGEX_RT_RW.toRegex().find(text)
                         rtrw?.value?.let {
-                            ocrValue.rt = it.split("/").first()
-                            ocrValue.rw = it.split("/").last()
+                            ktpModel.rt = it.split("/").first()
+                            ktpModel.rw = it.split("/").last()
                         }
-                        ocrValue.rt = result.value
+                        ktpModel.rt = result.value
                     }
-                    8 -> ocrValue.kelurahan = result.value
-                    9 -> ocrValue.kecamatan = result.value
-                    10 -> ocrValue.agama = result.value
-                    11 -> ocrValue.statusPerkawinan = result.value
-                    12 -> ocrValue.pekerjaan = result.value
-                    13 -> ocrValue.kewarganegaraan = result.value
-                    14 -> ocrValue.berlakuHingga = result.value
+                    8 -> ktpModel.kelurahan = result.value
+                    9 -> ktpModel.kecamatan = result.value
+                    10 -> ktpModel.agama = result.value
+                    11 -> ktpModel.statusPerkawinan = result.value
+                    12 -> ktpModel.pekerjaan = result.value
+                    13 -> ktpModel.kewarganegaraan = result.value
+                    14 -> ktpModel.berlakuHingga = result.value
                 }
                 lastProcessedPosition++
             }

@@ -1,11 +1,11 @@
 package id.mncinnovation.ocr.analyzer
 
-import id.mncinnovation.ocr.model.OCRValue
+import id.mncinnovation.ocr.model.KTPModel
 
 interface ScanKtpListener {
     fun onStatusChanged(status: Status)
     fun onProgress(progress: Int)
-    fun onScanComplete(ocrValue: OCRValue)
+    fun onScanComplete(ktpModel: KTPModel)
     fun onScanFailed(exception: Exception)
 }
 

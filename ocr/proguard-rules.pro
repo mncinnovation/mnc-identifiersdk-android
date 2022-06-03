@@ -22,7 +22,7 @@
 
 -keep class id.mncinnovation.ocr.CaptureOCRActivity { *; }
 -keep class id.mncinnovation.ocr.ScanOCRActivity { *; }
--keep class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
--keepclassmembers class id.mncinnovation.ocr.MNCIdentifierOCR { *; }
-
+-keep class id.mncinnovation.ocr.KeepDocumented { *; }
+-keep class id.mncinnovation.ocr.MNCIdentifierOCR { public void get*(android.content.Intent); }
+-keep class id.mncinnovation.ocr.MNCIdentifierOCR { public void start*(android.content.Intent); }
 -keep class id.mncinnovation.ocr.model.** { *; }

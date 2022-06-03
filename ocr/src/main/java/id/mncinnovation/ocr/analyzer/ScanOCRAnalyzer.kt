@@ -12,7 +12,7 @@ import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.utils.BitmapUtils
-import id.mncinnovation.ocr.model.OCRValue
+import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.utils.extractEktp
 
 class ScanOCRAnalyzer(private val listener: ScanKtpListener) :
@@ -28,7 +28,7 @@ class ScanOCRAnalyzer(private val listener: ScanKtpListener) :
             .build()
     private val objectDetector = ObjectDetection.getClient(option)
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private val listEktp = mutableListOf<OCRValue>()
+    private val listEktp = mutableListOf<KTPModel>()
 
     @SuppressLint( "UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
@@ -73,7 +73,7 @@ class ScanOCRAnalyzer(private val listener: ScanKtpListener) :
         }
     }
 
-    private fun List<OCRValue>.findBestResult(): OCRValue? {
+    private fun List<KTPModel>.findBestResult(): KTPModel? {
         val highestConfidence = maxByOrNull {
             it.confidence
         }?.apply {

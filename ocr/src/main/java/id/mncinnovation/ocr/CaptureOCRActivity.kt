@@ -33,7 +33,8 @@ import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerOcrBinding
-import id.mncinnovation.ocr.model.CaptureOCRResult
+import id.mncinnovation.ocr.model.OCRResultModel
+import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
 import id.mncinnovation.ocr.utils.extractEktp
@@ -81,7 +82,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             override fun onCurrentLightChanged(value: Int) {
                 val isLowLight = value < 5
                 if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
-                    showCustomToast("Cahaya terlalu gelap, silahkan mencari tempat yang lebih terang")
+                    showCustomToast(if (btnFlash.visibility == View.VISIBLE) "Cahaya terlalu gelap, bisa menggunakan flash" else "Cahaya terlalu gelap, silahkan mencari tempat yang lebih terang")
                 }
             }
         })
@@ -206,7 +207,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                     .addOnSuccessListener { text ->
                         val ekp = text.extractEktp()
                         val ocrResult =
-                            CaptureOCRResult(true, "Success", resultUri.path, ekp)
+                            OCRResultModel(true, "Success", resultUri.path, ekp)
                         setResult(RESULT_OK, intent)
                         hideProgressDialog()
                         val intent = Intent(this, ConfirmationActivity::class.java).apply {
@@ -273,6 +274,13 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     override fun onCaptureFailed(exception: Exception) {
         exception.printStackTrace()
+        setResult(
+            RESULT_CANCELED,
+            Intent().apply {
+                putExtra(EXTRA_RESULT, OCRResultModel(false, exception.message, null, KTPModel()))
+            }
+        )
+        finish()
     }
 
     private fun stopTimer() {
@@ -306,6 +314,16 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
         bottomSheetDialog?.setContentView(bindingPopup.root)
         bottomSheetDialog?.show()
+    }
+
+    override fun onBackPressed() {
+        setResult(
+            RESULT_CANCELED,
+            Intent().apply {
+                putExtra(EXTRA_RESULT, OCRResultModel(false, "Cancelled by user", null, KTPModel()))
+            }
+        )
+        super.onBackPressed()
     }
 
     companion object {

@@ -53,7 +53,7 @@ class ConfirmationActivity : AppCompatActivity() {
                 bloodGroups
             )
             captureKtpResult?.let {
-                with(it.ocrValue) {
+                with(it.ktp) {
 
                     if (bitmap != null) {
                         ivIdentity.setImageBitmap(bitmap)
@@ -62,6 +62,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     }
 
                     etNik.setText(nik)
+                    checkNIK(nik ?: "")
                     etFullname.setText(nama)
                     etBornPlace.setText(tempatLahir)
                     etBirthdate.setText(tglLahir)
@@ -111,105 +112,106 @@ class ConfirmationActivity : AppCompatActivity() {
             }
 
             etNik.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                checkNIK(it.toString())
+                captureKtpResult?.ktp?.apply {
                     nik = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etFullname.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     nama = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etBornPlace.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     tempatLahir = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etBirthdate.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     tglLahir = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etAddress.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     alamat = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etRt.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     rt = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etRw.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     rw = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etProvince.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     provinsi = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etCity.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     kabKot = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etVillage.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     kelurahan = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etDistrict.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     kecamatan = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etReligion.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     agama = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etJob.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     pekerjaan = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etCitizenship.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     kewarganegaraan = it.toString()
                     viewModel.checkValues(this)
                 }
             }
 
             etExpiredDate.doAfterTextChanged {
-                captureKtpResult?.ocrValue?.apply {
+                captureKtpResult?.ktp?.apply {
                     berlakuHingga = it.toString()
                     viewModel.checkValues(this)
                 }
@@ -233,7 +235,7 @@ class ConfirmationActivity : AppCompatActivity() {
                     viewModel.updateState()
                     scrollviewContent.post { scrollviewContent.fullScroll(ScrollView.FOCUS_UP) }
                 } else {
-                    captureKtpResult?.ocrValue?.apply {
+                    captureKtpResult?.ktp?.apply {
                         nik = etNik.text.toString()
                         nama = etFullname.text.toString()
                         tempatLahir = etBornPlace.text.toString()
@@ -291,6 +293,10 @@ class ConfirmationActivity : AppCompatActivity() {
                 setStateUpdate(state)
             }
         }
+    }
+
+    private fun checkNIK(value: String) {
+        binding.etNik.error = if (value.length < 16) "NIK harus 16 karakter" else null
     }
 
     override fun onBackPressed() {

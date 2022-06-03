@@ -3,17 +3,18 @@ package id.mncinnovation.ocr.model
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Parcelable
+import id.mncinnovation.identification.core.common.Result
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import java.io.File
 
 @Parcelize
-data class CaptureOCRResult(
-    val isSuccess: Boolean,
-    val errorMessage: String?,
-    val imagePath: String?,
-    val ocrValue: OCRValue
-) : Parcelable {
+data class OCRResultModel(
+    override val isSuccess: Boolean,
+    override val errorMessage: String?,
+    val imagePath: String? = null,
+    val ktp: KTPModel
+) : Result(), Parcelable {
     fun getBitmapImage(): Bitmap? {
         if (imagePath == null)
             return null
@@ -26,7 +27,7 @@ data class CaptureOCRResult(
         mutableMap["isSuccess"] = isSuccess
         mutableMap["errorMessage"] = errorMessage
         mutableMap["imagePath"] = imagePath
-        mutableMap["ocrValue"] = JSONObject(ocrValue.toJson())
+        mutableMap["ktp"] = JSONObject(ktp.toJson())
 
         val json = JSONObject(mutableMap)
 

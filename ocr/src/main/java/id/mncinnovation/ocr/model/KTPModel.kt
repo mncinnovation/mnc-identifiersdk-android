@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 
 @Parcelize
-data class OCRValue(
+data class KTPModel(
     var nik: String? = null,
     var nama: String? = null,
     var tempatLahir: String? = null,
@@ -26,7 +26,6 @@ data class OCRValue(
     var provinsi: String? = null,
     var kabKot: String? = null,
     var confidence: Int = 0,
-    var rawText: String? = null,
     var bitmap: Bitmap? = null
 ) : Parcelable {
     fun toJson(): String {
@@ -50,7 +49,6 @@ data class OCRValue(
         mutableMap["provinsi"] = provinsi
         mutableMap["kabKot"] = kabKot
         mutableMap["confidence"] = confidence
-        mutableMap["rawText"] = rawText
 
         val json = JSONObject(mutableMap)
         return json.toString()

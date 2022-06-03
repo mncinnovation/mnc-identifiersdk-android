@@ -1,6 +1,7 @@
 package id.mncinnovation.identification.core.base
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
@@ -11,6 +12,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.R
+import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.ResultImpl
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -29,14 +32,15 @@ abstract class BaseCameraActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this,
                 REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS)
+                REQUEST_CODE_PERMISSIONS
+            )
 
         } else {
             init()
         }
     }
 
-    private fun init(){
+    private fun init() {
         cameraExecutor = Executors.newSingleThreadExecutor()
         previewView.post {
             // Set up the camera and its use cases
@@ -64,7 +68,8 @@ abstract class BaseCameraActivity : AppCompatActivity() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onRequestPermissionsResult(
@@ -77,9 +82,17 @@ abstract class BaseCameraActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 init()
             } else {
-                Toast.makeText(this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
+                val errMsg = "Permissions not allowed by the user."
+                Toast.makeText(
+                    this,
+                    errMsg,
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                setResult(
+                    RESULT_CANCELED,
+                    Intent().putExtra(EXTRA_RESULT, ResultImpl(false, errMsg))
+                )
                 finish()
             }
         }
