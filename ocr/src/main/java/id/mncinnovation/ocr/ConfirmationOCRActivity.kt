@@ -237,9 +237,9 @@ class ConfirmationActivity : AppCompatActivity() {
                 } else {
                     captureKtpResult?.ktp?.apply {
                         nik = etNik.text.toString()
-                        nama = etFullname.text.toString()
-                        tempatLahir = etBornPlace.text.toString()
-                        tglLahir = etBirthdate.text.toString()
+                        nama = etFullname.text.toString().trim()
+                        tempatLahir = etBornPlace.text.toString().trim()
+                        tglLahir = etBirthdate.text.toString().trim()
                         jenisKelamin =
                             if (spGender.selectedItemPosition == 0) GENDER_MALE else GENDER_FEMALE
                         golDarah = when (spGolDarah.selectedItemPosition) {
@@ -257,14 +257,14 @@ class ConfirmationActivity : AppCompatActivity() {
                             12 -> "O-"
                             else -> "-"
                         }
-                        alamat = etAddress.text.toString()
-                        rt = etRt.text.toString()
-                        rw = etRw.text.toString()
-                        kelurahan = etVillage.text.toString()
-                        kecamatan = etDistrict.text.toString()
-                        kabKot = etCity.text.toString()
-                        provinsi = etProvince.text.toString()
-                        agama = etReligion.text.toString()
+                        alamat = etAddress.text.toString().trim()
+                        rt = etRt.text.toString().trim()
+                        rw = etRw.text.toString().trim()
+                        kelurahan = etVillage.text.toString().trim()
+                        kecamatan = etDistrict.text.toString().trim()
+                        kabKot = etCity.text.toString().trim()
+                        provinsi = etProvince.text.toString().trim()
+                        agama = etReligion.text.toString().trim()
                         statusPerkawinan =
                             when (spMaritalStatus.selectedItemPosition) {
                                 1 -> MARITAL_SINGLE
@@ -272,9 +272,9 @@ class ConfirmationActivity : AppCompatActivity() {
                                 3 -> MARITAL_DEATH_DIVORCE
                                 else -> MARITAL_MERRIED
                             }
-                        pekerjaan = etJob.text.toString()
-                        kewarganegaraan = etCitizenship.text.toString()
-                        berlakuHingga = etExpiredDate.text.toString()
+                        pekerjaan = etJob.text.toString().trim()
+                        kewarganegaraan = etCitizenship.text.toString().trim()
+                        berlakuHingga = etExpiredDate.text.toString().trim()
                     }
 
                     setResult(RESULT_OK, Intent().apply {
