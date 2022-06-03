@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.R
+import id.mncinnovation.identification.core.common.EXTRA_ERROR_MESSAGE
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.ResultImpl
 import java.util.concurrent.ExecutorService
@@ -91,7 +92,7 @@ abstract class BaseCameraActivity : AppCompatActivity() {
 
                 setResult(
                     RESULT_CANCELED,
-                    Intent().putExtra(EXTRA_RESULT, ResultImpl(false, errMsg))
+                    Intent().putExtra(EXTRA_ERROR_MESSAGE, errMsg)
                 )
                 finish()
             }
