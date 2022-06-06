@@ -10,6 +10,7 @@ import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.text.isDigitsOnly
 import androidx.core.widget.doAfterTextChanged
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
@@ -296,7 +297,8 @@ class ConfirmationActivity : AppCompatActivity() {
     }
 
     private fun checkNIK(value: String) {
-        binding.etNik.error = if (value.length < 16) "NIK harus 16 karakter" else null
+        binding.etNik.error =
+            if (value.length < 16 || !value.isDigitsOnly()) "NIK harus 16 digit angka" else null
     }
 
     override fun onBackPressed() {
