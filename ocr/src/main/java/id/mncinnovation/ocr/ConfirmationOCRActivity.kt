@@ -298,7 +298,7 @@ class ConfirmationActivity : AppCompatActivity() {
 
     private fun checkNIK(value: String) {
         binding.etNik.error =
-            if (value.length < 16 || !value.isDigitsOnly()) "NIK harus 16 digit angka" else null
+            if (value.length < 16 || !value.isDigitsOnly()) "NIK harus 16 digit" else null
     }
 
     override fun onBackPressed() {
