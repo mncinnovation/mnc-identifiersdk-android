@@ -13,8 +13,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import id.mncinnovation.identification.core.R
 import id.mncinnovation.identification.core.common.EXTRA_ERROR_MESSAGE
-import id.mncinnovation.identification.core.common.EXTRA_RESULT
-import id.mncinnovation.identification.core.common.ResultImpl
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -83,7 +81,7 @@ abstract class BaseCameraActivity : AppCompatActivity() {
             if (allPermissionsGranted()) {
                 init()
             } else {
-                val errMsg = "Permissions not allowed by the user."
+                val errMsg = "Permissions to access camera not allowed by the user."
                 Toast.makeText(
                     this,
                     errMsg,
