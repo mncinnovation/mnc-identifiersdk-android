@@ -129,11 +129,11 @@ fun Text.extractEktp(): KTPModel {
                         val rtrwSplit1 = rtrwLine?.split("/")
                         val rtrwSplit2 = rtrwLine?.split(" ")
                         if ((rtrwSplit1?.size ?: 0) > 1) {
-                            rt = rtrwSplit1?.first()?.cleanse(" ")
-                            rw = rtrwSplit1?.last()?.cleanse(" ")
+                            rt = rtrwSplit1?.first()?.cleanse("RT")
+                            rw = rtrwSplit1?.last()?.cleanse("RW")
                         } else {
-                            rt = rtrwSplit2?.first()?.cleanse(" ")
-                            rw = rtrwSplit2?.last()?.cleanse(" ")
+                            rt = rtrwSplit2?.first()?.cleanse("RT")
+                            rw = rtrwSplit2?.last()?.cleanse("RW")
                         }
                     }
                 }
@@ -224,7 +224,7 @@ fun Text.extractEktp(): KTPModel {
                         if (findAndClean(
                                 it,
                                 "Nama"
-                            )?.equals(ektp.nama) == true && ektp.nama != null &&
+                            )?.equals(ektp.nama) == true && ektp.nama != null && line != null &&
                             !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
                             && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
                         ) {
@@ -233,7 +233,7 @@ fun Text.extractEktp(): KTPModel {
                             }
                         }
 
-                        if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                        if (it.text != "Alamat" && line != null && ektp.alamat != null && findAndClean(
                                 it,
                                 "Alamat"
                             )?.cleanse("Aiamat")
