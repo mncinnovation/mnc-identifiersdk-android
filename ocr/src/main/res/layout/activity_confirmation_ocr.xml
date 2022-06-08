@@ -114,6 +114,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
                 android:drawableEnd="@drawable/ic_edit"
+                android:digits="0123456789"
                 android:inputType="number"
                 android:maxLength="16"
                 android:paddingHorizontal="16dp"
