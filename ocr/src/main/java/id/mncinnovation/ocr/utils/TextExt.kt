@@ -213,39 +213,41 @@ fun Text.extractEktp(): KTPModel {
 
                 else -> {
                     previousLine?.let {
-                        var containLowerCase = false
-                        for (c in line.text) {
-                            if (c.isLowerCase()) {
-                                containLowerCase = true
-                                break
+                        if (line != null) {
+                            var containLowerCase = false
+                            for (c in line.text) {
+                                if (c.isLowerCase()) {
+                                    containLowerCase = true
+                                    break
+                                }
                             }
-                        }
 
-                        if (findAndClean(
-                                it,
-                                "Nama"
-                            )?.equals(ektp.nama) == true && ektp.nama != null && line != null &&
-                            !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
-                            && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
-                        ) {
-                            ektp.apply {
-                                nama += " " + findAndClean(line, "Nama")
+                            if (findAndClean(
+                                    it,
+                                    "Nama"
+                                )?.equals(ektp.nama) == true && ektp.nama != null &&
+                                !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
+                                && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
+                            ) {
+                                ektp.apply {
+                                    nama += " " + findAndClean(line, "Nama")
+                                }
                             }
-                        }
 
-                        if (it.text != "Alamat" && line != null && ektp.alamat != null && findAndClean(
-                                it,
-                                "Alamat"
-                            )?.cleanse("Aiamat")
-                                ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
-                            !line.text.contains("RT") && !line.text.contains("RW") &&
-                            findAndClean(
-                                line,
-                                "Alamat"
-                            )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
-                        ) {
-                            ektp.apply {
-                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                            if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                                    it,
+                                    "Alamat"
+                                )?.cleanse("Aiamat")
+                                    ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
+                                !line.text.contains("RT") && !line.text.contains("RW") &&
+                                findAndClean(
+                                    line,
+                                    "Alamat"
+                                )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
+                            ) {
+                                ektp.apply {
+                                    alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                                }
                             }
                         }
                     }
