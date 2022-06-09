@@ -190,7 +190,10 @@ fun Text.extractEktp(): KTPModel {
                 }
 
                 line.text.startsWith("Kewarganegaraan", true) ||
-                        line.text.startsWith("Kewarga negaraan", true) -> {
+                        line.text.startsWith(
+                            "Kewarga negaraan",
+                            true
+                        ) || line.text.contains("negaraan") -> {
                     ektp.apply {
                         confidence++
                         kewarganegaraan =
@@ -221,34 +224,39 @@ fun Text.extractEktp(): KTPModel {
                                     break
                                 }
                             }
+                            if (!containLowerCase) {
+                                if (findAndClean(
+                                        it,
+                                        "Nama"
+                                    )?.equals(ektp.nama) == true && ektp.nama != null &&
+                                    !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
+                                    && findAndClean(line, "Nama") != ektp.nama
+                                ) {
+                                    ektp.apply {
+                                        nama += " " + findAndClean(line, "Nama")
+                                    }
+                                }
 
-                            if (findAndClean(
-                                    it,
-                                    "Nama"
-                                )?.equals(ektp.nama) == true && ektp.nama != null &&
-                                !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
-                                && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
-                            ) {
-                                ektp.apply {
-                                    nama += " " + findAndClean(line, "Nama")
+                                if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                                        it,
+                                        "Alamat"
+                                    )?.cleanse("Aiamat")
+                                        ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
+                                    !line.text.contains("RT") && !line.text.contains("RW") &&
+                                    findAndClean(
+                                        line,
+                                        "Alamat"
+                                    )?.cleanse("Aiamat") != ektp.alamat
+                                ) {
+                                    ektp.apply {
+                                        alamat += " " + findAndClean(
+                                            line,
+                                            "Alamat"
+                                        )?.cleanse("Aiamat")
+                                    }
                                 }
                             }
 
-                            if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
-                                    it,
-                                    "Alamat"
-                                )?.cleanse("Aiamat")
-                                    ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
-                                !line.text.contains("RT") && !line.text.contains("RW") &&
-                                findAndClean(
-                                    line,
-                                    "Alamat"
-                                )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
-                            ) {
-                                ektp.apply {
-                                    alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
-                                }
-                            }
                         }
                     }
                 }
