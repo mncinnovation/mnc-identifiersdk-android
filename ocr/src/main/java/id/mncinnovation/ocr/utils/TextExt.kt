@@ -216,7 +216,7 @@ fun Text.extractEktp(): KTPModel {
 
                 else -> {
                     previousLine?.let {
-                        if (line != null) {
+                        if (line != null && line.text != "null") {
                             var containLowerCase = false
                             for (c in line.text) {
                                 if (c.isLowerCase()) {
@@ -224,6 +224,9 @@ fun Text.extractEktp(): KTPModel {
                                     break
                                 }
                             }
+                            Log.e(TAG_OCR, "prevLine> ${it.text}")
+                            Log.e(TAG_OCR, "curLine> ${line.text}")
+
                             if (!containLowerCase) {
                                 if (findAndClean(
                                         it,
@@ -233,7 +236,10 @@ fun Text.extractEktp(): KTPModel {
                                     && findAndClean(line, "Nama") != ektp.nama
                                 ) {
                                     ektp.apply {
-                                        nama += " " + findAndClean(line, "Nama")
+                                        nama += " " + findAndClean(
+                                            line,
+                                            "Nama"
+                                        ).takeIf { name -> name != null && name != "null" }
                                     }
                                 }
 
@@ -243,7 +249,7 @@ fun Text.extractEktp(): KTPModel {
                                     )?.cleanse("Aiamat")
                                         ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
                                     !line.text.contains("RT") && !line.text.contains("RW") &&
-                                    findAndClean(
+                                    !line.text.contains("Darah") && findAndClean(
                                         line,
                                         "Alamat"
                                     )?.cleanse("Aiamat") != ektp.alamat
@@ -253,6 +259,7 @@ fun Text.extractEktp(): KTPModel {
                                             line,
                                             "Alamat"
                                         )?.cleanse("Aiamat")
+                                            .takeIf { addr -> addr != null && addr != "null" }
                                     }
                                 }
                             }
