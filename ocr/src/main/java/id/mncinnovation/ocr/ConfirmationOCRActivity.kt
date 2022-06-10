@@ -15,6 +15,7 @@ import androidx.core.widget.doAfterTextChanged
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
+import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.*
 import java.util.*
 
@@ -27,13 +28,14 @@ class ConfirmationActivity : AppCompatActivity() {
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
     private val bloodGroups =
         arrayOf("-", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
+    var captureKtpResult: OCRResultModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityConfirmationOcrBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val captureKtpResult = MNCIdentifierOCR.getOCRResult(intent)
+        captureKtpResult = MNCIdentifierOCR.getOCRResult(intent)
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
 
