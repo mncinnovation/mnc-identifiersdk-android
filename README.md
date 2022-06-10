@@ -1,24 +1,30 @@
 # MNC Identifier SDK
 
+![banner_identifier](/screenshots/identifier-cover.jpeg)
+
 MNC Identifier is a service to identify, and verify consumer with AI in it.
 
-## Features
+## Table
 
-The following are the features of MNC Identifier:
 
-* <a href="#liveness-detection">Liveness Detection</a>
-* <a href="#ocr-optical-character-recognition">OCR</a>
+* [About Identifier](https://mobile.mncinnovation.id/docs/mncidentifier/overview/)
+* [Liveness Detection](#liveness-detection) 
+* [OCR](#ocr-optical-character-recognition)
 
-### Liveness Detection
 
-<img src="screenshots/splash.jpg" width="256">
+---
+
+## Liveness Detection
+
+![banner_liveness](/screenshots/banner_liveness.jpeg)
+
 Liveness Detection using mlkit face recognition to detect live person present at the point of capture.
 
-## Requirements
+### Requirements
 
 - Min SDK 21
 
-## Setup
+### Setup
 
 build.gradle (root)
 
@@ -46,7 +52,7 @@ AndroidManifest.xml
 android:value="face" /></application>
 ```
 
-## How To Use
+### How To Use
 
 Start liveness activity
 
@@ -83,7 +89,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 }
 ```
 
-## Customize Detection Sequence
+### Customize Detection Sequence
 
 Default detection sequence is HOLD_STILL > BLINK > OPEN_MOUTH > SHAKE_HEAD > SMILE. You can cutomize
 detection sequence using following method
@@ -101,24 +107,20 @@ MNCIdentifier.setDetectionModeSequence(
 )
   ```
 
-## Screenshoots
+---
 
-<img src="screenshots/hold_face_in_frame.jpg" width="256">
-<img src="screenshots/open_mouth.jpg" width="256">
-<img src="screenshots/blink.jpg" width="256">
-<img src="screenshots/turn_head_left_or_right.jpg" width="256">
-<img src="screenshots/smile.jpg" width="256">
+## OCR (Optical Character Recognition)
 
-### OCR (Optical Character Recognition)
+![banner_ocr](/screenshots/banner_ocr.jpeg)
 
-<img src="screenshots/ocr_splash.jpeg" width="256">
+
 Optical Character Recognition using mlkit text recognition to detect text at the point of capture.
 
-#### Requirements
+### Requirements
 
 - Min SDK 21
 
-#### Setup
+### Setup
 
 build.gradle (root)
 
@@ -161,7 +163,7 @@ If you use face and ocr, AndroidManifest.xml
 </application>
 ```
 
-#### How To Use
+### How To Use
 
 Start scan to capture activity
 
@@ -221,11 +223,3 @@ private val resultLauncherOcr =
 
 MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr, true)
 ```
-
-#### Screenshoots
-
-<img src="screenshots/ocr_splash.jpeg" width="256">
-<img src="screenshots/ocr_scan.jpeg" width="256">
-<img src="screenshots/ocr_scanresult.jpeg" width="256">
-<img src="screenshots/ocr_confirm.jpeg" width="256">
-<img src="screenshots/ocr_result.jpeg" width="256">
