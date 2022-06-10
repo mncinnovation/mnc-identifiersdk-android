@@ -115,7 +115,9 @@ fun Text.extractEktp(): KTPModel {
                         line.text.startsWith("Aiamat", true) -> {
                     ektp.apply {
                         confidence++
-                        alamat = findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                        alamat =
+                            findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                                ?.cleanse("Gol. Darah ${golDarah ?: ""}")
                         alamat?.let { confidence++ }
                     }
                 }
@@ -193,11 +195,12 @@ fun Text.extractEktp(): KTPModel {
                         line.text.startsWith(
                             "Kewarga negaraan",
                             true
-                        ) || line.text.contains("negaraan") -> {
+                        ) -> {
                     ektp.apply {
                         confidence++
                         kewarganegaraan =
                             findAndClean(line, "Kewarganegaraan")?.cleanse("Kewarga negaraan")
+                                ?.cleanse("ewarganegaraan")
                                 ?.filterCitizenship()
                         kewarganegaraan?.let { confidence++ }
                     }
@@ -378,7 +381,7 @@ fun String?.filterBloodGroup(): String? {
 
 fun String?.filterCitizenship(): String? {
     this?.let {
-        if (it.startsWith("WN")) {
+        if (it.startsWith("WN", false)) {
             return CITIZEN_WNI
         }
     }
