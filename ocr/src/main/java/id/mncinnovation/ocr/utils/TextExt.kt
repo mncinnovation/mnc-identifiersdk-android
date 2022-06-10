@@ -239,10 +239,10 @@ fun Text.extractEktp(): KTPModel {
                                     && findAndClean(line, "Nama") != ektp.nama
                                 ) {
                                     ektp.apply {
-                                        nama += " " + findAndClean(
+                                        nama += " " + (findAndClean(
                                             line,
                                             "Nama"
-                                        ).takeIf { name -> name != null && name != "null" }
+                                        ) ?: line.text).cleanse("Nama")
                                     }
                                 }
 
@@ -250,7 +250,9 @@ fun Text.extractEktp(): KTPModel {
                                         it,
                                         "Alamat"
                                     )?.cleanse("Aiamat")
-                                        ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
+                                        ?.contains(
+                                            ektp.alamat ?: ""
+                                        ) == true && !line.text.contains("/") &&
                                     !line.text.contains("RT") && !line.text.contains("RW") &&
                                     !line.text.contains("Darah") && findAndClean(
                                         line,
@@ -258,11 +260,13 @@ fun Text.extractEktp(): KTPModel {
                                     )?.cleanse("Aiamat") != ektp.alamat
                                 ) {
                                     ektp.apply {
-                                        alamat += " " + findAndClean(
-                                            line,
-                                            "Alamat"
-                                        )?.cleanse("Aiamat")
-                                            .takeIf { addr -> addr != null && addr != "null" }
+                                        alamat = "$alamat ${
+                                            (findAndClean(
+                                                line,
+                                                "Alamat"
+                                            ) ?: line.text).cleanse("Alamat", false)
+                                                .cleanse("Aiamat", false)
+                                        }"
                                     }
                                 }
                             }
