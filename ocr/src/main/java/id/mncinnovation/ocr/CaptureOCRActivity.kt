@@ -186,16 +186,21 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                    Log.d(TAG, "Photo capture succeeded: $savedUri")
-                    if (uriList.size < MAX_CAPTURE) {
-                        uriList.add(savedUri)
-                    }
-                    if (uriList.size == MAX_CAPTURE) {
-                        uriList.forEach {
-                            extractDataKtp(it)
+                    try {
+                        val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                        Log.d(TAG, "Photo capture succeeded: $savedUri")
+                        if (uriList.size < MAX_CAPTURE) {
+                            uriList.add(savedUri)
                         }
+                        if (uriList.size == MAX_CAPTURE) {
+                            uriList.forEach {
+                                extractDataKtp(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
+
                 }
             })
     }
