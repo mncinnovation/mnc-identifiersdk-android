@@ -228,68 +228,73 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                             val usedKtp = ktpList.first()
                             if (ktpList.size > 1) {
                                 for (i in 1 until ktpList.size) {
-                                    Log.e(TAG_OCR, "confidence: ${ktpList[i].confidence}")
-                                    if (usedKtp.nik == null) {
-                                        usedKtp.nik = ktpList[i].nik.takeIf { it != null }
-                                    }
-                                    if (usedKtp.nama == null) {
-                                        usedKtp.nama = ktpList[i].nama.takeIf { it != null }
-                                    }
-                                    if (usedKtp.tempatLahir == null) {
-                                        usedKtp.tempatLahir =
-                                            ktpList[i].tempatLahir.takeIf { it != null }
-                                    }
-                                    if (usedKtp.golDarah == null) {
-                                        usedKtp.golDarah = ktpList[i].golDarah.takeIf { it != null }
-                                    }
-                                    if (usedKtp.tglLahir == null) {
-                                        usedKtp.tglLahir = ktpList[i].tglLahir.takeIf { it != null }
-                                    }
-                                    if (usedKtp.jenisKelamin == null) {
-                                        usedKtp.jenisKelamin =
-                                            ktpList[i].jenisKelamin.takeIf { it != null }
-                                    }
-                                    if (usedKtp.alamat == null) {
-                                        usedKtp.alamat = ktpList[i].alamat.takeIf { it != null }
-                                    }
-                                    if (usedKtp.rt == null) {
-                                        usedKtp.rt = ktpList[i].rt.takeIf { it != null }
-                                    }
-                                    if (usedKtp.rw == null) {
-                                        usedKtp.rw = ktpList[i].rw.takeIf { it != null }
-                                    }
-                                    if (usedKtp.kelurahan == null) {
-                                        usedKtp.kelurahan =
-                                            ktpList[i].kelurahan.takeIf { it != null }
-                                    }
-                                    if (usedKtp.kecamatan == null) {
-                                        usedKtp.kecamatan =
-                                            ktpList[i].kecamatan.takeIf { it != null }
-                                    }
-                                    if (usedKtp.agama == null) {
-                                        usedKtp.agama = ktpList[i].agama.takeIf { it != null }
-                                    }
-                                    if (usedKtp.statusPerkawinan == null) {
-                                        usedKtp.statusPerkawinan =
-                                            ktpList[i].statusPerkawinan.takeIf { it != null }
-                                    }
-                                    if (usedKtp.pekerjaan == null) {
-                                        usedKtp.pekerjaan =
-                                            ktpList[i].pekerjaan.takeIf { it != null }
-                                    }
-                                    if (usedKtp.kewarganegaraan == null) {
-                                        usedKtp.kewarganegaraan =
-                                            ktpList[i].kewarganegaraan.takeIf { it != null }
-                                    }
-                                    if (usedKtp.berlakuHingga == null) {
-                                        usedKtp.berlakuHingga =
-                                            ktpList[i].berlakuHingga.takeIf { it != null }
-                                    }
-                                    if (usedKtp.provinsi == null) {
-                                        usedKtp.provinsi = ktpList[i].provinsi.takeIf { it != null }
-                                    }
-                                    if (usedKtp.kabKot == null) {
-                                        usedKtp.kabKot = ktpList[i].kabKot.takeIf { it != null }
+                                    val nextKtp = ktpList[i]
+                                    if (usedKtp.confidence <= nextKtp.confidence) {
+                                        if (usedKtp.nik == null) {
+                                            usedKtp.nik = nextKtp.nik.takeIf { it != null }
+                                        }
+                                        if (usedKtp.nama == null) {
+                                            usedKtp.nama = nextKtp.nama.takeIf { it != null }
+                                        }
+                                        if (usedKtp.tempatLahir == null) {
+                                            usedKtp.tempatLahir =
+                                                nextKtp.tempatLahir.takeIf { it != null }
+                                        }
+                                        if (usedKtp.golDarah == null) {
+                                            usedKtp.golDarah =
+                                                nextKtp.golDarah.takeIf { it != null }
+                                        }
+                                        if (usedKtp.tglLahir == null) {
+                                            usedKtp.tglLahir =
+                                                nextKtp.tglLahir.takeIf { it != null }
+                                        }
+                                        if (usedKtp.jenisKelamin == null) {
+                                            usedKtp.jenisKelamin =
+                                                nextKtp.jenisKelamin.takeIf { it != null }
+                                        }
+                                        if (usedKtp.alamat == null) {
+                                            usedKtp.alamat = nextKtp.alamat.takeIf { it != null }
+                                        }
+                                        if (usedKtp.rt == null) {
+                                            usedKtp.rt = nextKtp.rt.takeIf { it != null }
+                                        }
+                                        if (usedKtp.rw == null) {
+                                            usedKtp.rw = nextKtp.rw.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kelurahan == null) {
+                                            usedKtp.kelurahan =
+                                                nextKtp.kelurahan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kecamatan == null) {
+                                            usedKtp.kecamatan =
+                                                nextKtp.kecamatan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.agama == null) {
+                                            usedKtp.agama = nextKtp.agama.takeIf { it != null }
+                                        }
+                                        if (usedKtp.statusPerkawinan == null) {
+                                            usedKtp.statusPerkawinan =
+                                                nextKtp.statusPerkawinan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.pekerjaan == null) {
+                                            usedKtp.pekerjaan =
+                                                nextKtp.pekerjaan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kewarganegaraan == null) {
+                                            usedKtp.kewarganegaraan =
+                                                nextKtp.kewarganegaraan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.berlakuHingga == null) {
+                                            usedKtp.berlakuHingga =
+                                                nextKtp.berlakuHingga.takeIf { it != null }
+                                        }
+                                        if (usedKtp.provinsi == null) {
+                                            usedKtp.provinsi =
+                                                nextKtp.provinsi.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kabKot == null) {
+                                            usedKtp.kabKot = nextKtp.kabKot.takeIf { it != null }
+                                        }
                                     }
                                 }
                             }
