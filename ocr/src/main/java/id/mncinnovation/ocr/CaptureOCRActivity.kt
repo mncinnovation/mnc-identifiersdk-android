@@ -39,7 +39,6 @@ import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
-import id.mncinnovation.ocr.utils.TAG_OCR
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
@@ -83,7 +82,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         super.onCreate(savedInstanceState)
         if (!hasLaunchSplash)
             resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
-
 
         lightSensor = LightSensor(this, object : LightSensorListener {
             override fun onCurrentLightChanged(value: Int) {
