@@ -27,7 +27,7 @@ object MNCIdentifier {
     @JvmStatic
     fun getLivenessIntent(context: Context): Intent {
         attempt++
-        return Intent(context, SplashActivity::class.java)
+        return Intent(context, SplashLivenessActivity::class.java)
     }
 
     @JvmStatic
