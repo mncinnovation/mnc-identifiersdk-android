@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 
-class SplashActivity : AppCompatActivity() {
+class SplashLivenessActivity : AppCompatActivity() {
     private val cameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()){ isGranted ->
         if (isGranted)
             Handler(Looper.getMainLooper()).postDelayed({
@@ -27,7 +27,7 @@ class SplashActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
+        setContentView(R.layout.activity_splash_liveness)
         cameraPermission.launch(Manifest.permission.CAMERA)
     }
 }
