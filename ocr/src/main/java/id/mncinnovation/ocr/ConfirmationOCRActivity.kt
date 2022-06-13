@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ScrollView
@@ -41,20 +42,21 @@ class ConfirmationActivity : AppCompatActivity() {
 
             spGender.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 genders
             )
             spMaritalStatus.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 maritalsStatus
             )
 
             spGolDarah.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 bloodGroups
             )
+
             captureKtpResult?.let {
                 with(it.ktp) {
 
@@ -331,6 +333,11 @@ class ConfirmationActivity : AppCompatActivity() {
             if (isConfirmState) R.drawable.bg_edittext_readonly else R.drawable.bg_white_corner_radius_solid
         )
 
+        val bgColorField = ContextCompat.getColor(
+            context,
+            if (isConfirmState) R.color.bg_disable else android.R.color.white
+        )
+
         with(binding) {
             llConfirmIdentity.visibility = isConfirmState.toVisibilityOrGone()
             btnNext.text = if (isConfirmState) "Konfirmasi ulang" else "Lanjutkan"
@@ -377,10 +384,12 @@ class ConfirmationActivity : AppCompatActivity() {
             }
             spGender.isEnabled = !isConfirmState
             rlGender.background = bgField
+            spGender.setBackgroundColor(bgColorField)
             ivDropdownGender.setImageDrawable(drawableArrowDown)
 
             spGolDarah.isEnabled = !isConfirmState
             rlGolDarah.background = bgField
+            spGolDarah.setBackgroundColor(bgColorField)
             ivDropdownGolDarah.setImageDrawable(drawableArrowDown)
 
             etAddress.apply {
@@ -468,6 +477,8 @@ class ConfirmationActivity : AppCompatActivity() {
 
             spMaritalStatus.isEnabled = !isConfirmState
             rlMaritalStatus.background = bgField
+            spMaritalStatus.setBackgroundColor(bgColorField)
+
             ivDropdownMaritalStatus.setImageDrawable(drawableArrowDown)
 
             etJob.apply {
