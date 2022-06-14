@@ -38,6 +38,7 @@
         android:background="@drawable/bg_btn_solid"
         android:text="Lanjutkan"
         android:textAllCaps="false"
+        android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -113,11 +114,13 @@
                 android:layout_height="40dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_white_corner_radius_solid"
+                android:digits="0123456789"
                 android:drawableEnd="@drawable/ic_edit"
                 android:inputType="number"
                 android:maxLength="16"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -139,6 +142,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -160,6 +164,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -185,6 +190,7 @@
                 android:inputType="date"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -208,6 +214,16 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="2dp">
 
+                <Spinner
+                    android:id="@+id/sp_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1.5dp"
+                    android:background="@color/white"
+                    android:popupBackground="@color/white"
+                    android:spinnerMode="dropdown"
+                    android:textSize="14sp" />
+
                 <ImageView
                     android:id="@+id/iv_dropdown_gender"
                     android:layout_width="wrap_content"
@@ -215,14 +231,6 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
-
-                <Spinner
-                    android:id="@+id/sp_gender"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:spinnerMode="dropdown"
-                    android:textSize="14sp" />
 
             </RelativeLayout>
 
@@ -247,6 +255,16 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="2dp">
 
+                <Spinner
+                    android:id="@+id/sp_gol_darah"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="1.5dp"
+                    android:background="@color/white"
+                    android:popupBackground="@color/white"
+                    android:spinnerMode="dropdown"
+                    android:textSize="14sp" />
+
                 <ImageView
                     android:id="@+id/iv_dropdown_gol_darah"
                     android:layout_width="wrap_content"
@@ -254,14 +272,6 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
-
-                <Spinner
-                    android:id="@+id/sp_gol_darah"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:spinnerMode="dropdown"
-                    android:textSize="14sp" />
 
             </RelativeLayout>
 
@@ -284,6 +294,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -305,6 +316,7 @@
                 android:inputType="number"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -326,6 +338,7 @@
                 android:inputType="number"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -347,6 +360,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -368,6 +382,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -389,6 +404,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -410,6 +426,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -431,6 +448,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <TextView
@@ -454,6 +472,16 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="2dp">
 
+                <Spinner
+                    android:id="@+id/sp_marital_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="1.5dp"
+                    android:background="@color/white"
+                    android:popupBackground="@color/white"
+                    android:spinnerMode="dropdown"
+                    android:textSize="14sp" />
+
                 <ImageView
                     android:id="@+id/iv_dropdown_marital_status"
                     android:layout_width="wrap_content"
@@ -461,14 +489,6 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_baseline_keyboard_arrow_down_24" />
-
-                <Spinner
-                    android:id="@+id/sp_marital_status"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:spinnerMode="dropdown"
-                    android:textSize="14sp" />
 
             </RelativeLayout>
 
@@ -492,6 +512,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
 
@@ -514,8 +535,8 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
-
 
             <TextView
                 android:layout_width="wrap_content"
@@ -536,6 +557,7 @@
                 android:inputType="textCapCharacters"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
         </LinearLayout>

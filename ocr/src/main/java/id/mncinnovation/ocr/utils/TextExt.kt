@@ -55,7 +55,7 @@ fun Text.extractEktp(): KTPModel {
             when {
                 line.text.startsWith("PROVINSI") -> {
                     ektp.confidence++
-                    ektp.provinsi = line.text.cleanse("PROVINSI")
+                    ektp.provinsi = line.text.cleanse("PROVINSI").filterNumberToAlphabet()
                     ektp.provinsi?.let { ektp.confidence++ }
                 }
 
@@ -63,7 +63,7 @@ fun Text.extractEktp(): KTPModel {
                         line.text.startsWith("KABUPATEN") || line.text.startsWith("JAKARTA") -> {
                     ektp.confidence++
                     if (ektp.kabKot.isNullOrEmpty())
-                        ektp.kabKot = line.text
+                        ektp.kabKot = line.text.filterNumberToAlphabet()
                 }
 
                 line.text.startsWith("NIK") -> {
@@ -71,12 +71,12 @@ fun Text.extractEktp(): KTPModel {
                     ektp.nik = ((if (line.elements.size > 1)
                         line.elements.last().text
                     else
-                        filterNik())?.cleanse("NIK"))?.replace("O", "0")
+                        filterNik())?.cleanse("NIK"))?.filterAlphabetToNumber()
                 }
 
                 line.text.startsWith("Nama", true) -> {
                     ektp.confidence++
-                    ektp.nama = findAndClean(line, "Nama")
+                    ektp.nama = findAndClean(line, "Nama")?.filterNumberToAlphabet()
                     ektp.nama?.let { ektp.confidence++ }
                 }
 
@@ -115,7 +115,9 @@ fun Text.extractEktp(): KTPModel {
                         line.text.startsWith("Aiamat", true) -> {
                     ektp.apply {
                         confidence++
-                        alamat = findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                        alamat =
+                            findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                                ?.cleanse("Gol. Darah ${golDarah ?: ""}")
                         alamat?.let { confidence++ }
                     }
                 }
@@ -129,11 +131,11 @@ fun Text.extractEktp(): KTPModel {
                         val rtrwSplit1 = rtrwLine?.split("/")
                         val rtrwSplit2 = rtrwLine?.split(" ")
                         if ((rtrwSplit1?.size ?: 0) > 1) {
-                            rt = rtrwSplit1?.first()?.cleanse(" ")
-                            rw = rtrwSplit1?.last()?.cleanse(" ")
+                            rt = rtrwSplit1?.first()?.cleanse("RT")?.filterAlphabetToNumber()
+                            rw = rtrwSplit1?.last()?.cleanse("RW")?.filterAlphabetToNumber()
                         } else {
-                            rt = rtrwSplit2?.first()?.cleanse(" ")
-                            rw = rtrwSplit2?.last()?.cleanse(" ")
+                            rt = rtrwSplit2?.first()?.cleanse("RT")?.filterAlphabetToNumber()
+                            rw = rtrwSplit2?.last()?.cleanse("RW")?.filterAlphabetToNumber()
                         }
                     }
                 }
@@ -145,7 +147,7 @@ fun Text.extractEktp(): KTPModel {
                             cleanse("Desa")
                             cleanse("/")
                             cleanse("KeV")
-                        }
+                        }?.filterNumberToAlphabet()
                         kelurahan?.let { confidence++ }
                     }
                 }
@@ -153,7 +155,7 @@ fun Text.extractEktp(): KTPModel {
                 line.text.startsWith("Kecamatan", true) -> {
                     ektp.apply {
                         confidence++
-                        kecamatan = findAndClean(line, "Kecamatan")
+                        kecamatan = findAndClean(line, "Kecamatan")?.filterNumberToAlphabet()
                         kecamatan?.let { confidence++ }
                     }
                 }
@@ -161,7 +163,8 @@ fun Text.extractEktp(): KTPModel {
                 line.text.startsWith("Agama", true) -> {
                     ektp.apply {
                         confidence++
-                        agama = findAndClean(line, "Agama")?.replace("1", "I")?.filterReligion()
+                        agama =
+                            findAndClean(line, "Agama")?.filterNumberToAlphabet()?.filterReligion()
                         agama?.let { confidence++ }
                     }
                 }
@@ -174,6 +177,7 @@ fun Text.extractEktp(): KTPModel {
                         confidence++
                         statusPerkawinan =
                             findAndClean(line, "Status Perkawinan")?.cleanse("Perkainan")
+                                ?.filterNumberToAlphabet()
                                 ?.filterMaritalStatus()
 
                         statusPerkawinan?.let { confidence++ }
@@ -185,16 +189,21 @@ fun Text.extractEktp(): KTPModel {
                         confidence++
                         pekerjaan =
                             findAndClean(line, "Pekerjaan")?.cleanse("ekerjaan")?.cleanse("kerjaan")
+                                ?.filterNumberToAlphabet()
                         pekerjaan?.let { confidence++ }
                     }
                 }
 
                 line.text.startsWith("Kewarganegaraan", true) ||
-                        line.text.startsWith("Kewarga negaraan", true) -> {
+                        line.text.startsWith(
+                            "Kewarga negaraan",
+                            true
+                        ) -> {
                     ektp.apply {
                         confidence++
                         kewarganegaraan =
                             findAndClean(line, "Kewarganegaraan")?.cleanse("Kewarga negaraan")
+                                ?.cleanse("ewarganegaraan")?.filterNumberToAlphabet()
                                 ?.filterCitizenship()
                         kewarganegaraan?.let { confidence++ }
                     }
@@ -213,40 +222,58 @@ fun Text.extractEktp(): KTPModel {
 
                 else -> {
                     previousLine?.let {
-                        var containLowerCase = false
-                        for (c in line.text) {
-                            if (c.isLowerCase()) {
-                                containLowerCase = true
-                                break
+                        if (line != null && line.text != "null") {
+                            var containLowerCase = false
+                            for (c in line.text) {
+                                if (c.isLowerCase()) {
+                                    containLowerCase = true
+                                    break
+                                }
                             }
-                        }
+                            Log.e(TAG_OCR, "prevLine> ${it.text}")
+                            Log.e(TAG_OCR, "curLine> ${line.text}")
 
-                        if (findAndClean(
-                                it,
-                                "Nama"
-                            )?.equals(ektp.nama) == true && ektp.nama != null &&
-                            !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
-                            && findAndClean(line, "Nama") != ektp.nama && !containLowerCase
-                        ) {
-                            ektp.apply {
-                                nama += " " + findAndClean(line, "Nama")
-                            }
-                        }
+                            if (!containLowerCase) {
+                                if (findAndClean(
+                                        it,
+                                        "Nama"
+                                    )?.equals(ektp.nama) == true && ektp.nama != null &&
+                                    !line.text.contains("[0-9]".toRegex()) && !line.text.contains("/")
+                                    && findAndClean(line, "Nama") != ektp.nama
+                                ) {
+                                    ektp.apply {
+                                        nama += " " + (findAndClean(
+                                            line,
+                                            "Nama"
+                                        ) ?: line.text).cleanse("Nama")
+                                    }
+                                }
 
-                        if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
-                                it,
-                                "Alamat"
-                            )?.cleanse("Aiamat")
-                                ?.equals(ektp.alamat) == true && !line.text.contains("/") &&
-                            !line.text.contains("RT") && !line.text.contains("RW") &&
-                            findAndClean(
-                                line,
-                                "Alamat"
-                            )?.cleanse("Aiamat") != ektp.alamat && !containLowerCase
-                        ) {
-                            ektp.apply {
-                                alamat += " " + findAndClean(line, "Alamat")?.cleanse("Aiamat")
+                                if (it.text != "Alamat" && ektp.alamat != null && findAndClean(
+                                        it,
+                                        "Alamat"
+                                    )?.cleanse("Aiamat")
+                                        ?.contains(
+                                            ektp.alamat ?: ""
+                                        ) == true && !line.text.contains("/") &&
+                                    !line.text.contains("RT") && !line.text.contains("RW") &&
+                                    !line.text.contains("Darah") && findAndClean(
+                                        line,
+                                        "Alamat"
+                                    )?.cleanse("Aiamat") != ektp.alamat
+                                ) {
+                                    ektp.apply {
+                                        alamat = "$alamat ${
+                                            (findAndClean(
+                                                line,
+                                                "Alamat"
+                                            ) ?: line.text).cleanse("Alamat", false)
+                                                .cleanse("Aiamat", false)
+                                        }"
+                                    }
+                                }
                             }
+
                         }
                     }
                 }
@@ -361,7 +388,7 @@ fun String?.filterBloodGroup(): String? {
 
 fun String?.filterCitizenship(): String? {
     this?.let {
-        if (it.startsWith("WN")) {
+        if (it.startsWith("WN", false)) {
             return CITIZEN_WNI
         }
     }
@@ -434,6 +461,24 @@ fun String?.filterReligion(): String? {
 
 fun String.cleanse(text: String, ignoreCase: Boolean = true): String {
     return replace(text, "", ignoreCase).replace(":", "").trim()
+}
+
+fun String.filterNumberToAlphabet(): String {
+    return replace("0", "O")
+        .replace("1", "I")
+        .replace("4", "A")
+        .replace("5", "S")
+        .replace("7", "T")
+        .replace("8", "B")
+}
+
+fun String.filterAlphabetToNumber(): String {
+    return replace("O", "0")
+        .replace("I", "1")
+        .replace("A", "4")
+        .replace("S", "5")
+        .replace("T", "7")
+        .replace("B", "8")
 }
 
 const val CITIZEN_WNI = "WNI"

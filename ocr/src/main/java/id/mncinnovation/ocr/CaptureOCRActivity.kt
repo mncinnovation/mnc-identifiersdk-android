@@ -5,6 +5,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -44,15 +46,18 @@ import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
-@Suppress("DEPRECATION")
 class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
     private lateinit var btnFlash: ImageButton
     private lateinit var gifLoading: LottieAnimationView
-
     private var hasLaunchSplash = false
     private var bottomSheetDialog: BottomSheetDialog? = null
     private var timer: Timer? = null
+
+    //Property for capture logic
+    private var handlers: Handler? = null
+    private var runnableCapture: Runnable? = null
+
     private var isCaptured = false
     private var flashMode = ImageCapture.FLASH_MODE_OFF
     private var camera: Camera? = null
@@ -69,14 +74,14 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     private lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
-
     private var lightSensor: LightSensor? = null
+    private var uriList = mutableListOf<Uri>()
+    private var ktpList = mutableListOf<KTPModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!hasLaunchSplash)
             resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
-
 
         lightSensor = LightSensor(this, object : LightSensorListener {
             override fun onCurrentLightChanged(value: Int) {
@@ -159,7 +164,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun captureImage() {
-        val photoFile = File.createTempFile("selfiektp", ".jpg")
+        val photoFile = File.createTempFile("ktp", ".jpg")
         // Setup image capture metadata
         val metadata = ImageCapture.Metadata().apply {
             // Mirror image when using the front camera
@@ -179,16 +184,30 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                    Log.d(TAG, "Photo capture succeeded: $savedUri")
-                    extractDataKtp(savedUri)
+                    try {
+                        val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                        Log.d(TAG, "Photo capture succeeded: $savedUri")
+                        if (uriList.size < MAX_CAPTURE) {
+                            uriList.add(savedUri)
+                        }
+                        if (uriList.size == MAX_CAPTURE) {
+                            uriList.forEach {
+                                extractDataKtp(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
                 }
             })
     }
 
     private fun extractDataKtp(uri: Uri) {
         lightSensor?.closeSensor()
-        showProgressDialog()
+        if (isCaptured) {
+            showProgressDialog()
+        }
         val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
             ?: return
         objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
@@ -205,15 +224,92 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                 val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
                 textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
                     .addOnSuccessListener { text ->
-                        val ekp = text.extractEktp()
-                        val ocrResult =
-                            OCRResultModel(true, "Success", resultUri.path, ekp)
-                        setResult(RESULT_OK, intent)
-                        hideProgressDialog()
-                        val intent = Intent(this, ConfirmationActivity::class.java).apply {
-                            putExtra(EXTRA_RESULT, ocrResult)
+                        val ktp = text.extractEktp()
+                        ktpList.add(ktp)
+                        if (ktpList.size == uriList.size) {
+                            hideProgressDialog()
+                            val usedKtp = ktpList.first()
+                            if (ktpList.size > 1) {
+                                for (i in 1 until ktpList.size) {
+                                    val nextKtp = ktpList[i]
+                                    if (usedKtp.confidence <= nextKtp.confidence) {
+                                        if (usedKtp.nik == null) {
+                                            usedKtp.nik = nextKtp.nik.takeIf { it != null }
+                                        }
+                                        if (usedKtp.nama == null) {
+                                            usedKtp.nama = nextKtp.nama.takeIf { it != null }
+                                        }
+                                        if (usedKtp.tempatLahir == null) {
+                                            usedKtp.tempatLahir =
+                                                nextKtp.tempatLahir.takeIf { it != null }
+                                        }
+                                        if (usedKtp.golDarah == null) {
+                                            usedKtp.golDarah =
+                                                nextKtp.golDarah.takeIf { it != null }
+                                        }
+                                        if (usedKtp.tglLahir == null) {
+                                            usedKtp.tglLahir =
+                                                nextKtp.tglLahir.takeIf { it != null }
+                                        }
+                                        if (usedKtp.jenisKelamin == null) {
+                                            usedKtp.jenisKelamin =
+                                                nextKtp.jenisKelamin.takeIf { it != null }
+                                        }
+                                        if (usedKtp.alamat == null) {
+                                            usedKtp.alamat = nextKtp.alamat.takeIf { it != null }
+                                        }
+                                        if (usedKtp.rt == null) {
+                                            usedKtp.rt = nextKtp.rt.takeIf { it != null }
+                                        }
+                                        if (usedKtp.rw == null) {
+                                            usedKtp.rw = nextKtp.rw.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kelurahan == null) {
+                                            usedKtp.kelurahan =
+                                                nextKtp.kelurahan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kecamatan == null) {
+                                            usedKtp.kecamatan =
+                                                nextKtp.kecamatan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.agama == null) {
+                                            usedKtp.agama = nextKtp.agama.takeIf { it != null }
+                                        }
+                                        if (usedKtp.statusPerkawinan == null) {
+                                            usedKtp.statusPerkawinan =
+                                                nextKtp.statusPerkawinan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.pekerjaan == null) {
+                                            usedKtp.pekerjaan =
+                                                nextKtp.pekerjaan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kewarganegaraan == null) {
+                                            usedKtp.kewarganegaraan =
+                                                nextKtp.kewarganegaraan.takeIf { it != null }
+                                        }
+                                        if (usedKtp.berlakuHingga == null) {
+                                            usedKtp.berlakuHingga =
+                                                nextKtp.berlakuHingga.takeIf { it != null }
+                                        }
+                                        if (usedKtp.provinsi == null) {
+                                            usedKtp.provinsi =
+                                                nextKtp.provinsi.takeIf { it != null }
+                                        }
+                                        if (usedKtp.kabKot == null) {
+                                            usedKtp.kabKot = nextKtp.kabKot.takeIf { it != null }
+                                        }
+                                    }
+                                }
+                            }
+
+                            val ocrResult =
+                                OCRResultModel(true, "Success", resultUri.path, usedKtp)
+
+                            val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                                putExtra(EXTRA_RESULT, ocrResult)
+                            }
+                            resultLauncherConfirm.launch(intent)
                         }
-                        resultLauncherConfirm.launch(intent)
                     }
             }
     }
@@ -224,9 +320,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         lightSensor?.startDetectingSensor()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         stopTimer()
+        hideProgressDialog()
         lightSensor?.closeSensor()
     }
 
@@ -267,9 +364,16 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             if (isCaptured) return
             showPopupHoldScanDialog()
         } else {
+            clearDataCapture()
             stopTimer()
+            hideProgressDialog()
             bottomSheetDialog?.dismiss()
         }
+    }
+
+    private fun clearDataCapture() {
+        ktpList.clear()
+        uriList.clear()
     }
 
     override fun onCaptureFailed(exception: Exception) {
@@ -286,6 +390,9 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private fun stopTimer() {
         timer?.cancel()
         timer = null
+        runnableCapture?.let {
+            handlers?.removeCallbacks(it)
+        }
     }
 
     private fun showPopupHoldScanDialog() {
@@ -301,11 +408,23 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                     if (counter == 0) {
                         bottomSheetDialog?.dismiss()
                         isCaptured = true
-                        captureImage()
+                        stopTimer()
                     }
                     counter--
                 }
             }
+        }
+        handlers = Handler(Looper.getMainLooper())
+        runnableCapture = object : Runnable {
+            override fun run() {
+                if (!isCaptured) {
+                    captureImage()
+                }
+                handlers?.postDelayed(this, 500)
+            }
+        }
+        runnableCapture?.let {
+            handlers?.post(it)
         }
 
         if (bottomSheetDialog?.isShowing == true) {
@@ -329,5 +448,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     companion object {
         const val TAG = "CaptureOCRActivity"
         const val COUNTDOWN_TIME = 3
+        const val MAX_CAPTURE = 6
     }
 }

@@ -10,10 +10,12 @@ import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.text.isDigitsOnly
 import androidx.core.widget.doAfterTextChanged
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.ocr.databinding.ActivityConfirmationOcrBinding
+import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.*
 import java.util.*
 
@@ -26,32 +28,34 @@ class ConfirmationActivity : AppCompatActivity() {
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
     private val bloodGroups =
         arrayOf("-", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
+    var captureKtpResult: OCRResultModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityConfirmationOcrBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val captureKtpResult = MNCIdentifierOCR.getOCRResult(intent)
+        captureKtpResult = MNCIdentifierOCR.getOCRResult(intent)
         with(binding) {
             llConfirmIdentity.visibility = View.GONE
 
             spGender.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 genders
             )
             spMaritalStatus.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 maritalsStatus
             )
 
             spGolDarah.adapter = ArrayAdapter<Any?>(
                 context,
-                android.R.layout.simple_list_item_1,
+                R.layout.simple_text_item_black,
                 bloodGroups
             )
+
             captureKtpResult?.let {
                 with(it.ktp) {
 
@@ -296,7 +300,8 @@ class ConfirmationActivity : AppCompatActivity() {
     }
 
     private fun checkNIK(value: String) {
-        binding.etNik.error = if (value.length < 16) "NIK harus 16 karakter" else null
+        binding.etNik.error =
+            if (value.length < 16 || !value.isDigitsOnly()) "NIK harus 16 digit" else null
     }
 
     override fun onBackPressed() {
@@ -325,6 +330,11 @@ class ConfirmationActivity : AppCompatActivity() {
         val bgField: Drawable? = ContextCompat.getDrawable(
             context,
             if (isConfirmState) R.drawable.bg_edittext_readonly else R.drawable.bg_white_corner_radius_solid
+        )
+
+        val bgColorField = ContextCompat.getColor(
+            context,
+            if (isConfirmState) R.color.bg_disable else android.R.color.white
         )
 
         with(binding) {
@@ -373,10 +383,13 @@ class ConfirmationActivity : AppCompatActivity() {
             }
             spGender.isEnabled = !isConfirmState
             rlGender.background = bgField
+            spGender.background = bgField
+
             ivDropdownGender.setImageDrawable(drawableArrowDown)
 
             spGolDarah.isEnabled = !isConfirmState
             rlGolDarah.background = bgField
+            spGolDarah.background = bgField
             ivDropdownGolDarah.setImageDrawable(drawableArrowDown)
 
             etAddress.apply {
@@ -464,6 +477,8 @@ class ConfirmationActivity : AppCompatActivity() {
 
             spMaritalStatus.isEnabled = !isConfirmState
             rlMaritalStatus.background = bgField
+            spMaritalStatus.background = bgField
+
             ivDropdownMaritalStatus.setImageDrawable(drawableArrowDown)
 
             etJob.apply {
