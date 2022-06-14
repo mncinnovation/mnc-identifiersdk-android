@@ -383,12 +383,13 @@ class ConfirmationActivity : AppCompatActivity() {
             }
             spGender.isEnabled = !isConfirmState
             rlGender.background = bgField
-            spGender.setBackgroundColor(bgColorField)
+            spGender.background = bgField
+
             ivDropdownGender.setImageDrawable(drawableArrowDown)
 
             spGolDarah.isEnabled = !isConfirmState
             rlGolDarah.background = bgField
-            spGolDarah.setBackgroundColor(bgColorField)
+            spGolDarah.background = bgField
             ivDropdownGolDarah.setImageDrawable(drawableArrowDown)
 
             etAddress.apply {
@@ -476,7 +477,7 @@ class ConfirmationActivity : AppCompatActivity() {
 
             spMaritalStatus.isEnabled = !isConfirmState
             rlMaritalStatus.background = bgField
-            spMaritalStatus.setBackgroundColor(bgColorField)
+            spMaritalStatus.background = bgField
 
             ivDropdownMaritalStatus.setImageDrawable(drawableArrowDown)
 
