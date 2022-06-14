@@ -136,8 +136,8 @@ build.gradle (app)
 ```groovy
 
 dependencies{
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.7"
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.7"  
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.9"
+	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.9"  
 }
 ```
 
