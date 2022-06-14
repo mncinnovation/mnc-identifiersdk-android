@@ -305,7 +305,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                             val ocrResult =
                                 OCRResultModel(true, "Success", resultUri.path, usedKtp)
 
-                            val intent = Intent(this, ConfirmationActivity::class.java).apply {
+                            val intent = Intent(this, ConfirmationOCRActivity::class.java).apply {
                                 putExtra(EXTRA_RESULT, ocrResult)
                             }
                             resultLauncherConfirm.launch(intent)

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/black"
     android:paddingHorizontal="@dimen/margin_xsmall"
-    tools:context=".ConfirmationActivity">
+    tools:context=".ConfirmationOCRActivity">
 
     <ImageView
         android:id="@+id/iv_back"

@@ -91,7 +91,7 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
 
             val scanResult =
                 OCRResultModel(true, "Success", bitmapuri.path, ktpModel.apply { bitmap = it })
-            val intent = Intent(this@ScanOCRActivity, ConfirmationActivity::class.java).apply {
+            val intent = Intent(this@ScanOCRActivity, ConfirmationOCRActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }
             resultLauncherConfirm.launch(intent)

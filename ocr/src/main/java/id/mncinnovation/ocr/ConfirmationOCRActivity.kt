@@ -20,7 +20,7 @@ import id.mncinnovation.ocr.utils.*
 import java.util.*
 
 
-class ConfirmationActivity : AppCompatActivity() {
+class ConfirmationOCRActivity : AppCompatActivity() {
     private lateinit var binding: ActivityConfirmationOcrBinding
     private val viewModel = ConfirmationOCRViewModel()
     private val genders = arrayOf(GENDER_MALE, GENDER_FEMALE)
@@ -28,7 +28,7 @@ class ConfirmationActivity : AppCompatActivity() {
         arrayOf(MARITAL_MERRIED, MARITAL_SINGLE, MARITAL_DIVORCED, MARITAL_DEATH_DIVORCE)
     private val bloodGroups =
         arrayOf("-", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
-    var captureKtpResult: OCRResultModel? = null
+    private var captureKtpResult: OCRResultModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -288,12 +288,12 @@ class ConfirmationActivity : AppCompatActivity() {
                 }
             }
 
-            viewModel.isShouldEnableBtnNext.observe(this@ConfirmationActivity) { enable ->
+            viewModel.isShouldEnableBtnNext.observe(this@ConfirmationOCRActivity) { enable ->
                 btnNext.isEnabled = enable
                 btnNext.alpha = if (enable) 1.0f else 0.3f
             }
 
-            viewModel.state.observe(this@ConfirmationActivity) { state ->
+            viewModel.state.observe(this@ConfirmationOCRActivity) { state ->
                 setStateUpdate(state)
             }
         }
@@ -515,5 +515,5 @@ class ConfirmationActivity : AppCompatActivity() {
     }
 
     val context: Context
-        get() = this@ConfirmationActivity
+        get() = this@ConfirmationOCRActivity
 }
