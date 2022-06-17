@@ -1,4 +1,4 @@
-# MNC Identifier SDK
+# MNC Identifier SDK <img src="https://img.shields.io/github/v/release/mncinnovation/mnc-identifiersdk-android.svg?label=latest"/>
 
 ![banner_identifier](/screenshots/identifier-cover.jpeg)
 
