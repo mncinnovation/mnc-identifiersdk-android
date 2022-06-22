@@ -108,20 +108,30 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_nik"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_nik"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_white_corner_radius_solid"
-                android:digits="0123456789"
-                android:drawableEnd="@drawable/ic_edit"
-                android:inputType="number"
-                android:maxLength="16"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="4dp"
-                android:textColor="@color/black"
-                android:textSize="14sp" />
+                app:counterEnabled="true"
+                app:counterMaxLength="16"
+                app:counterTextColor="@color/white"
+                app:errorTextColor="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_nik"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_white_corner_radius_solid"
+                    android:digits="0123456789"
+                    android:drawableEnd="@drawable/ic_edit"
+                    android:inputType="number"
+                    android:maxLength="16"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="4dp"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:layout_width="wrap_content"
