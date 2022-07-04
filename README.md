@@ -171,7 +171,7 @@ Optional configuration to show button flash at camera activity and show camera o
 - Default value ``cameraOnly`` is ``false``.
 
 ```kotlin
-    //call this function before startCapture
+//call this function before startCapture
 MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
 ```
 
@@ -254,7 +254,7 @@ MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr)
         })
 ```
 
-Extract data OCR input options is below:
+Extract data OCR input options:
 
 - Uri : uri image file
 - List<Uri> : list of uri image files
