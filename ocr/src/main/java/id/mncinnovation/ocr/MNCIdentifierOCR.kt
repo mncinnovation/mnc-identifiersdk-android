@@ -3,11 +3,12 @@ package id.mncinnovation.ocr
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
+import androidx.core.net.toUri
 import id.mncinnovation.identification.core.common.CAPTURE_EKTP_REQUEST_CODE
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
-import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
 import id.mncinnovation.ocr.model.OCRResultModel
 
 
@@ -22,6 +23,23 @@ annotation class KeepDocumented
 
 @Keep
 object MNCIdentifierOCR {
+    internal var withFlash: Boolean? = null
+    internal var cameraOnly: Boolean? = null
+
+    /**
+     * Start capture
+     * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
+     * @param cameraOnly boolean value to show an activity camera only (without splash and confirmation screen) to get result OCR. The default value is false
+     */
+    @JvmStatic
+    @KeepDocumented
+    fun config(
+        @KeepDocumented withFlash: Boolean? = false,
+        @KeepDocumented cameraOnly: Boolean? = false
+    ) {
+        MNCIdentifierOCR.withFlash = withFlash
+        MNCIdentifierOCR.cameraOnly = cameraOnly
+    }
 
     /**
      * Start capture
@@ -35,7 +53,7 @@ object MNCIdentifierOCR {
     }
 
     /**
-     * Start capture
+     * Start capture directly without customize withFlash and cameraOnly
      * @param activity an Activity
      */
     @JvmStatic
@@ -49,48 +67,30 @@ object MNCIdentifierOCR {
     /**
      * Start capture
      * @param activity an Activity
-     * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
-     */
-    @JvmStatic
-    @KeepDocumented
-    fun startCapture(
-        @KeepDocumented activity: Activity,
-        @KeepDocumented withFlash: Boolean? = false
-    ) {
-        start(activity, withFlash)
-    }
-
-    /**
-     * Start capture
-     * @param activity an Activity
-     * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      * @param requestCode an unique request code for activity result
      */
     @JvmStatic
     @KeepDocumented
     fun startCapture(
         @KeepDocumented activity: Activity,
-        @KeepDocumented withFlash: Boolean? = false,
         @KeepDocumented requestCode: Int? = CAPTURE_EKTP_REQUEST_CODE
     ) {
-        start(activity, withFlash, requestCode)
+        start(activity, requestCode)
     }
 
     /**
      * Start capture activity (you need to override onActivityResult)
      * @param activity an Activity
-     * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      * @param requestCode an unique request code for activity result
      */
     @JvmStatic
     @KeepDocumented
-    fun start(
+    private fun start(
         @KeepDocumented activity: Activity,
-        @KeepDocumented withFlash: Boolean? = null,
         @KeepDocumented requestCode: Int? = null
     ) {
         activity.startActivityForResult(
-            getIntent(activity, withFlash),
+            getIntent(activity),
             requestCode ?: CAPTURE_EKTP_REQUEST_CODE
         )
     }
@@ -99,23 +99,74 @@ object MNCIdentifierOCR {
      * Start capture activity (you need to override onActivityResult)
      * @param context an Context
      * @param activityResultLauncher an ActivityResultLauncher<Intent>
-     * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      */
     @JvmStatic
     @KeepDocumented
     fun startCapture(
         @KeepDocumented context: Context,
-        @KeepDocumented activityResultLauncher: ActivityResultLauncher<Intent>,
-        @KeepDocumented withFlash: Boolean? = null
+        @KeepDocumented activityResultLauncher: ActivityResultLauncher<Intent>
     ) {
-        activityResultLauncher.launch(getIntent(context, withFlash))
+        activityResultLauncher.launch(getIntent(context))
     }
 
-    private fun getIntent(context: Context, withFlash: Boolean?): Intent {
+    private fun getIntent(
+        context: Context
+    ): Intent {
         return Intent(context, CaptureOCRActivity::class.java)
-            .putExtra(
-                EXTRA_WITH_FLASH,
-                withFlash
-            )
+    }
+
+    /**
+     * Function to extract Data OCR from one image path.
+     * @param imagePath list of image path
+     * @param context an Context
+     * @param listener an listener to listen on start and on finish process extract data.
+     */
+    fun extractData(
+        imagePath: String, context: Context,
+        listener: ExtractDataOCRListener
+    ) {
+        val uriList = mutableListOf<Uri>()
+        uriList.add(imagePath.toUri())
+
+        extractDataFromUri(uriList, context, listener)
+    }
+
+    /**
+     * Function to extract Data OCR from list of image path.
+     * Use this function to get best result by using many options of input images.
+     * @param imagePaths list of image path
+     * @param context an Context
+     * @param listener an listener to listen on start and on finish process extract data.
+     */
+    fun extractData(
+        imagePaths: List<String>,
+        context: Context,
+        listener: ExtractDataOCRListener
+    ) {
+        val uriList = mutableListOf<Uri>()
+        imagePaths.forEach {
+            uriList.add(it.toUri())
+        }
+        extractDataFromUri(uriList, context, listener)
+    }
+
+    fun extractDataFromUri(
+        uri: Uri,
+        context: Context,
+        listener: ExtractDataOCRListener
+    ) {
+        val uriList = mutableListOf<Uri>()
+        uriList.add(uri)
+        val extractDataOCR = ExtractDataOCR(context, listener)
+        extractDataOCR.processExtractData(uriList)
+    }
+
+    fun extractDataFromUri(
+        uriList: List<Uri>,
+        context: Context,
+        listener: ExtractDataOCRListener
+    ) {
+        val extractDataOCR = ExtractDataOCR(context, listener)
+        extractDataOCR.processExtractData(uriList)
     }
 }

@@ -133,6 +133,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Capture KTP"/>
+    <Button
+        android:id="@+id/btn_capture_ktp_own"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Capture KTP with Own Camera"/>
     <ImageView
         android:id="@+id/iv_ktp_capture"
         android:layout_width="wrap_content"
