@@ -27,3 +27,4 @@
 -keepclasseswithmembers class id.mncinnovation.ocr.MNCIdentifierOCR.* { *; }
 
 -keep class id.mncinnovation.ocr.model.** { *; }
+-keep interface id.mncinnovation.ocr.ExtractDataOCRListener { *; }

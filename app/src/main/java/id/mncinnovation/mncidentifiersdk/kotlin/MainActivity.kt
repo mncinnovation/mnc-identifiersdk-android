@@ -2,19 +2,30 @@ package id.mncinnovation.mncidentifiersdk.kotlin
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
+import id.mncinnovation.mncidentifiersdk.BuildConfig
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
+import id.mncinnovation.ocr.ExtractDataOCRListener
 import id.mncinnovation.ocr.MNCIdentifierOCR
 import id.mncinnovation.ocr.ScanOCRActivity
+import id.mncinnovation.ocr.model.OCRResultModel
+import java.io.File
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
+
+    private var latestTmpUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,8 +36,15 @@ class MainActivity : AppCompatActivity() {
                 resultLauncherOcr.launch(Intent(this@MainActivity, ScanOCRActivity::class.java))
             }
 
+            btnCaptureKtpOwn.setOnClickListener {
+                takeImage()
+            }
+
             btnCaptureKtp.setOnClickListener {
-                MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr, true)
+                MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
+                MNCIdentifierOCR.startCapture(
+                    this@MainActivity, resultLauncherOcr
+                )
             }
 
             btnLivenessDetection.setOnClickListener {
@@ -43,6 +61,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private val resultLauncherOwnCamera =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                latestTmpUri?.let {
+                    val uriList = mutableListOf<Uri>()
+                    uriList.add(it)
+                    MNCIdentifierOCR.extractDataFromUri(
+                        uriList,
+                        this@MainActivity,
+                        object : ExtractDataOCRListener {
+                            override fun onStart() {
+                                Log.d("TAGAPP", "onStart Process Extract")
+                            }
+
+                            override fun onFinish(result: OCRResultModel) {
+
+                                result.getBitmapImage()?.let { bitmap ->
+                                    binding.ivKtp.setImageBitmap(bitmap)
+                                }
+                                binding.tvScanKtp.text = result.toString()
+
+                            }
+                        })
+                }
+            } else {
+                Toast.makeText(this, "Capture image failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
     private val resultLauncherOcr =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -107,4 +155,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+    private fun takeImage() {
+        getTmpFileUri().let { uri ->
+            latestTmpUri = uri
+            resultLauncherOwnCamera.launch(uri)
+        }
+    }
+
+    private fun getTmpFileUri(): Uri {
+        val tmpFile = File.createTempFile("tmp_image_file", ".jpg", cacheDir).apply {
+            createNewFile()
+            deleteOnExit()
+        }
+
+        return FileProvider.getUriForFile(
+            applicationContext,
+            "${BuildConfig.APPLICATION_ID}.provider",
+            tmpFile
+        )
+    }
 }

@@ -12,6 +12,7 @@
         <entry key="../../.gradle/caches/transforms-3/75c6b37b5d5928d4f5c9d73a1a6b930b/transformed/jetified-camera-core-1.0.0/res/drawable/border_white.xml" value="0.134375" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.16621983914209115" />
         <entry key="app/src/main/res/layout/item_live_detection_result.xml" value="0.25" />
+        <entry key="app/src/main/res/xml/provider_paths.xml" value="0.1" />
         <entry key="camera-core/src/main/res/drawable/border_dash.xml" value="0.55" />
         <entry key="camera-core/src/main/res/drawable/border_white.xml" value="0.134375" />
         <entry key="camera-core/src/main/res/layout/activity_base_camera.xml" value="0.11822916666666666" />

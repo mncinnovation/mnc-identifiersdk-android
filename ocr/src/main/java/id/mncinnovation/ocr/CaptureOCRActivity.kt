@@ -2,7 +2,6 @@ package id.mncinnovation.ocr
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -18,30 +17,16 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.mlkit.common.model.LocalModel
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.objects.ObjectDetection
-import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.base.BaseCameraActivity
-import id.mncinnovation.identification.core.common.EXTRA_RESULT
-import id.mncinnovation.identification.core.common.EXTRA_WITH_FLASH
-import id.mncinnovation.identification.core.common.showCustomToast
-import id.mncinnovation.identification.core.common.toVisibilityOrGone
-import id.mncinnovation.identification.core.utils.BitmapUtils
-import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
-import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
+import id.mncinnovation.identification.core.common.*
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
+import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.PopupBottomsheetScanTimerOcrBinding
-import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.model.KTPModel
+import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
-import id.mncinnovation.ocr.utils.extractEktp
-import jp.co.cyberagent.android.gpuimage.GPUImage
-import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
@@ -62,17 +47,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private var flashMode = ImageCapture.FLASH_MODE_OFF
     private var camera: Camera? = null
 
-    private val localModel =
-        LocalModel.Builder().setAssetFilePath("custom_models/object_labeler.tflite").build()
-    private var option =
-        CustomObjectDetectorOptions.Builder(localModel)
-            .setDetectorMode(CustomObjectDetectorOptions.SINGLE_IMAGE_MODE)
-            .enableClassification()
-            .setMaxPerObjectLabelCount(1)
-            .build()
-    private val objectDetector = ObjectDetection.getClient(option)
-    private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private lateinit var gpuImage: GPUImage
     private var captureUseCase: ImageCapture? = null
     private var lightSensor: LightSensor? = null
     private var uriList = mutableListOf<Uri>()
@@ -80,7 +54,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!hasLaunchSplash)
+        if (!hasLaunchSplash && MNCIdentifierOCR.cameraOnly == false)
             resultLauncherSplash.launch(Intent(this, SplashOCRActivity::class.java))
 
         lightSensor = LightSensor(this, object : LightSensorListener {
@@ -92,27 +66,14 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             }
         })
 
-        gpuImage = GPUImage(this).apply {
-            setFilter(
-                GPUImageColorMatrixFilter(
-                    1f,
-                    floatArrayOf(
-                        0f, 0f, 1.3f, 0f,
-                        0f, 0f, 1.3f, 0f,
-                        0f, 0f, 1.3f, 0f,
-                        0f, 0f, 0f, 1f
-                    )
-                )
-            )
-        }
         uiContainer =
             LayoutInflater.from(this).inflate(R.layout.activity_capture_ocr, rootView, true)
         btnFlash = uiContainer.findViewById(R.id.ib_flash_mode)
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
 
-        btnFlash.visibility =
-            (intent?.getBooleanExtra(EXTRA_WITH_FLASH, false) ?: false).toVisibilityOrGone()
+        btnFlash.visibility = (MNCIdentifierOCR.withFlash ?: false).toVisibilityOrGone()
+
         btnFlash.setOnClickListener {
             flashMode =
                 if (flashMode == ImageCapture.FLASH_MODE_OFF) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
@@ -191,9 +152,35 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                             uriList.add(savedUri)
                         }
                         if (uriList.size == MAX_CAPTURE) {
-                            uriList.forEach {
-                                extractDataKtp(it)
-                            }
+                            MNCIdentifierOCR.extractDataFromUri(
+                                uriList,
+                                this@CaptureOCRActivity,
+                                object : ExtractDataOCRListener {
+                                    override fun onStart() {
+                                        if (isCaptured) {
+                                            showProgressDialog()
+                                        }
+                                    }
+
+                                    override fun onFinish(result: OCRResultModel) {
+                                        hideProgressDialog()
+                                        if (MNCIdentifierOCR.cameraOnly == true) {
+                                            val intent = Intent().apply {
+                                                putExtra(EXTRA_RESULT, result)
+                                            }
+                                            setResult(RESULT_OK, intent)
+                                            finish()
+                                        } else {
+                                            val intent = Intent(
+                                                this@CaptureOCRActivity,
+                                                ConfirmationOCRActivity::class.java
+                                            ).apply {
+                                                putExtra(EXTRA_RESULT, result)
+                                            }
+                                            resultLauncherConfirm.launch(intent)
+                                        }
+                                    }
+                                })
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -201,117 +188,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
                 }
             })
-    }
-
-    private fun extractDataKtp(uri: Uri) {
-        lightSensor?.closeSensor()
-        if (isCaptured) {
-            showProgressDialog()
-        }
-        val imageBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
-            ?: return
-        objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
-            .addOnSuccessListener { objects ->
-                val cropedBitmap = if (objects.isEmpty()) imageBitmap else
-                    Bitmap.createBitmap(
-                        imageBitmap,
-                        objects.first().boundingBox.left,
-                        objects.first().boundingBox.top,
-                        objects.first().boundingBox.width(),
-                        objects.first().boundingBox.height()
-                    )
-                val resultUri = saveBitmapToFile(cropedBitmap, filesDir.absolutePath, "ktpocr.jpg")
-                val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
-                textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
-                    .addOnSuccessListener { text ->
-                        val ktp = text.extractEktp()
-                        ktpList.add(ktp)
-                        if (ktpList.size == uriList.size) {
-                            hideProgressDialog()
-                            val usedKtp = ktpList.first()
-                            if (ktpList.size > 1) {
-                                for (i in 1 until ktpList.size) {
-                                    val nextKtp = ktpList[i]
-                                    if (usedKtp.confidence <= nextKtp.confidence) {
-                                        if (usedKtp.nik == null) {
-                                            usedKtp.nik = nextKtp.nik.takeIf { it != null }
-                                        }
-                                        if (usedKtp.nama == null) {
-                                            usedKtp.nama = nextKtp.nama.takeIf { it != null }
-                                        }
-                                        if (usedKtp.tempatLahir == null) {
-                                            usedKtp.tempatLahir =
-                                                nextKtp.tempatLahir.takeIf { it != null }
-                                        }
-                                        if (usedKtp.golDarah == null) {
-                                            usedKtp.golDarah =
-                                                nextKtp.golDarah.takeIf { it != null }
-                                        }
-                                        if (usedKtp.tglLahir == null) {
-                                            usedKtp.tglLahir =
-                                                nextKtp.tglLahir.takeIf { it != null }
-                                        }
-                                        if (usedKtp.jenisKelamin == null) {
-                                            usedKtp.jenisKelamin =
-                                                nextKtp.jenisKelamin.takeIf { it != null }
-                                        }
-                                        if (usedKtp.alamat == null) {
-                                            usedKtp.alamat = nextKtp.alamat.takeIf { it != null }
-                                        }
-                                        if (usedKtp.rt == null) {
-                                            usedKtp.rt = nextKtp.rt.takeIf { it != null }
-                                        }
-                                        if (usedKtp.rw == null) {
-                                            usedKtp.rw = nextKtp.rw.takeIf { it != null }
-                                        }
-                                        if (usedKtp.kelurahan == null) {
-                                            usedKtp.kelurahan =
-                                                nextKtp.kelurahan.takeIf { it != null }
-                                        }
-                                        if (usedKtp.kecamatan == null) {
-                                            usedKtp.kecamatan =
-                                                nextKtp.kecamatan.takeIf { it != null }
-                                        }
-                                        if (usedKtp.agama == null) {
-                                            usedKtp.agama = nextKtp.agama.takeIf { it != null }
-                                        }
-                                        if (usedKtp.statusPerkawinan == null) {
-                                            usedKtp.statusPerkawinan =
-                                                nextKtp.statusPerkawinan.takeIf { it != null }
-                                        }
-                                        if (usedKtp.pekerjaan == null) {
-                                            usedKtp.pekerjaan =
-                                                nextKtp.pekerjaan.takeIf { it != null }
-                                        }
-                                        if (usedKtp.kewarganegaraan == null) {
-                                            usedKtp.kewarganegaraan =
-                                                nextKtp.kewarganegaraan.takeIf { it != null }
-                                        }
-                                        if (usedKtp.berlakuHingga == null) {
-                                            usedKtp.berlakuHingga =
-                                                nextKtp.berlakuHingga.takeIf { it != null }
-                                        }
-                                        if (usedKtp.provinsi == null) {
-                                            usedKtp.provinsi =
-                                                nextKtp.provinsi.takeIf { it != null }
-                                        }
-                                        if (usedKtp.kabKot == null) {
-                                            usedKtp.kabKot = nextKtp.kabKot.takeIf { it != null }
-                                        }
-                                    }
-                                }
-                            }
-
-                            val ocrResult =
-                                OCRResultModel(true, "Success", resultUri.path, usedKtp)
-
-                            val intent = Intent(this, ConfirmationOCRActivity::class.java).apply {
-                                putExtra(EXTRA_RESULT, ocrResult)
-                            }
-                            resultLauncherConfirm.launch(intent)
-                        }
-                    }
-            }
     }
 
     override fun onResume() {

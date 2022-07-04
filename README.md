@@ -6,11 +6,9 @@ MNC Identifier is a service to identify, and verify consumer with AI in it.
 
 ## Table
 
-
 * [About Identifier](https://mobile.mncinnovation.id/docs/mncidentifier/overview/)
-* [Liveness Detection](#liveness-detection) 
+* [Liveness Detection](#liveness-detection)
 * [OCR](#ocr-optical-character-recognition)
-
 
 ---
 
@@ -18,7 +16,8 @@ MNC Identifier is a service to identify, and verify consumer with AI in it.
 
 ![banner_liveness](/screenshots/banner_liveness.jpeg)
 
-Liveness Detection using mlkit face recognition to detect live person present at the point of capture.
+Liveness Detection using mlkit face recognition to detect live person present at the point of
+capture.
 
 ### Requirements
 
@@ -113,7 +112,6 @@ MNCIdentifier.setDetectionModeSequence(
 
 ![banner_ocr](/screenshots/banner_ocr.jpeg)
 
-
 Optical Character Recognition using mlkit text recognition to detect text at the point of capture.
 
 ### Requirements
@@ -135,9 +133,9 @@ build.gradle (app)
 
 ```groovy
 
-dependencies{
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.0.9"
-	implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.0.9"  
+dependencies {
+    implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.1.0"
+    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.1.0"
 }
 ```
 
@@ -145,38 +143,47 @@ AndroidManifest.xml
 
 ```xml
 
-<application ...>
-	...
-	<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
-		   android:value="ocr" />
-</application>
+    <application ...>    
+        ...    
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
+                    android:value="ocr" />
+    </application>
 ```
 
 If you use face and ocr, AndroidManifest.xml
 
 ```xml
 
-<application ...>
-	...
-	<meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
-		   android:value="face, ocr" />
-</application>
+    <application ...>    
+        ...    
+        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
+                    android:value="face, ocr" />
+        </application>
 ```
 
 ### How To Use
 
-Start scan to capture activity
+#### Get OCR result by using scan camera from MNC Identifier
+
+Optional configuration to show button flash at camera activity and show camera only screen.
+
+- Default value ``withFlash`` is ``false``.
+- Default value ``cameraOnly`` is ``false``.
+
+```kotlin
+    //call this function before startCapture
+MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
+```
+
+Start to capture OCR result activity
 
 ```kotlin
 
 //start directly
 MNCIdentifierOCR.startCapture(this@MainActivity)
 
-//withFlash value
-MNCIdentifierOCR.startCapture(this@MainActivity, true)
-
-//or withFlash value and also requestCode value
-MNCIdentifierOCR.startCapture(this@MainActivity, true, CAPTURE_EKTP_REQUEST_CODE)
+//or with requestCode value
+MNCIdentifierOCR.startCapture(this@MainActivity, CAPTURE_EKTP_REQUEST_CODE)
 
 companion object {
     const val CAPTURE_EKTP_REQUEST_CODE = xxxx
@@ -221,5 +228,35 @@ private val resultLauncherOcr =
         }
     }
 
-MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr, true)
+MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr)
 ```
+
+#### Get OCR result by using function extract data. MNCIdentifier will receive input image from your app.
+
+```kotlin
+    //call this function to get extract data from uri of image 
+    MNCIdentifierOCR.extractDataFromUri(
+        uriList,
+        this@MainActivity,
+        object : ExtractDataOCRListener {
+            override fun onStart() {
+                Log.d("TAGAPP", "onStart Process Extract")
+            }
+    
+            override fun onFinish(result: OCRResultModel) {
+    
+                result.getBitmapImage()?.let { bitmap ->
+                    binding.ivKtp.setImageBitmap(bitmap)
+                }
+                binding.tvScanKtp.text = result.toString()
+    
+            }
+        })
+```
+
+Extract data OCR input options is below:
+
+- Uri : uri image file
+- List<Uri> : list of uri image files
+- String : path image file
+- List<String> : list of path image files
