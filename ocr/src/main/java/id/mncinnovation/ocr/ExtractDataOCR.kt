@@ -45,8 +45,8 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
     fun processExtractData(uriList: List<Uri>) {
         listener.onStart()
-        uriList.forEach {
-            val imageBitmap = BitmapUtils.getBitmapFromContentUri(context.contentResolver, it)
+        uriList.forEach { uri ->
+            val imageBitmap = BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri)
                 ?: return
             objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
                 .addOnSuccessListener { objects ->

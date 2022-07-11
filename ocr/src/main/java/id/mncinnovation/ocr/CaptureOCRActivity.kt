@@ -236,8 +236,8 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     //Listener of CaptureKtpListener
     override fun onStatusChanged(status: Status) {
+        if (isCaptured) return
         if (status == Status.SCANNING) {
-            if (isCaptured) return
             showPopupHoldScanDialog()
         } else {
             clearDataCapture()
