@@ -42,9 +42,10 @@ class MainActivity : AppCompatActivity() {
 
             btnCaptureKtp.setOnClickListener {
                 MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
-                MNCIdentifierOCR.startCapture(
-                    this@MainActivity, resultLauncherOcr
-                )
+                MNCIdentifierOCR.startCapture(this@MainActivity, 102)
+//                MNCIdentifierOCR.startCapture(
+//                    this@MainActivity, resultLauncherOcr
+//                )
             }
 
             btnLivenessDetection.setOnClickListener {
@@ -156,6 +157,20 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == 102){
+        if (resultCode == Activity.RESULT_OK) {
+            val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
+            captureOCRResult?.let { ktpResult ->
+                ktpResult.getBitmapImage()?.let {
+                    binding.ivKtp.setImageBitmap(it)
+                }
+                binding.tvScanKtp.text = captureOCRResult.toString()
+            }
+        }
+    }
+}
     private fun takeImage() {
         getTmpFileUri().let { uri ->
             latestTmpUri = uri
