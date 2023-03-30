@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.ToggleButton
-import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -23,7 +22,6 @@ import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.identification.core.GraphicOverlay
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
-import id.mncinnovation.identification.core.common.alert
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
@@ -75,11 +73,9 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
                 countdownTime--
                 if (countdownTime==0){
                     stopTimer()
-                    alert("TimeOut", isCancelable = false){
-                        val livenessResult = LivenessResult(false, "User Timeout")
-                        setResult(RESULT_OK, Intent().putExtra(EXTRA_RESULT,livenessResult))
-                        finish()
-                    }
+                    val livenessResult = LivenessResult(false, "User Timeout")
+                    setResult(RESULT_OK, Intent().putExtra(EXTRA_RESULT,livenessResult))
+                    finish()
                 }
             }
         }
