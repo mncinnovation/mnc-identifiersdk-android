@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -34,6 +35,7 @@ import kotlin.concurrent.fixedRateTimer
 class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
     private lateinit var btnFlash: ImageButton
+    private lateinit var tvMessage: TextView
     private lateinit var gifLoading: LottieAnimationView
     private var hasLaunchSplash = false
     private var bottomSheetDialog: BottomSheetDialog? = null
@@ -60,24 +62,29 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         lightSensor = LightSensor(this, object : LightSensorListener {
             override fun onCurrentLightChanged(value: Int) {
                 val isLowLight = value < 5
-                if (isLowLight && flashMode == ImageCapture.FLASH_MODE_OFF) {
-                    showCustomToast(if (btnFlash.visibility == View.VISIBLE) "Cahaya terlalu gelap, bisa menggunakan flash" else "Cahaya terlalu gelap, silahkan mencari tempat yang lebih terang")
-                }
+                tvMessage.visibility = (isLowLight).toVisibilityOrGone()
             }
         })
 
         uiContainer =
             LayoutInflater.from(this).inflate(R.layout.activity_capture_ocr, rootView, true)
         btnFlash = uiContainer.findViewById(R.id.ib_flash_mode)
+        tvMessage = uiContainer.findViewById(R.id.tv_message)
         gifLoading = uiContainer.findViewById(R.id.gif_loading)
         hideProgressDialog()
 
         btnFlash.visibility = (MNCIdentifierOCR.withFlash ?: false).toVisibilityOrGone()
 
+        tvMessage.visibility = View.GONE
+        setMessageIsTorchEnable(false)
+
         btnFlash.setOnClickListener {
             flashMode =
                 if (flashMode == ImageCapture.FLASH_MODE_OFF) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
             val isTorchEnable = flashMode == ImageCapture.FLASH_MODE_ON
+
+            setMessageIsTorchEnable(isTorchEnable)
+
             btnFlash.setImageDrawable(
                 ContextCompat.getDrawable(
                     this,
@@ -86,6 +93,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             )
             camera?.cameraControl?.enableTorch(isTorchEnable)
         }
+    }
+
+    private fun setMessageIsTorchEnable(isActive: Boolean) {
+        tvMessage.text = if (isActive) "Cahaya terlalu gelap, silahkan mencari tempat yang lebih terang" else "Cahaya terlalu gelap, bisa menggunakan flash"
     }
 
     override fun startCamera(
