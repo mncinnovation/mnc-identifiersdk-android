@@ -121,6 +121,7 @@ object MNCIdentifierOCR {
      * @param context an Context
      * @param listener an listener to listen on start and on finish process extract data.
      */
+    @JvmStatic
     fun extractData(
         imagePath: String, context: Context,
         listener: ExtractDataOCRListener
@@ -138,6 +139,7 @@ object MNCIdentifierOCR {
      * @param context an Context
      * @param listener an listener to listen on start and on finish process extract data.
      */
+    @JvmStatic
     fun extractData(
         imagePaths: List<String>,
         context: Context,
@@ -150,6 +152,7 @@ object MNCIdentifierOCR {
         extractDataFromUri(uriList, context, listener)
     }
 
+    @JvmStatic
     fun extractDataFromUri(
         uri: Uri,
         context: Context,
@@ -161,6 +164,7 @@ object MNCIdentifierOCR {
         extractDataOCR.processExtractData(uriList)
     }
 
+    @JvmStatic
     fun extractDataFromUri(
         uriList: List<Uri>,
         context: Context,
