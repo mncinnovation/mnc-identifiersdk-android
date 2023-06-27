@@ -41,7 +41,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnCaptureKtp.setOnClickListener {
-                MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
+                MNCIdentifierOCR.config(
+                    true, //withFlash
+                    true, //cameraOnly
+                )
                 MNCIdentifierOCR.startCapture(this@MainActivity, 102)
 //                MNCIdentifierOCR.startCapture(
 //                    this@MainActivity, resultLauncherOcr
