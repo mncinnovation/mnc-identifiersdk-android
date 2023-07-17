@@ -67,8 +67,8 @@ class ConfirmationOCRActivity : AppCompatActivity() {
 
                     etNik.setText(nik)
                     checkNIK(nik ?: "")
-                    etFullname.setText(nama)
-                    etBornPlace.setText(tempatLahir)
+                    etFullname.setText(nama?.removeAccents())
+                    etBornPlace.setText(tempatLahir?.removeAccents())
                     etBirthdate.setText(tglLahir)
                     if (jenisKelamin == GENDER_MALE) {
                         spGender.setSelection(0)
@@ -90,13 +90,13 @@ class ConfirmationOCRActivity : AppCompatActivity() {
                         "O-" -> spGolDarah.setSelection(12)
                         else -> spGolDarah.setSelection(0)
                     }
-                    etAddress.setText(alamat)
+                    etAddress.setText(alamat?.removeAccents())
                     etRt.setText(rt)
                     etRw.setText(rw)
-                    etVillage.setText(kelurahan)
-                    etDistrict.setText(kecamatan)
-                    etCity.setText(kabKot)
-                    etProvince.setText(provinsi)
+                    etVillage.setText(kelurahan?.removeAccents())
+                    etDistrict.setText(kecamatan?.removeAccents())
+                    etCity.setText(kabKot?.removeAccents())
+                    etProvince.setText(provinsi?.removeAccents())
                     etReligion.setText(agama)
 
                     spMaritalStatus.setSelection(
@@ -108,8 +108,8 @@ class ConfirmationOCRActivity : AppCompatActivity() {
                         }
                     )
 
-                    etJob.setText(pekerjaan)
-                    etCitizenship.setText(kewarganegaraan)
+                    etJob.setText(pekerjaan?.removeAccents())
+                    etCitizenship.setText(kewarganegaraan?.removeAccents())
                     etExpiredDate.setText(berlakuHingga)
                     viewModel.checkValues(this)
                 }
