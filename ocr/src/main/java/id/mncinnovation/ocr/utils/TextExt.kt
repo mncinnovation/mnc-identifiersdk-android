@@ -5,6 +5,8 @@ import com.google.mlkit.vision.text.Text
 import id.mncinnovation.ocr.BuildConfig
 import id.mncinnovation.ocr.model.KTPModel
 import org.json.JSONObject
+import java.text.Normalizer
+import java.util.regex.Pattern
 
 
 fun Text.findAndClean(line: Text.Line, key: String): String? {
@@ -479,6 +481,12 @@ fun String.filterAlphabetToNumber(): String {
         .replace("S", "5")
         .replace("T", "7")
         .replace("B", "8")
+}
+
+fun String.removeAccents(): String {
+    val normalizedString = Normalizer.normalize(this, Normalizer.Form.NFD)
+    val pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+    return pattern.matcher(normalizedString).replaceAll("")
 }
 
 const val CITIZEN_WNI = "WNI"
