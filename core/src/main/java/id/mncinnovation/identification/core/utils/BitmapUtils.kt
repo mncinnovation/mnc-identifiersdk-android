@@ -19,7 +19,6 @@ import androidx.annotation.RequiresApi
 import android.os.Build.VERSION_CODES
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
-import kotlin.Throws
 import android.content.ContentResolver
 import android.provider.MediaStore
 import android.media.Image.Plane
@@ -92,35 +91,48 @@ object BitmapUtils {
         }
         return rotatedBitmap
     }
-
-    @Throws(IOException::class)
-    fun getBitmapFromContentUri(contentResolver: ContentResolver, imageUri: Uri): Bitmap? {
-        val decodedBitmap =
-            MediaStore.Images.Media.getBitmap(contentResolver, imageUri) ?: return null
-        val orientation = getExifOrientationTag(contentResolver, imageUri)
-        var rotationDegrees = 0
-        var flipX = false
-        var flipY = false
-        when (orientation) {
-            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> flipX = true
-            ExifInterface.ORIENTATION_ROTATE_90 -> rotationDegrees = 90
-            ExifInterface.ORIENTATION_TRANSPOSE -> {
-                rotationDegrees = 90
-                flipX = true
+//
+fun getBitmapFromContentUri(
+    contentResolver: ContentResolver,
+    imageUri: Uri,
+    onError: (String) -> Unit
+): Bitmap? {
+        try {
+            val decodedBitmap =
+                MediaStore.Images.Media.getBitmap(contentResolver, imageUri) ?: return null
+            val orientation = getExifOrientationTag(contentResolver, imageUri)
+            var rotationDegrees = 0
+            var flipX = false
+            var flipY = false
+            when (orientation) {
+                ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> flipX = true
+                ExifInterface.ORIENTATION_ROTATE_90 -> rotationDegrees = 90
+                ExifInterface.ORIENTATION_TRANSPOSE -> {
+                    rotationDegrees = 90
+                    flipX = true
+                }
+                ExifInterface.ORIENTATION_ROTATE_180 -> rotationDegrees = 180
+                ExifInterface.ORIENTATION_FLIP_VERTICAL -> flipY = true
+                ExifInterface.ORIENTATION_ROTATE_270 -> rotationDegrees = -90
+                ExifInterface.ORIENTATION_TRANSVERSE -> {
+                    rotationDegrees = -90
+                    flipX = true
+                }
+                ExifInterface.ORIENTATION_UNDEFINED, ExifInterface.ORIENTATION_NORMAL -> {
+                }
+                else -> {
+                }
             }
-            ExifInterface.ORIENTATION_ROTATE_180 -> rotationDegrees = 180
-            ExifInterface.ORIENTATION_FLIP_VERTICAL -> flipY = true
-            ExifInterface.ORIENTATION_ROTATE_270 -> rotationDegrees = -90
-            ExifInterface.ORIENTATION_TRANSVERSE -> {
-                rotationDegrees = -90
-                flipX = true
-            }
-            ExifInterface.ORIENTATION_UNDEFINED, ExifInterface.ORIENTATION_NORMAL -> {
-            }
-            else -> {
-            }
+            return rotateBitmap(decodedBitmap, rotationDegrees, flipX, flipY)
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            onError("Terjadi kesalahan pada saat memproses gambar")
+            return null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            onError("Terjadi kesalahan pada saat memproses gambar")
+            return null
         }
-        return rotateBitmap(decodedBitmap, rotationDegrees, flipX, flipY)
     }
 
     private fun getExifOrientationTag(resolver: ContentResolver, imageUri: Uri): Int {

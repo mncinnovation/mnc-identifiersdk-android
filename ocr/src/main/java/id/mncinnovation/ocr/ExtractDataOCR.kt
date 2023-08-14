@@ -46,8 +46,10 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
     fun processExtractData(uriList: List<Uri>) {
         listener.onStart()
         uriList.forEach { uri ->
-            val imageBitmap = BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri)
-                ?: return
+            val imageBitmap = BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
+                listener.onError(message)
+            } ?: return
+
             objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
                 .addOnSuccessListener { objects ->
                     val cropedBitmap = if (objects.isEmpty()) imageBitmap else
@@ -170,4 +172,9 @@ interface ExtractDataOCRListener {
      * @param result an result data ocr
      */
     fun onFinish(result: OCRResultModel)
+
+    /**
+     * Function to listen onFailed process of extract data ocr
+     */
+    fun onError(message: String?)
 }

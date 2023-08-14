@@ -9,6 +9,8 @@ import id.mncinnovation.identification.core.common.EXTRA_RESULT
 
 object MNCIdentifier {
     private var attempt = 0
+    internal var lowMemoryThreshold: Int? = null
+
     var detectionMode = listOf(
         DetectionMode.HOLD_STILL,
         DetectionMode.OPEN_MOUTH,
@@ -22,6 +24,11 @@ object MNCIdentifier {
         MNCIdentifier.detectionMode = detectionMode.run {
             if (shuffle) shuffled() else this
         }
+    }
+
+    @JvmStatic
+    fun setLowMemoryThreshold(threshold: Int){
+        lowMemoryThreshold = threshold
     }
 
     @JvmStatic

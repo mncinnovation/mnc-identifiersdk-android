@@ -1,5 +1,6 @@
 package id.mncinnovation.face_detection
 
+import android.app.ActivityManager
 import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Bitmap
@@ -24,16 +25,16 @@ import id.mncinnovation.face_detection.analyzer.FaceDetectionAnalyzer
 import id.mncinnovation.face_detection.analyzer.FaceDetectionListener
 import id.mncinnovation.face_detection.model.SelfieWithKtpResult
 import id.mncinnovation.identification.core.base.BaseCameraActivity
-import id.mncinnovation.identification.core.common.EXTRA_IMAGE_URI
-import id.mncinnovation.identification.core.common.EXTRA_LIST_IMAGE_URI
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils
+import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import java.io.File
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 @Suppress("DEPRECATION")
 class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
+    private var memoryUsageMonitor: MemoryUsageMonitor? = null
     private lateinit var uiContainer: View
     private lateinit var btnCapture: ImageButton
     private lateinit var tvFaceNotFound: TextView
@@ -57,9 +58,11 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
         tvFaceNotFound = uiContainer.findViewById(R.id.tv_face_notfound)
         tvTimer = uiContainer.findViewById(R.id.tv_timer)
         btnCapture.setOnClickListener {
-            captureImage()
+            memoryUsageMonitor?.checkMemoryAndProceed {
+                captureImage()
+            }
         }
-
+        memoryUsageMonitor = MemoryUsageMonitor(this, getSystemService(ACTIVITY_SERVICE) as ActivityManager, lowMemoryThreshold = MNCIdentifier.lowMemoryThreshold)
     }
 
     private fun captureImage(){
@@ -139,7 +142,10 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
     private fun extractFace(uri: Uri) {
         showProgressDialog()
         val faceImages = mutableListOf<Uri>()
-        val originalBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri)
+        val originalBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri, onError = { message ->
+            Log.e(TAG, message)
+            handleResult(false,message, uri, faceImages)
+        })
         originalBitmap?.let {
             faceDetector.process(InputImage.fromFilePath(this, uri))
                 .addOnSuccessListener {
@@ -157,15 +163,19 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
                     }
                 }
                 .addOnCompleteListener {
-                    val selfieResult = SelfieWithKtpResult(true,"Success", uri, faceImages)
-                    val intent = Intent().apply {
-                        putExtra(EXTRA_RESULT, selfieResult)
-                    }
-                    setResult(RESULT_OK, intent)
-                    hideProgressDialog()
-                    finish()
+                    handleResult(true,"Success", uri, faceImages)
                 }
         }
+    }
+
+    private fun handleResult(isSuccess: Boolean, message: String, uri: Uri, faceImages: List<Uri>) {
+        val selfieResult = SelfieWithKtpResult(isSuccess, message, uri, faceImages)
+        val intent = Intent().apply {
+            putExtra(EXTRA_RESULT, selfieResult)
+        }
+        setResult(RESULT_OK, intent)
+        hideProgressDialog()
+        finish()
     }
 
     private fun startCountdownTimer(){

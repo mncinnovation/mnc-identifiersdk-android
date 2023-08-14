@@ -1,6 +1,8 @@
 package id.mncinnovation.ocr
 
 import android.app.Activity
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,14 +14,21 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import id.mncinnovation.identification.core.base.BaseCameraActivity
-import id.mncinnovation.identification.core.common.*
+import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.toVisibilityOrGone
+import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
 import id.mncinnovation.ocr.analyzer.CaptureOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.Status
@@ -29,8 +38,9 @@ import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
 import java.io.File
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
+
 
 class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private lateinit var uiContainer: View
@@ -53,6 +63,8 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private var lightSensor: LightSensor? = null
     private var uriList = mutableListOf<Uri>()
     private var ktpList = mutableListOf<KTPModel>()
+
+    private var memoryUsageMonitor: MemoryUsageMonitor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +105,8 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             )
             camera?.cameraControl?.enableTorch(isTorchEnable)
         }
+
+        memoryUsageMonitor = MemoryUsageMonitor(this, getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager, lowMemoryThreshold = MNCIdentifierOCR.lowMemoryThreshold)
     }
 
     private fun setMessageIsTorchEnable(isActive: Boolean) {
@@ -191,6 +205,16 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                                             resultLauncherConfirm.launch(intent)
                                         }
                                     }
+
+                                    override fun onError(message: String?) {
+                                        Log.e(TAG, "Failed extract ocr: $message")
+
+                                        val intent = Intent().apply {
+                                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
+                                        }
+                                        setResult(RESULT_OK, intent)
+                                        finish()
+                                    }
                                 })
                         }
                     } catch (e: Exception) {
@@ -249,7 +273,9 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     override fun onStatusChanged(status: Status) {
         if (isCaptured) return
         if (status == Status.SCANNING) {
-            showPopupHoldScanDialog()
+            memoryUsageMonitor?.checkMemoryAndProceed {
+                showPopupHoldScanDialog()
+            }
         } else {
             clearDataCapture()
             stopTimer()

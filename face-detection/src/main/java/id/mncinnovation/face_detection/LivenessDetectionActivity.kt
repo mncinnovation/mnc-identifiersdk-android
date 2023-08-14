@@ -1,5 +1,6 @@
 package id.mncinnovation.face_detection
 
+import android.app.ActivityManager
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
@@ -22,6 +23,7 @@ import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.identification.core.GraphicOverlay
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
@@ -41,6 +43,8 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
     private var timer: Timer? = null
     private var countdownTime = COUNTDOWN_TIME
     private var currentDetection: DetectionMode? = null
+
+    private var memoryUsageMonitor: MemoryUsageMonitor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +66,9 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
                 textToSpeech.stop()
         }
         initTextToSpeech()
+
+        memoryUsageMonitor = MemoryUsageMonitor(this, getSystemService(ACTIVITY_SERVICE) as ActivityManager, lowMemoryThreshold = MNCIdentifier.lowMemoryThreshold)
+        memoryUsageMonitor?.checkMemory()
     }
 
 
