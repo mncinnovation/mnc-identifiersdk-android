@@ -31,6 +31,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        MNCIdentifier.setLowMemoryThreshold(50) // for face detection
+
         with(binding) {
             btnScanKtp.setOnClickListener {
                 resultLauncherOcr.launch(Intent(this@MainActivity, ScanOCRActivity::class.java))
@@ -42,13 +45,11 @@ class MainActivity : AppCompatActivity() {
 
             btnCaptureKtp.setOnClickListener {
                 MNCIdentifierOCR.config(
-                    true, //withFlash
-                    true, //cameraOnly
+                    withFlash = true, //withFlash
+                    cameraOnly = true, //cameraOnly
+                    lowMemoryThreshold = 50 // for ocr
                 )
                 MNCIdentifierOCR.startCapture(this@MainActivity, 102)
-//                MNCIdentifierOCR.startCapture(
-//                    this@MainActivity, resultLauncherOcr
-//                )
             }
 
             btnLivenessDetection.setOnClickListener {
@@ -81,12 +82,15 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             override fun onFinish(result: OCRResultModel) {
-
                                 result.getBitmapImage()?.let { bitmap ->
                                     binding.ivKtp.setImageBitmap(bitmap)
                                 }
                                 binding.tvScanKtp.text = result.toString()
 
+                            }
+
+                            override fun onError(message: String?) {
+                                handleError(message)
                             }
                         })
                 }
@@ -102,10 +106,14 @@ class MainActivity : AppCompatActivity() {
                 val data = result.data
                 val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { ktpResult ->
-                    ktpResult.getBitmapImage()?.let {
-                        binding.ivKtp.setImageBitmap(it)
+                    if (ktpResult.isSuccess) {
+                        ktpResult.getBitmapImage()?.let {
+                            binding.ivKtp.setImageBitmap(it)
+                        }
+                        binding.tvScanKtp.text = captureOCRResult.toString()
+                    } else {
+                        handleError(ktpResult.errorMessage)
                     }
-                    binding.tvScanKtp.text = captureOCRResult.toString()
                 }
             }
         }
@@ -116,18 +124,20 @@ class MainActivity : AppCompatActivity() {
                 val data = result.data
                 val livenessResult = MNCIdentifier.getLivenessResult(data)
                 livenessResult?.let {
-                    binding.tvAttempt.apply {
-                        visibility = View.VISIBLE
-                        text = "Attempt: ${it.attempt}"
-                    }
-                    val livenessResultAdapter = LivenessResultAdapter(it)
-                    binding.rvLiveness.apply {
-                        layoutManager = LinearLayoutManager(
-                            this@MainActivity,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                        adapter = livenessResultAdapter
+                    if (it.isSuccess) {
+                        binding.tvAttempt.apply {
+                            visibility = View.VISIBLE
+                            text = "Attempt: ${it.attempt}"
+                        }
+                        val livenessResultAdapter = LivenessResultAdapter(it)
+                        binding.rvLiveness.apply {
+                            layoutManager = LinearLayoutManager(
+                                this@MainActivity,
+                                LinearLayoutManager.HORIZONTAL,
+                                false
+                            )
+                            adapter = livenessResultAdapter
+                        }
                     }
                 }
             }
@@ -139,26 +149,41 @@ class MainActivity : AppCompatActivity() {
                 val data = result.data
                 val selfieResult = MNCIdentifier.getSelfieResult(data)
                 selfieResult?.let { selfieWithKtpResult ->
-                    selfieWithKtpResult.getBitmap(this)?.let {
-                        binding.ivSelfieWKtpOri.setImageBitmap(it)
-                    }
-                    selfieWithKtpResult.getListFaceBitmap(this).forEachIndexed { index, bitmap ->
-                        when (index) {
-                            0 -> {
-                                binding.ivFace1.apply {
-                                    visibility = View.VISIBLE
-                                    setImageBitmap(bitmap)
+                    if(selfieWithKtpResult.isSuccess) {
+                        selfieWithKtpResult.getBitmap(this) { message ->
+                            handleError(message)
+                        }?.let {
+                            binding.ivSelfieWKtpOri.setImageBitmap(it)
+                        }
+                        selfieWithKtpResult.getListFaceBitmap(this) { message ->
+                            handleError(message)
+                        }
+                            .forEachIndexed { index, bitmap ->
+                                when (index) {
+                                    0 -> {
+                                        binding.ivFace1.apply {
+                                            visibility = View.VISIBLE
+                                            setImageBitmap(bitmap)
+                                        }
+                                    }
+
+                                    1 -> binding.ivFace2.apply {
+                                        visibility = View.VISIBLE
+                                        setImageBitmap(bitmap)
+                                    }
                                 }
                             }
-                            1 -> binding.ivFace2.apply {
-                                visibility = View.VISIBLE
-                                setImageBitmap(bitmap)
-                            }
-                        }
+                    } else {
+                        handleError(selfieResult.errorMessage)
                     }
                 }
             }
         }
+
+    private fun handleError(errorMessage: String?) {
+        Log.d(this.javaClass.name, "Error : $errorMessage")
+        Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -166,10 +191,14 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK) {
             val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
             captureOCRResult?.let { ktpResult ->
-                ktpResult.getBitmapImage()?.let {
-                    binding.ivKtp.setImageBitmap(it)
+                if (ktpResult.isSuccess){
+                    ktpResult.getBitmapImage()?.let {
+                        binding.ivKtp.setImageBitmap(it)
+                    }
+                    binding.tvScanKtp.text = captureOCRResult.toString()
+                } else {
+                    handleError(ktpResult.errorMessage)
                 }
-                binding.tvScanKtp.text = captureOCRResult.toString()
             }
         }
     }

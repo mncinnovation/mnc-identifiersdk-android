@@ -10,6 +10,7 @@ import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.*
 import id.mncinnovation.face_detection.model.LivenessResult
+import id.mncinnovation.face_detection.utils.FileUtils
 import id.mncinnovation.identification.core.GraphicOverlay
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
@@ -189,14 +190,16 @@ class LivenessDetectionAnalyzer(
     }
 
     private fun nextDetection() {
-        currentDetectionMode()?.let {
+        currentDetectionMode()?.let { detectionMode ->
             val fileUri = originalBitmap?.let { bitmap ->
                 saveBitmapToFile(
                     bitmap,
                     context.filesDir.absolutePath,
-                    "img_${it.name}.jpg")
+                    "img_${detectionMode.name}.jpg")
             }
-            detectionResults.add(LivenessResult.DetectionResult(it, fileUri, startDetectionTime?.let { time -> System.currentTimeMillis()-time }))
+            fileUri?.let { uri ->
+                detectionResults.add(LivenessResult.DetectionResult(detectionMode, uri, FileUtils(context).getPath(uri), startDetectionTime?.let { time -> System.currentTimeMillis()-time }))
+            }
         }
         queueDetectionMode.removeFirst()
         if (queueDetectionMode.isEmpty()) {

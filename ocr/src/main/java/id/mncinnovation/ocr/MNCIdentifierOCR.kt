@@ -25,20 +25,24 @@ annotation class KeepDocumented
 object MNCIdentifierOCR {
     internal var withFlash: Boolean? = null
     internal var cameraOnly: Boolean? = null
+    internal var lowMemoryThreshold: Int? = null
 
     /**
      * Start capture
      * @param withFlash boolean value to show button flash or not (true to show or false to hide it). The default value is false
      * @param cameraOnly boolean value to show an activity camera only (without splash and confirmation screen) to get result OCR. The default value is false
+     * @param lowMemoryThreshold Int value to set low memory threshold for show warning usage minimum alocation memory. The default value is 50 MB
      */
     @JvmStatic
     @KeepDocumented
     fun config(
         @KeepDocumented withFlash: Boolean? = false,
-        @KeepDocumented cameraOnly: Boolean? = false
+        @KeepDocumented cameraOnly: Boolean? = false,
+        @KeepDocumented lowMemoryThreshold: Int? = 50
     ) {
         MNCIdentifierOCR.withFlash = withFlash
         MNCIdentifierOCR.cameraOnly = cameraOnly
+        MNCIdentifierOCR.lowMemoryThreshold = lowMemoryThreshold
     }
 
     /**

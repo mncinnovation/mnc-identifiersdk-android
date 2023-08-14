@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity  {
                 DetectionMode.OPEN_MOUTH,
                 DetectionMode.SMILE,
                 DetectionMode.SHAKE_HEAD));
+        MNCIdentifier.setLowMemoryThreshold(50);
+
         binding.btnScanKtp.setOnClickListener(v ->
             startActivityForResult(new Intent(this, ScanOCRActivity.class), SCAN_KTP_REQUEST_CODE)
         );
