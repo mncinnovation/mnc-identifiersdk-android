@@ -66,7 +66,7 @@ afterEvaluate {
     publishing {
         publications {
             aar(MavenPublication) {
-                from components.release
+                components.getByName('release')
                 groupId = groupId
                 artifactId = project.getName()
                 version = VERSION_NAME
