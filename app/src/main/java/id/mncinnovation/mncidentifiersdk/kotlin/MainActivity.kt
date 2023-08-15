@@ -44,10 +44,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnCaptureKtp.setOnClickListener {
+                // keep without named param
                 MNCIdentifierOCR.config(
-                    withFlash = true, //withFlash
-                    cameraOnly = true, //cameraOnly
-                    lowMemoryThreshold = 50 // for ocr
+                    true, //withFlash
+                    true, //cameraOnly
+                    50 // for ocr
                 )
                 MNCIdentifierOCR.startCapture(this@MainActivity, 102)
             }
