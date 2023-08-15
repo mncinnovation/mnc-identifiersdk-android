@@ -39,10 +39,13 @@ android {
         viewBinding true
     }
     publishing {
-        multipleVariants {
+        singleVariant('release') {
             withSourcesJar()
             withJavadocJar()
-            allVariants()
+        }
+        singleVariant('debug') {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -78,7 +81,7 @@ task androidSourcesJar(type: Jar) {
 afterEvaluate {
     publishing {
         publications {
-            aar(MavenPublication) {
+            release(MavenPublication) {
                 components.getByName('release')
                 groupId = groupId
                 artifactId = project.getName()

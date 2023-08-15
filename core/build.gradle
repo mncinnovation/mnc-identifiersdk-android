@@ -34,10 +34,13 @@ android {
         jvmTarget = '1.8'
     }
     publishing {
-        multipleVariants {
+        singleVariant('release') {
             withSourcesJar()
             withJavadocJar()
-            allVariants()
+        }
+        singleVariant('debug') {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -68,7 +71,7 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            aar(MavenPublication) {
+            release(MavenPublication) {
                 components.getByName('release')
                 groupId = groupId
                 artifactId = project.getName()

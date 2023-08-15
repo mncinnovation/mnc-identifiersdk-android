@@ -20,13 +20,13 @@ allprojects {
     apply plugin: 'maven-publish'
 
     project.ext {
-        appVersionString = "1.1.7-alpha01" //String
+        appVersionString = "1.1.7-alpha02" //String
         appVersionCode = 1 //Integer
     }
 
     ext {
         groupId = 'id.mncinnovation'
-        versionId = '1.1.7-alpha01-SNAPSHOT'
+        versionId = '1.1.7-alpha02-SNAPSHOT'
         gitProjectUrl = ""
         gitUrl = ""
     }
