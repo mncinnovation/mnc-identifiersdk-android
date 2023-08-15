@@ -33,16 +33,6 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    publishing {
-        singleVariant('release') {
-            withSourcesJar()
-            withJavadocJar()
-        }
-        singleVariant('debug') {
-            withSourcesJar()
-            withJavadocJar()
-        }
-    }
 }
 
 dependencies {
@@ -71,8 +61,8 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            release(MavenPublication) {
-                components.getByName('release')
+            aar(MavenPublication) {
+                from components.release
                 groupId = groupId
                 artifactId = project.getName()
                 version = VERSION_NAME

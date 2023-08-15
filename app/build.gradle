@@ -40,13 +40,13 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
-    implementation "com.github.mncinnovation.mnc-identifiersdk-android:face-detection:1.1.7-alpha01"
-    implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.1.7-alpha01"
-    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.1.7-alpha01"
+//    implementation "com.github.mncinnovation.mnc-identifiersdk-android:face-detection:1.1.6"
+//    implementation "com.github.mncinnovation.mnc-identifiersdk-android:core:1.1.6"
+//    implementation "com.github.mncinnovation.mnc-identifiersdk-android:ocr:1.1.6"
 //    implementation(name: 'ocr-release2', ext: 'aar')
-//    implementation project(path: ':ocr')
-//    implementation project(path: ':core')
-//    implementation project(path: ':face-detection')
+    implementation project(path: ':ocr')
+    implementation project(path: ':core')
+    implementation project(path: ':face-detection')
 //    implementation 'id.mncinnovation:face-detection:1.0.0'
 //    implementation 'id.mncinnovation:ocr:1.0.0'
 //    implementation 'id.mncinnovation:camera-core:1.0.0'
