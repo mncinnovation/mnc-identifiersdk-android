@@ -15,6 +15,7 @@ import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
+import java.lang.Exception
 
 class ExtractDataOCR(private val context: Context, private val listener: ExtractDataOCRListener) {
 
@@ -45,116 +46,143 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
     fun processExtractData(uriList: List<Uri>) {
         listener.onStart()
-        uriList.forEach { uri ->
-            val imageBitmap = BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
-                listener.onError(message)
-            } ?: return
-
-            objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
-                .addOnSuccessListener { objects ->
-                    val cropedBitmap = if (objects.isEmpty()) imageBitmap else
-                        Bitmap.createBitmap(
-                            imageBitmap,
-                            objects.first().boundingBox.left,
-                            objects.first().boundingBox.top,
-                            objects.first().boundingBox.width(),
-                            objects.first().boundingBox.height()
-                        )
-                    val resultUri =
-                        BitmapUtils.saveBitmapToFile(
-                            cropedBitmap,
-                            context.filesDir.absolutePath,
-                            "ktpocr.jpg"
-                        )
-                    val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
-                    textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
-                        .addOnSuccessListener { text ->
-                            val ktp = text.extractEktp()
-                            ktpList.add(ktp)
-                            if (ktpList.size == uriList.size) {
-                                val usedKtp = ktpList.first()
-                                if (ktpList.size > 1) {
-                                    for (i in 1 until ktpList.size) {
-                                        val nextKtp = ktpList[i]
-                                        if (usedKtp.confidence <= nextKtp.confidence) {
-                                            if (usedKtp.nik == null) {
-                                                usedKtp.nik = nextKtp.nik.takeIf { it != null }
-                                            }
-                                            if (usedKtp.nama == null) {
-                                                usedKtp.nama = nextKtp.nama.takeIf { it != null }
-                                            }
-                                            if (usedKtp.tempatLahir == null) {
-                                                usedKtp.tempatLahir =
-                                                    nextKtp.tempatLahir.takeIf { it != null }
-                                            }
-                                            if (usedKtp.golDarah == null) {
-                                                usedKtp.golDarah =
-                                                    nextKtp.golDarah.takeIf { it != null }
-                                            }
-                                            if (usedKtp.tglLahir == null) {
-                                                usedKtp.tglLahir =
-                                                    nextKtp.tglLahir.takeIf { it != null }
-                                            }
-                                            if (usedKtp.jenisKelamin == null) {
-                                                usedKtp.jenisKelamin =
-                                                    nextKtp.jenisKelamin.takeIf { it != null }
-                                            }
-                                            if (usedKtp.alamat == null) {
-                                                usedKtp.alamat =
-                                                    nextKtp.alamat.takeIf { it != null }
-                                            }
-                                            if (usedKtp.rt == null) {
-                                                usedKtp.rt = nextKtp.rt.takeIf { it != null }
-                                            }
-                                            if (usedKtp.rw == null) {
-                                                usedKtp.rw = nextKtp.rw.takeIf { it != null }
-                                            }
-                                            if (usedKtp.kelurahan == null) {
-                                                usedKtp.kelurahan =
-                                                    nextKtp.kelurahan.takeIf { it != null }
-                                            }
-                                            if (usedKtp.kecamatan == null) {
-                                                usedKtp.kecamatan =
-                                                    nextKtp.kecamatan.takeIf { it != null }
-                                            }
-                                            if (usedKtp.agama == null) {
-                                                usedKtp.agama = nextKtp.agama.takeIf { it != null }
-                                            }
-                                            if (usedKtp.statusPerkawinan == null) {
-                                                usedKtp.statusPerkawinan =
-                                                    nextKtp.statusPerkawinan.takeIf { it != null }
-                                            }
-                                            if (usedKtp.pekerjaan == null) {
-                                                usedKtp.pekerjaan =
-                                                    nextKtp.pekerjaan.takeIf { it != null }
-                                            }
-                                            if (usedKtp.kewarganegaraan == null) {
-                                                usedKtp.kewarganegaraan =
-                                                    nextKtp.kewarganegaraan.takeIf { it != null }
-                                            }
-                                            if (usedKtp.berlakuHingga == null) {
-                                                usedKtp.berlakuHingga =
-                                                    nextKtp.berlakuHingga.takeIf { it != null }
-                                            }
-                                            if (usedKtp.provinsi == null) {
-                                                usedKtp.provinsi =
-                                                    nextKtp.provinsi.takeIf { it != null }
-                                            }
-                                            if (usedKtp.kabKot == null) {
-                                                usedKtp.kabKot =
-                                                    nextKtp.kabKot.takeIf { it != null }
-                                            }
-                                        }
+        fun onError(index : Int, uri : Uri, message : String) {
+            if(index == uriList.size - 1) {
+                if(ktpList.isEmpty()) {
+                    listener.onError(message)
+                } else {
+                    filterResult(uri)
+                }
+            }
+        }
+        uriList.forEachIndexed { index, uri ->
+            BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
+                onError(index, uri, message)
+            }?.let { imageBitmap ->
+                val defaultErrorMsg = "Terjadi kesalahan pada saat memproses gambar"
+                objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
+                    .addOnFailureListener {
+                        onError(index, uri,it.message ?: defaultErrorMsg)
+                    }
+                    .addOnSuccessListener { objects ->
+                        val cropedBitmap = if (objects.isEmpty()) imageBitmap else
+                            Bitmap.createBitmap(
+                                imageBitmap,
+                                objects.first().boundingBox.left,
+                                objects.first().boundingBox.top,
+                                objects.first().boundingBox.width(),
+                                objects.first().boundingBox.height()
+                            )
+                        val resultUri =
+                            BitmapUtils.saveBitmapToFile(
+                                cropedBitmap,
+                                context.filesDir.absolutePath,
+                                "ktpocr.jpg"
+                            )
+                        try {
+                            val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
+                            textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
+                                .addOnSuccessListener { text ->
+                                    val ktp = text.extractEktp()
+                                    ktpList.add(ktp)
+                                    if (ktpList.size == uriList.size) {
+                                        filterResult(resultUri)
                                     }
                                 }
-
-                                val ocrResult =
-                                    OCRResultModel(true, "Success", resultUri.path, usedKtp)
-                                listener.onFinish(ocrResult)
-                            }
+                        } catch (e: OutOfMemoryError) {
+                            e.printStackTrace()
+                            onError(index, uri, e.message ?: defaultErrorMsg)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            onError(index, uri,e.message ?: defaultErrorMsg)
                         }
-                }
+                    }
+            }
         }
+    }
+
+    private fun filterResult(uri: Uri) {
+        val usedKtp = ktpList.first()
+        if (ktpList.size > 1) {
+            for (i in 1 until ktpList.size) {
+                val nextKtp = ktpList[i]
+                if (usedKtp.confidence <= nextKtp.confidence) {
+                    if (usedKtp.nik == null) {
+                        usedKtp.nik = nextKtp.nik.takeIf { it != null }
+                    }
+                    if (usedKtp.nama == null) {
+                        usedKtp.nama =
+                            nextKtp.nama.takeIf { it != null }
+                    }
+                    if (usedKtp.tempatLahir == null) {
+                        usedKtp.tempatLahir =
+                            nextKtp.tempatLahir.takeIf { it != null }
+                    }
+                    if (usedKtp.golDarah == null) {
+                        usedKtp.golDarah =
+                            nextKtp.golDarah.takeIf { it != null }
+                    }
+                    if (usedKtp.tglLahir == null) {
+                        usedKtp.tglLahir =
+                            nextKtp.tglLahir.takeIf { it != null }
+                    }
+                    if (usedKtp.jenisKelamin == null) {
+                        usedKtp.jenisKelamin =
+                            nextKtp.jenisKelamin.takeIf { it != null }
+                    }
+                    if (usedKtp.alamat == null) {
+                        usedKtp.alamat =
+                            nextKtp.alamat.takeIf { it != null }
+                    }
+                    if (usedKtp.rt == null) {
+                        usedKtp.rt = nextKtp.rt.takeIf { it != null }
+                    }
+                    if (usedKtp.rw == null) {
+                        usedKtp.rw = nextKtp.rw.takeIf { it != null }
+                    }
+                    if (usedKtp.kelurahan == null) {
+                        usedKtp.kelurahan =
+                            nextKtp.kelurahan.takeIf { it != null }
+                    }
+                    if (usedKtp.kecamatan == null) {
+                        usedKtp.kecamatan =
+                            nextKtp.kecamatan.takeIf { it != null }
+                    }
+                    if (usedKtp.agama == null) {
+                        usedKtp.agama =
+                            nextKtp.agama.takeIf { it != null }
+                    }
+                    if (usedKtp.statusPerkawinan == null) {
+                        usedKtp.statusPerkawinan =
+                            nextKtp.statusPerkawinan.takeIf { it != null }
+                    }
+                    if (usedKtp.pekerjaan == null) {
+                        usedKtp.pekerjaan =
+                            nextKtp.pekerjaan.takeIf { it != null }
+                    }
+                    if (usedKtp.kewarganegaraan == null) {
+                        usedKtp.kewarganegaraan =
+                            nextKtp.kewarganegaraan.takeIf { it != null }
+                    }
+                    if (usedKtp.berlakuHingga == null) {
+                        usedKtp.berlakuHingga =
+                            nextKtp.berlakuHingga.takeIf { it != null }
+                    }
+                    if (usedKtp.provinsi == null) {
+                        usedKtp.provinsi =
+                            nextKtp.provinsi.takeIf { it != null }
+                    }
+                    if (usedKtp.kabKot == null) {
+                        usedKtp.kabKot =
+                            nextKtp.kabKot.takeIf { it != null }
+                    }
+                }
+            }
+        }
+
+        val ocrResult =
+            OCRResultModel(true, "Success", uri.path, usedKtp)
+        listener.onFinish(ocrResult)
     }
 }
 
