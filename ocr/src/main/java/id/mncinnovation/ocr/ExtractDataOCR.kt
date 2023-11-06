@@ -90,6 +90,9 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                         }
 
                         textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
+                            .addOnFailureListener {
+                                onError(index, uri, it.message ?: defaultErrorMsg)
+                            }
                             .addOnSuccessListener { text ->
                                 val ktp = text.extractEktp()
                                 ktpList.add(ktp)
