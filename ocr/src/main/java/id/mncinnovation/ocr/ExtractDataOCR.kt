@@ -46,23 +46,23 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
     fun processExtractData(uriList: List<Uri>) {
         listener.onStart()
-        uriList.forEachIndexed { index, uri ->
-            fun onError(message : String) {
-                if(index == uriList.size - 1) {
-                    if(ktpList.isEmpty()) {
-                        listener.onError(message)
-                    } else {
-                        filterResult(uri)
-                    }
+        fun onError(index : Int, uri : Uri, message : String) {
+            if(index == uriList.size - 1) {
+                if(ktpList.isEmpty()) {
+                    listener.onError(message)
+                } else {
+                    filterResult(uri)
                 }
             }
+        }
+        uriList.forEachIndexed { index, uri ->
             BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
-                onError(message)
+                onError(index, uri, message)
             }?.let { imageBitmap ->
                 val defaultErrorMsg = "Terjadi kesalahan pada saat memproses gambar"
                 objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
                     .addOnFailureListener {
-                        onError(it.message ?: defaultErrorMsg)
+                        onError(index, uri,it.message ?: defaultErrorMsg)
                     }
                     .addOnSuccessListener { objects ->
                         val cropedBitmap = if (objects.isEmpty()) imageBitmap else
@@ -91,10 +91,10 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 }
                         } catch (e: OutOfMemoryError) {
                             e.printStackTrace()
-                            onError(e.message ?: defaultErrorMsg)
+                            onError(index, uri, e.message ?: defaultErrorMsg)
                         } catch (e: Exception) {
                             e.printStackTrace()
-                            onError(e.message ?: defaultErrorMsg)
+                            onError(index, uri,e.message ?: defaultErrorMsg)
                         }
                     }
             }
