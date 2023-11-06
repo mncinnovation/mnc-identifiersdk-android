@@ -79,23 +79,24 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 context.filesDir.absolutePath,
                                 "ktpocr.jpg"
                             )
-                        try {
-                            val filteredBitmap = gpuImage.getBitmapWithFilterApplied(cropedBitmap)
-                            textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
-                                .addOnSuccessListener { text ->
-                                    val ktp = text.extractEktp()
-                                    ktpList.add(ktp)
-                                    if (ktpList.size == uriList.size) {
-                                        filterResult(resultUri)
-                                    }
-                                }
+                        val filteredBitmap : Bitmap = try {
+                             gpuImage.getBitmapWithFilterApplied(cropedBitmap)
                         } catch (e: OutOfMemoryError) {
                             e.printStackTrace()
-                            onError(index, uri, e.message ?: defaultErrorMsg)
+                            cropedBitmap
                         } catch (e: Exception) {
                             e.printStackTrace()
-                            onError(index, uri,e.message ?: defaultErrorMsg)
+                            cropedBitmap
                         }
+
+                        textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
+                            .addOnSuccessListener { text ->
+                                val ktp = text.extractEktp()
+                                ktpList.add(ktp)
+                                if (ktpList.size == uriList.size) {
+                                    filterResult(resultUri)
+                                }
+                            }
                     }
             }
         }
