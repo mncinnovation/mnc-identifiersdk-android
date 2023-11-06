@@ -52,7 +52,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                     if(ktpList.isEmpty()) {
                         listener.onError(message)
                     } else {
-                        fillterResult(uri)
+                        filterResult(uri)
                     }
                 }
             }
@@ -86,7 +86,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                     val ktp = text.extractEktp()
                                     ktpList.add(ktp)
                                     if (ktpList.size == uriList.size) {
-                                        fillterResult(resultUri)
+                                        filterResult(resultUri)
                                     }
                                 }
                         } catch (e: OutOfMemoryError) {
@@ -101,7 +101,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         }
     }
 
-    private fun fillterResult(uri: Uri) {
+    private fun filterResult(uri: Uri) {
         val usedKtp = ktpList.first()
         if (ktpList.size > 1) {
             for (i in 1 until ktpList.size) {
