@@ -211,7 +211,7 @@ class LivenessDetectionAnalyzer(
                         detectionResults ))
         } else {
             startDetectionTime = System.currentTimeMillis()
-            listener.onStartDetection(queueDetectionMode.first())
+            currentDetectionMode()?.let { listener.onStartDetection(it) }
         }
     }
 
@@ -236,7 +236,7 @@ class LivenessDetectionAnalyzer(
         when (faceStatus) {
             FaceStatus.READY -> {
                 if(startDetectionTime == null) startDetectionTime = System.currentTimeMillis()
-                listener.onStartDetection(queueDetectionMode.first())
+                currentDetectionMode()?.let { listener.onStartDetection(it) }
             }
             FaceStatus.NOT_FOUND -> {
                 startHoldStillTimemilis = null
