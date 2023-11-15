@@ -26,6 +26,7 @@ import id.mncinnovation.face_detection.analyzer.FaceDetectionListener
 import id.mncinnovation.face_detection.model.SelfieWithKtpResult
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import java.io.File
@@ -142,10 +143,13 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
     private fun extractFace(uri: Uri) {
         showProgressDialog()
         val faceImages = mutableListOf<Uri>()
-        val originalBitmap = BitmapUtils.getBitmapFromContentUri(contentResolver, uri, onError = { message ->
-            Log.e(TAG, message)
-            handleResult(false,message, uri, faceImages)
-        })
+        val originalBitmap = BitmapUtils.getBitmapFromContentUri(
+            contentResolver,
+            uri,
+            onError = { message, errorType ->
+                Log.e(TAG, message)
+                handleResult(false, message, uri, faceImages, errorType)
+            })
         originalBitmap?.let {
             faceDetector.process(InputImage.fromFilePath(this, uri))
                 .addOnSuccessListener {
@@ -158,18 +162,27 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
                             face.boundingBox.height())
                         val faceUri = BitmapUtils.saveBitmapToFile(croppedFace,
                             filesDir.absolutePath,
-                            "face${index+1}.jpg")
+                            "face${index + 1}.jpg",
+                            onError = { message, errorType ->
+                                Log.e(TAG, "Error: $message, Type: $errorType")
+                            })
                         faceImages.add(faceUri)
                     }
                 }
                 .addOnCompleteListener {
-                    handleResult(true,"Success", uri, faceImages)
+                    handleResult(true, "Success", uri, faceImages)
                 }
         }
     }
 
-    private fun handleResult(isSuccess: Boolean, message: String, uri: Uri, faceImages: List<Uri>) {
-        val selfieResult = SelfieWithKtpResult(isSuccess, message, uri, faceImages)
+    private fun handleResult(
+        isSuccess: Boolean,
+        message: String,
+        uri: Uri,
+        faceImages: List<Uri>,
+        errorType: ResultErrorType? = null
+    ) {
+        val selfieResult = SelfieWithKtpResult(isSuccess, message, errorType, uri, faceImages)
         val intent = Intent().apply {
             putExtra(EXTRA_RESULT, selfieResult)
         }
@@ -178,8 +191,8 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
         finish()
     }
 
-    private fun startCountdownTimer(){
-        if(timer != null ) return
+    private fun startCountdownTimer() {
+        if (timer != null) return
         countdownTime = COUNTDOWN_TIME
         timer = fixedRateTimer(initialDelay = 0, period = 1000){
             runOnUiThread {

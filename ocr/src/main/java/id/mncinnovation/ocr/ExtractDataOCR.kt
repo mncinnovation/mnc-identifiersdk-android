@@ -9,13 +9,13 @@ import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.extractEktp
 import jp.co.cyberagent.android.gpuimage.GPUImage
 import jp.co.cyberagent.android.gpuimage.filter.GPUImageColorMatrixFilter
-import java.lang.Exception
 
 class ExtractDataOCR(private val context: Context, private val listener: ExtractDataOCRListener) {
 
@@ -46,23 +46,31 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
     fun processExtractData(uriList: List<Uri>) {
         listener.onStart()
-        fun onError(index : Int, uri : Uri, message : String) {
-            if(index == uriList.size - 1) {
-                if(ktpList.isEmpty()) {
-                    listener.onError(message)
+        fun onError(index: Int, uri: Uri, message: String, errorType: ResultErrorType) {
+            if (index == uriList.size - 1) {
+                if (ktpList.isEmpty()) {
+                    listener.onError(message, errorType)
                 } else {
                     filterResult(uri)
                 }
             }
         }
         uriList.forEachIndexed { index, uri ->
-            BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
-                onError(index, uri, message)
+            BitmapUtils.getBitmapFromContentUri(
+                context.contentResolver,
+                uri
+            ) { message, errorType ->
+                onError(index, uri, message, errorType)
             }?.let { imageBitmap ->
                 val defaultErrorMsg = "Terjadi kesalahan pada saat memproses gambar"
                 objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
                     .addOnFailureListener {
-                        onError(index, uri,it.message ?: defaultErrorMsg)
+                        onError(
+                            index,
+                            uri,
+                            it.message ?: defaultErrorMsg,
+                            ResultErrorType.EXCEPTION
+                        )
                     }
                     .addOnSuccessListener { objects ->
                         val cropedBitmap = if (objects.isEmpty()) imageBitmap else
@@ -77,7 +85,10 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                             BitmapUtils.saveBitmapToFile(
                                 cropedBitmap,
                                 context.filesDir.absolutePath,
-                                "ktpocr.jpg"
+                                "ktpocr.jpg",
+                                onError = { message, errorType ->
+                                    onError(index, uri, message, errorType)
+                                }
                             )
                         val filteredBitmap : Bitmap = try {
                              gpuImage.getBitmapWithFilterApplied(cropedBitmap)
@@ -91,7 +102,12 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
                         textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
                             .addOnFailureListener {
-                                onError(index, uri, it.message ?: defaultErrorMsg)
+                                onError(
+                                    index,
+                                    uri,
+                                    it.message ?: defaultErrorMsg,
+                                    ResultErrorType.EXCEPTION
+                                )
                             }
                             .addOnSuccessListener { text ->
                                 val ktp = text.extractEktp()
@@ -185,7 +201,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         }
 
         val ocrResult =
-            OCRResultModel(true, "Success", uri.path, usedKtp)
+            OCRResultModel(true, "Success", errorType = null, uri.path, usedKtp)
         listener.onFinish(ocrResult)
     }
 }
@@ -208,5 +224,5 @@ interface ExtractDataOCRListener {
     /**
      * Function to listen onFailed process of extract data ocr
      */
-    fun onError(message: String?)
+    fun onError(message: String?, errorType: ResultErrorType?)
 }

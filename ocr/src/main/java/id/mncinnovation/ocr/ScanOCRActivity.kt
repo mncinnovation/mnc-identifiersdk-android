@@ -14,12 +14,12 @@ import androidx.camera.view.PreviewView
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
 import id.mncinnovation.identification.core.utils.BitmapUtils.saveBitmapToFile
-import id.mncinnovation.ocr.analyzer.ScanOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.ScanKtpListener
+import id.mncinnovation.ocr.analyzer.ScanOCRAnalyzer
 import id.mncinnovation.ocr.analyzer.Status
 import id.mncinnovation.ocr.databinding.ActivityScanOcrBinding
-import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.model.KTPModel
+import id.mncinnovation.ocr.model.OCRResultModel
 
 class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
     private lateinit var binding: ActivityScanOcrBinding
@@ -87,10 +87,18 @@ class ScanOCRActivity : BaseCameraActivity(), ScanKtpListener {
 
     override fun onScanComplete(ktpModel: KTPModel) {
         ktpModel.bitmap?.let {
-            val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg")
+            val bitmapuri = saveBitmapToFile(it, filesDir.absolutePath, "scanktp.jpg",
+                onError = { message, errorType ->
+                    Log.e(TAG, "Error: $message, Type: $errorType")
+                })
 
             val scanResult =
-                OCRResultModel(true, "Success", bitmapuri.path, ktpModel.apply { bitmap = it })
+                OCRResultModel(
+                    true,
+                    "Success",
+                    errorType = null,
+                    bitmapuri.path,
+                    ktpModel.apply { bitmap = it })
             val intent = Intent(this@ScanOCRActivity, ConfirmationOCRActivity::class.java).apply {
                 putExtra(EXTRA_RESULT, scanResult)
             }

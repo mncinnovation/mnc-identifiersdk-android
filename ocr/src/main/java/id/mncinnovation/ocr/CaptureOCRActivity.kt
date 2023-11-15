@@ -27,6 +27,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
@@ -206,11 +207,26 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                                         }
                                     }
 
-                                    override fun onError(message: String?) {
-                                        Log.e(TAG, "Failed extract ocr: $message")
+                                    override fun onError(
+                                        message: String?,
+                                        errorType: ResultErrorType?
+                                    ) {
+                                        Log.e(
+                                            TAG,
+                                            "Failed extract ocr: $message (${errorType.toString()})"
+                                        )
 
                                         val intent = Intent().apply {
-                                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
+                                            putExtra(
+                                                EXTRA_RESULT,
+                                                OCRResultModel(
+                                                    false,
+                                                    message,
+                                                    null,
+                                                    null,
+                                                    KTPModel()
+                                                )
+                                            )
                                         }
                                         setResult(RESULT_OK, intent)
                                         finish()
@@ -294,7 +310,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         setResult(
             RESULT_CANCELED,
             Intent().apply {
-                putExtra(EXTRA_RESULT, OCRResultModel(false, exception.message, null, KTPModel()))
+                putExtra(
+                    EXTRA_RESULT,
+                    OCRResultModel(false, exception.message, null, null, KTPModel())
+                )
             }
         )
         finish()
@@ -352,7 +371,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         setResult(
             RESULT_CANCELED,
             Intent().apply {
-                putExtra(EXTRA_RESULT, OCRResultModel(false, "Cancelled by user", null, KTPModel()))
+                putExtra(
+                    EXTRA_RESULT,
+                    OCRResultModel(false, "Cancelled by user", null, null, KTPModel())
+                )
             }
         )
         super.onBackPressed()
