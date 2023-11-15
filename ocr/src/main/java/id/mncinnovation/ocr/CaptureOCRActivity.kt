@@ -243,6 +243,11 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         lightSensor?.closeSensor()
     }
 
+    override fun onDestroy() {
+        dismissPopupScanDialog()
+        super.onDestroy()
+    }
+
     private fun showProgressDialog() {
         runOnUiThread {
             gifLoading.visibility = View.VISIBLE
@@ -285,7 +290,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             clearDataCapture()
             stopTimer()
             hideProgressDialog()
-            bottomSheetDialog?.dismiss()
+            dismissPopupScanDialog()
         }
     }
 
@@ -324,7 +329,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                 runOnUiThread {
                     tvCountdown.text = "$counter"
                     if (counter == 0) {
-                        bottomSheetDialog?.dismiss()
+                        dismissPopupScanDialog()
                         isCaptured = true
                         stopTimer()
                     }
@@ -353,6 +358,12 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         bottomSheetDialog?.show()
     }
 
+    private fun dismissPopupScanDialog() {
+        if(bottomSheetDialog != null && bottomSheetDialog?.isShowing == true) {
+            bottomSheetDialog?.dismiss()
+            bottomSheetDialog = null
+        }
+    }
     override fun onBackPressed() {
         setResult(
             RESULT_CANCELED,
