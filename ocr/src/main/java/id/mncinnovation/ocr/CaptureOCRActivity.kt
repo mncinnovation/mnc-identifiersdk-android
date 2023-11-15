@@ -309,7 +309,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun showPopupHoldScanDialog() {
-        if (timer != null) return
+        if (timer != null || this@CaptureOCRActivity.isFinishing) return
         val bindingPopup = PopupBottomsheetScanTimerOcrBinding.inflate(LayoutInflater.from(this))
         var counter = COUNTDOWN_TIME
 
