@@ -11,7 +11,7 @@ object MNCIdentifier {
     private var attempt = 0
     internal var lowMemoryThreshold: Int? = null
 
-    var detectionMode = listOf(
+    internal var detectionMode = listOf(
         DetectionMode.HOLD_STILL,
         DetectionMode.OPEN_MOUTH,
         DetectionMode.BLINK,
