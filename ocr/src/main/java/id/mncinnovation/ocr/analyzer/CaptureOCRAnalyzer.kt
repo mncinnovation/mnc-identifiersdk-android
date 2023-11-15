@@ -25,35 +25,31 @@ class CaptureOCRAnalyzer(private val listener: CaptureKtpListener) :
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
-        val originalBitmap = BitmapUtils.getBitmap(image)
-        if (originalBitmap != null) {
-            val inputImage = InputImage.fromMediaImage(
-                image.image!!,
-                image.imageInfo.rotationDegrees
-            )
-            objectDetector.process(inputImage)
-                .addOnSuccessListener { detectedObjects ->
-                    Log.d(
-                        TAG,
-                        detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
-                            ?: "Label Not Found"
+        val inputImage = InputImage.fromMediaImage(
+            image.image!!,
+            image.imageInfo.rotationDegrees
+        )
+        objectDetector.process(inputImage)
+            .addOnSuccessListener { detectedObjects ->
+                Log.d(
+                    TAG,
+                    detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
+                        ?: "Label Not Found"
+                )
+                if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
+                        "Driver's license",
+                        "Passport"
                     )
-                    if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
-                            "Driver's license",
-                            "Passport"
-                        )
-                    ) {
-                        listener.onStatusChanged(Status.SCANNING)
-                    } else {
-                        listener.onStatusChanged(Status.NOT_FOUND)
-                    }
-                }.addOnFailureListener {
-                    listener.onCaptureFailed(it)
-                }.addOnCompleteListener {
-                    image.close()
+                ) {
+                    listener.onStatusChanged(Status.SCANNING)
+                } else {
+                    listener.onStatusChanged(Status.NOT_FOUND)
                 }
-
-        }
+            }.addOnFailureListener {
+                listener.onCaptureFailed(it)
+            }.addOnCompleteListener {
+                image.close()
+            }
     }
 
     companion object {
