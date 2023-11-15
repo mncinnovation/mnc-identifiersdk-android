@@ -38,6 +38,7 @@ import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
 import java.io.File
+import java.io.IOException
 import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
 
@@ -150,79 +151,83 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun captureImage() {
-        val photoFile = File.createTempFile("ktp", ".jpg")
-        // Setup image capture metadata
-        val metadata = ImageCapture.Metadata().apply {
-            // Mirror image when using the front camera
-            isReversedHorizontal = false
-        }
+        try {
+            val photoFile = File.createTempFile("ktp", ".jpg")
+            // Setup image capture metadata
+            val metadata = ImageCapture.Metadata().apply {
+                // Mirror image when using the front camera
+                isReversedHorizontal = false
+            }
 
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
-            .setMetadata(metadata)
-            .build()
+            // Create output options object which contains file + metadata
+            val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
+                .setMetadata(metadata)
+                .build()
 
-        // Setup image capture listener which is triggered after photo has been taken
-        captureUseCase?.takePicture(
-            outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                }
+            // Setup image capture listener which is triggered after photo has been taken
+            captureUseCase?.takePicture(
+                outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(exc: ImageCaptureException) {
+                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    }
 
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    try {
-                        val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                        Log.d(TAG, "Photo capture succeeded: $savedUri")
-                        if (uriList.size < MAX_CAPTURE) {
-                            uriList.add(savedUri)
-                        }
-                        if (uriList.size == MAX_CAPTURE) {
-                            MNCIdentifierOCR.extractDataFromUri(
-                                uriList,
-                                this@CaptureOCRActivity,
-                                object : ExtractDataOCRListener {
-                                    override fun onStart() {
-                                        if (isCaptured) {
-                                            showProgressDialog()
+                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                        try {
+                            val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                            Log.d(TAG, "Photo capture succeeded: $savedUri")
+                            if (uriList.size < MAX_CAPTURE) {
+                                uriList.add(savedUri)
+                            }
+                            if (uriList.size == MAX_CAPTURE) {
+                                MNCIdentifierOCR.extractDataFromUri(
+                                    uriList,
+                                    this@CaptureOCRActivity,
+                                    object : ExtractDataOCRListener {
+                                        override fun onStart() {
+                                            if (isCaptured) {
+                                                showProgressDialog()
+                                            }
                                         }
-                                    }
 
-                                    override fun onFinish(result: OCRResultModel) {
-                                        hideProgressDialog()
-                                        if (MNCIdentifierOCR.cameraOnly == true) {
+                                        override fun onFinish(result: OCRResultModel) {
+                                            hideProgressDialog()
+                                            if (MNCIdentifierOCR.cameraOnly == true) {
+                                                val intent = Intent().apply {
+                                                    putExtra(EXTRA_RESULT, result)
+                                                }
+                                                setResult(RESULT_OK, intent)
+                                                finish()
+                                            } else {
+                                                val intent = Intent(
+                                                    this@CaptureOCRActivity,
+                                                    ConfirmationOCRActivity::class.java
+                                                ).apply {
+                                                    putExtra(EXTRA_RESULT, result)
+                                                }
+                                                resultLauncherConfirm.launch(intent)
+                                            }
+                                        }
+
+                                        override fun onError(message: String?) {
+                                            Log.e(TAG, "Failed extract ocr: $message")
+
                                             val intent = Intent().apply {
-                                                putExtra(EXTRA_RESULT, result)
+                                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
                                             }
                                             setResult(RESULT_OK, intent)
                                             finish()
-                                        } else {
-                                            val intent = Intent(
-                                                this@CaptureOCRActivity,
-                                                ConfirmationOCRActivity::class.java
-                                            ).apply {
-                                                putExtra(EXTRA_RESULT, result)
-                                            }
-                                            resultLauncherConfirm.launch(intent)
                                         }
-                                    }
-
-                                    override fun onError(message: String?) {
-                                        Log.e(TAG, "Failed extract ocr: $message")
-
-                                        val intent = Intent().apply {
-                                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
-                                        }
-                                        setResult(RESULT_OK, intent)
-                                        finish()
-                                    }
-                                })
+                                    })
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
 
-                }
-            })
+                    }
+                })
+        } catch (e : IOException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onResume() {
