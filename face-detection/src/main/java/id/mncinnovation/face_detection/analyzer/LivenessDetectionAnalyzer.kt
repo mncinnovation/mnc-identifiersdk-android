@@ -201,7 +201,7 @@ class LivenessDetectionAnalyzer(
                 saveBitmapToFile(
                     bitmap,
                     context.filesDir.absolutePath,
-                    "img_${detectionMode.name}.jpg")
+                    "img_${detectionMode.name}.jpg", true)
             }
             fileUri?.let { uri ->
                 detectionResults.add(LivenessResult.DetectionResult(detectionMode, uri, FileUtils(context).getPath(uri), startDetectionTime?.let { time -> System.currentTimeMillis()-time }))
