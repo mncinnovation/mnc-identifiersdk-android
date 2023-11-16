@@ -99,6 +99,7 @@ class LivenessDetectionActivity : BaseCameraActivity(), LivenessDetectionListene
     }
 
     override fun onDestroy() {
+        textToSpeech.shutdown()
         super.onDestroy()
         stopTimer()
     }

@@ -209,6 +209,9 @@ class LivenessDetectionAnalyzer(
         }
         queueDetectionMode.removeFirst()
         if (queueDetectionMode.isEmpty()) {
+            if(originalBitmapList.isNotEmpty()){
+                originalBitmapList.forEach { it?.recycle() }
+            }
                 listener.onLiveDetectionSuccess(
                     LivenessResult(
                         true,
