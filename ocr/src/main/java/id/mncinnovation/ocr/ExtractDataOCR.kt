@@ -54,7 +54,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         }
         val resultUri =
             BitmapUtils.saveBitmapToFile(
-                notNullBitmap[0],
+                notNullBitmap.last(),
                 context.filesDir.absolutePath,
                 "ktpocr.jpg"
             )

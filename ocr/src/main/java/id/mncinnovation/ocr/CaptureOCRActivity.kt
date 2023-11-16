@@ -155,46 +155,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         if(bitmapList.size < MAX_CAPTURE) {
             bitmapList.add(croppedBitmap)
         }
-        if(bitmapList.size == MAX_CAPTURE) {
-            analysisUseCase?.clearAnalyzer()
-            MNCIdentifierOCR.extractDataFromBitmap(
-                bitmapList,
-                this@CaptureOCRActivity,
-                object : ExtractDataOCRListener {
-                    override fun onStart() {
-                        showProgressDialog()
-                    }
-
-                    override fun onFinish(result: OCRResultModel) {
-                        hideProgressDialog()
-                        if (MNCIdentifierOCR.cameraOnly == true) {
-                            val intent = Intent().apply {
-                                putExtra(EXTRA_RESULT, result)
-                            }
-                            setResult(RESULT_OK, intent)
-                            finish()
-                        } else {
-                            val intent = Intent(
-                                this@CaptureOCRActivity,
-                                ConfirmationOCRActivity::class.java
-                            ).apply {
-                                putExtra(EXTRA_RESULT, result)
-                            }
-                            resultLauncherConfirm.launch(intent)
-                        }
-                    }
-
-                    override fun onError(message: String?) {
-                        Log.e(TAG, "Failed extract ocr: $message")
-
-                        val intent = Intent().apply {
-                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    }
-                })
-        }
     }
 
     override fun onResume() {
@@ -253,6 +213,46 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             this.croppedBitmap = croppedBitmap
             memoryUsageMonitor?.checkMemoryAndProceed {
                 showPopupHoldScanDialog()
+            }
+            if(bitmapList.size == MAX_CAPTURE) {
+                analysisUseCase?.clearAnalyzer()
+                MNCIdentifierOCR.extractDataFromBitmap(
+                    bitmapList,
+                    this@CaptureOCRActivity,
+                    object : ExtractDataOCRListener {
+                        override fun onStart() {
+                            showProgressDialog()
+                        }
+
+                        override fun onFinish(result: OCRResultModel) {
+                            hideProgressDialog()
+                            if (MNCIdentifierOCR.cameraOnly == true) {
+                                val intent = Intent().apply {
+                                    putExtra(EXTRA_RESULT, result)
+                                }
+                                setResult(RESULT_OK, intent)
+                                finish()
+                            } else {
+                                val intent = Intent(
+                                    this@CaptureOCRActivity,
+                                    ConfirmationOCRActivity::class.java
+                                ).apply {
+                                    putExtra(EXTRA_RESULT, result)
+                                }
+                                resultLauncherConfirm.launch(intent)
+                            }
+                        }
+
+                        override fun onError(message: String?) {
+                            Log.e(TAG, "Failed extract ocr: $message")
+
+                            val intent = Intent().apply {
+                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
+                            }
+                            setResult(RESULT_OK, intent)
+                            finish()
+                        }
+                    })
             }
         } else {
             clearDataCapture()
