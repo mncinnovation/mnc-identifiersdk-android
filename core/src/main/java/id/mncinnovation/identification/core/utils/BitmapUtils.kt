@@ -269,7 +269,7 @@ fun getBitmapFromContentUri(
     }
 
 
-    fun saveBitmapToFile(bitmap: Bitmap, fileDirectory: String, fileName: String): Uri {
+    fun saveBitmapToFile(bitmap: Bitmap, fileDirectory: String, fileName: String, removeBitmap : Boolean = false): Uri {
         val file = createFile(fileDirectory, fileName)
         try {
             val out = FileOutputStream(file)
@@ -279,7 +279,9 @@ fun getBitmapFromContentUri(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
+        if(removeBitmap) {
+            bitmap.recycle()
+        }
         return Uri.fromFile(file)
     }
 
