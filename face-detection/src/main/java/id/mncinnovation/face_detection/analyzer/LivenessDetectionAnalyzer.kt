@@ -61,7 +61,7 @@ class LivenessDetectionAnalyzer(
         queueDetectionMode = listDetectionMode.toMutableList()
     }
 
-    private val isOnlyBlinkMode get() = listDetectionMode.size == 1 && listDetectionMode.contains(DetectionMode.BLINK)
+    private val isBlinkModeOnly get() = listDetectionMode.size == 1 && listDetectionMode.getOrNull(0) == DetectionMode.BLINK
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
@@ -74,7 +74,7 @@ class LivenessDetectionAnalyzer(
         }
         BitmapUtils.getBitmap(image)?.let {
             originalBitmap = it
-            if(isOnlyBlinkMode) {
+            if(isBlinkModeOnly) {
                 originalBitmapList.add(it)
             }
         } ?: kotlin.run { return }
@@ -197,7 +197,7 @@ class LivenessDetectionAnalyzer(
 
     private fun nextDetection() {
         currentDetectionMode()?.let { detectionMode ->
-            val fileUri = (if(isOnlyBlinkMode) originalBitmapList.getOrNull(originalBitmapList.size - 2) else originalBitmap)?.let { bitmap ->
+            val fileUri = (if(isBlinkModeOnly) originalBitmapList.getOrNull(originalBitmapList.size - 2) else originalBitmap)?.let { bitmap ->
                 saveBitmapToFile(
                     bitmap,
                     context.filesDir.absolutePath,
