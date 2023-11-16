@@ -61,6 +61,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private var camera: Camera? = null
 
     private var captureUseCase: ImageCapture? = null
+    private var analysisUseCase : ImageAnalysis? = null
     private var lightSensor: LightSensor? = null
     private var uriList = mutableListOf<Uri>()
     private var ktpList = mutableListOf<KTPModel>()
@@ -131,9 +132,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         }.build()
 
 
-        val analysisUseCase = ImageAnalysis.Builder().build().also {
+        analysisUseCase = ImageAnalysis.Builder().build().also {
             it.setAnalyzer(cameraExecutor, CaptureOCRAnalyzer(this))
         }
+
         // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
 
@@ -179,6 +181,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                                 uriList.add(savedUri)
                             }
                             if (uriList.size == MAX_CAPTURE) {
+                                analysisUseCase?.clearAnalyzer()
                                 MNCIdentifierOCR.extractDataFromUri(
                                     uriList,
                                     this@CaptureOCRActivity,
