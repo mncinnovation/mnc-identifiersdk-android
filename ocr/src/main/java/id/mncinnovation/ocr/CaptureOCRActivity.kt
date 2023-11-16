@@ -4,11 +4,13 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
@@ -18,7 +20,6 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -37,8 +38,6 @@ import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
-import java.io.File
-import java.io.IOException
 import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
 
@@ -60,12 +59,11 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     private var flashMode = ImageCapture.FLASH_MODE_OFF
     private var camera: Camera? = null
 
-    private var captureUseCase: ImageCapture? = null
     private var analysisUseCase : ImageAnalysis? = null
     private var lightSensor: LightSensor? = null
     private var uriList = mutableListOf<Uri>()
-    private var ktpList = mutableListOf<KTPModel>()
-
+    private var bitmapList = mutableListOf<Bitmap?>()
+    private var croppedBitmap : Bitmap? = null
     private var memoryUsageMonitor: MemoryUsageMonitor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +74,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         lightSensor = LightSensor(this, object : LightSensorListener {
             override fun onCurrentLightChanged(value: Int) {
                 val isLowLight = value < 5
-                tvMessage.visibility = (isLowLight).toVisibilityOrGone()
+                tvMessage.visibility = isLowLight.toVisibilityOrGone()
             }
         })
 
@@ -127,12 +125,14 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         val previewUseCase = Preview.Builder().build()
 
         // ImageCapture
-        captureUseCase = ImageCapture.Builder().apply {
+        val captureUseCase = ImageCapture.Builder().apply {
             setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
         }.build()
 
 
-        analysisUseCase = ImageAnalysis.Builder().build().also {
+        analysisUseCase = ImageAnalysis.Builder()
+            .setTargetResolution(Size(1280,720))
+            .build().also {
             it.setAnalyzer(cameraExecutor, CaptureOCRAnalyzer(this))
         }
 
@@ -153,83 +153,48 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun captureImage() {
-        try {
-            val photoFile = File.createTempFile("ktp", ".jpg")
-            // Setup image capture metadata
-            val metadata = ImageCapture.Metadata().apply {
-                // Mirror image when using the front camera
-                isReversedHorizontal = false
-            }
-
-            // Create output options object which contains file + metadata
-            val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
-                .setMetadata(metadata)
-                .build()
-
-            // Setup image capture listener which is triggered after photo has been taken
-            captureUseCase?.takePicture(
-                outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
-                    override fun onError(exc: ImageCaptureException) {
-                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+        if(bitmapList.size < MAX_CAPTURE) {
+            bitmapList.add(croppedBitmap)
+        }
+        if(bitmapList.size == MAX_CAPTURE) {
+            analysisUseCase?.clearAnalyzer()
+            MNCIdentifierOCR.extractDataFromBitmap(
+                bitmapList,
+                this@CaptureOCRActivity,
+                object : ExtractDataOCRListener {
+                    override fun onStart() {
+                        showProgressDialog()
                     }
 
-                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                        try {
-                            val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                            Log.d(TAG, "Photo capture succeeded: $savedUri")
-                            if (uriList.size < MAX_CAPTURE) {
-                                uriList.add(savedUri)
+                    override fun onFinish(result: OCRResultModel) {
+                        hideProgressDialog()
+                        if (MNCIdentifierOCR.cameraOnly == true) {
+                            val intent = Intent().apply {
+                                putExtra(EXTRA_RESULT, result)
                             }
-                            if (uriList.size == MAX_CAPTURE) {
-                                analysisUseCase?.clearAnalyzer()
-                                MNCIdentifierOCR.extractDataFromUri(
-                                    uriList,
-                                    this@CaptureOCRActivity,
-                                    object : ExtractDataOCRListener {
-                                        override fun onStart() {
-                                            if (isCaptured) {
-                                                showProgressDialog()
-                                            }
-                                        }
-
-                                        override fun onFinish(result: OCRResultModel) {
-                                            hideProgressDialog()
-                                            if (MNCIdentifierOCR.cameraOnly == true) {
-                                                val intent = Intent().apply {
-                                                    putExtra(EXTRA_RESULT, result)
-                                                }
-                                                setResult(RESULT_OK, intent)
-                                                finish()
-                                            } else {
-                                                val intent = Intent(
-                                                    this@CaptureOCRActivity,
-                                                    ConfirmationOCRActivity::class.java
-                                                ).apply {
-                                                    putExtra(EXTRA_RESULT, result)
-                                                }
-                                                resultLauncherConfirm.launch(intent)
-                                            }
-                                        }
-
-                                        override fun onError(message: String?) {
-                                            Log.e(TAG, "Failed extract ocr: $message")
-
-                                            val intent = Intent().apply {
-                                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
-                                            }
-                                            setResult(RESULT_OK, intent)
-                                            finish()
-                                        }
-                                    })
+                            setResult(RESULT_OK, intent)
+                            finish()
+                        } else {
+                            val intent = Intent(
+                                this@CaptureOCRActivity,
+                                ConfirmationOCRActivity::class.java
+                            ).apply {
+                                putExtra(EXTRA_RESULT, result)
                             }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                            resultLauncherConfirm.launch(intent)
                         }
+                    }
 
+                    override fun onError(message: String?) {
+                        Log.e(TAG, "Failed extract ocr: $message")
+
+                        val intent = Intent().apply {
+                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
                     }
                 })
-        } catch (e : IOException) {
-            e.printStackTrace()
         }
     }
 
@@ -283,9 +248,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         }
 
     //Listener of CaptureKtpListener
-    override fun onStatusChanged(status: Status) {
+    override fun onStatusChanged(status: Status, croppedBitmap : Bitmap?) {
         if (isCaptured) return
         if (status == Status.SCANNING) {
+            this.croppedBitmap = croppedBitmap
             memoryUsageMonitor?.checkMemoryAndProceed {
                 showPopupHoldScanDialog()
             }
@@ -298,8 +264,9 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun clearDataCapture() {
-        ktpList.clear()
         uriList.clear()
+        bitmapList.forEach { it?.recycle() }
+        bitmapList.clear()
     }
 
     override fun onCaptureFailed(exception: Exception) {
@@ -327,19 +294,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         var counter = COUNTDOWN_TIME
 
         bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogThemeOCR)
-        bindingPopup.apply {
-            timer = fixedRateTimer(initialDelay = 0, period = 1000) {
-                runOnUiThread {
-                    tvCountdown.text = "$counter"
-                    if (counter == 0) {
-                        dismissPopupScanDialog()
-                        isCaptured = true
-                        stopTimer()
-                    }
-                    counter--
-                }
-            }
-        }
         handlers = Handler(Looper.getMainLooper())
         runnableCapture = object : Runnable {
             override fun run() {
@@ -351,6 +305,18 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         }
         runnableCapture?.let {
             handlers?.post(it)
+        }
+
+        timer = fixedRateTimer(initialDelay = 500, period = 1000) {
+            runOnUiThread {
+                bindingPopup.tvCountdown.text = "$counter"
+                if (counter == 0) {
+                    dismissPopupScanDialog()
+                    isCaptured = true
+                    stopTimer()
+                }
+                counter--
+            }
         }
 
         if (bottomSheetDialog?.isShowing == true) {

@@ -3,6 +3,7 @@ package id.mncinnovation.ocr
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
@@ -162,10 +163,8 @@ object MNCIdentifierOCR {
         context: Context,
         listener: ExtractDataOCRListener
     ) {
-        val uriList = mutableListOf<Uri>()
-        uriList.add(uri)
         val extractDataOCR = ExtractDataOCR(context, listener)
-        extractDataOCR.processExtractData(uriList)
+        extractDataOCR.processExtractDataUri(listOf(uri))
     }
 
     @JvmStatic
@@ -175,6 +174,16 @@ object MNCIdentifierOCR {
         listener: ExtractDataOCRListener
     ) {
         val extractDataOCR = ExtractDataOCR(context, listener)
-        extractDataOCR.processExtractData(uriList)
+        extractDataOCR.processExtractDataUri(uriList)
+    }
+
+    @JvmStatic
+    fun extractDataFromBitmap(
+        bitmapList: List<Bitmap?>,
+        context: Context,
+        listener: ExtractDataOCRListener
+    ) {
+        val extractDataOCR = ExtractDataOCR(context, listener)
+        extractDataOCR.processExtractDataBitmap(bitmapList)
     }
 }
