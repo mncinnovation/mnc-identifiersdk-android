@@ -61,7 +61,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     private var analysisUseCase : ImageAnalysis? = null
     private var lightSensor: LightSensor? = null
-    private var uriList = mutableListOf<Uri>()
     private var bitmapList = mutableListOf<Bitmap?>()
     private var croppedBitmap : Bitmap? = null
     private var memoryUsageMonitor: MemoryUsageMonitor? = null
@@ -264,7 +263,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun clearDataCapture() {
-        uriList.clear()
         bitmapList.forEach { it?.recycle() }
         bitmapList.clear()
     }

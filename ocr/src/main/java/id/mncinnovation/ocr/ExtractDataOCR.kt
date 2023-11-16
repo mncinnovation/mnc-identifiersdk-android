@@ -52,13 +52,13 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
             onError(true, "Error extract from empty list of bitmap")
             return
         }
+        val resultUri =
+            BitmapUtils.saveBitmapToFile(
+                notNullBitmap[0],
+                context.filesDir.absolutePath,
+                "ktpocr.jpg"
+            )
         notNullBitmap.forEachIndexed { index, croppedBitmap ->
-            val resultUri =
-                BitmapUtils.saveBitmapToFile(
-                    croppedBitmap,
-                    context.filesDir.absolutePath,
-                    "ktpocr.jpg"
-                )
             val filteredBitmap: Bitmap = try {
                 gpuImage.getBitmapWithFilterApplied(croppedBitmap)
             } catch (e: OutOfMemoryError) {
@@ -124,12 +124,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 objects.first().boundingBox.width(),
                                 objects.first().boundingBox.height()
                             )
-                        val resultUri =
-                            BitmapUtils.saveBitmapToFile(
-                                croppedBitmap,
-                                context.filesDir.absolutePath,
-                                "ktpocr.jpg"
-                            )
+
                         val filteredBitmap: Bitmap = try {
                             gpuImage.getBitmapWithFilterApplied(croppedBitmap)
                         } catch (e: OutOfMemoryError) {
@@ -152,12 +147,19 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                             }
                             .addOnSuccessListener { text ->
                                 imageBitmap.recycle()
-                                croppedBitmap.recycle()
                                 val ktp = text.extractEktp()
                                 ktpList.add(ktp)
                                 if (ktpList.size == uriList.size) {
+                                    val resultUri =
+                                        BitmapUtils.saveBitmapToFile(
+                                            croppedBitmap,
+                                            context.filesDir.absolutePath,
+                                            "ktpocr.jpg",
+                                            removeBitmap = true
+                                        )
                                     filterResult(resultUri)
                                 }
+                                croppedBitmap.recycle()
                             }
                     }
             }
