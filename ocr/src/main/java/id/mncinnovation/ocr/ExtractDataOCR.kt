@@ -58,20 +58,19 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                 context.filesDir.absolutePath,
                 "ktpocr.jpg"
             )
-        notNullBitmap.forEachIndexed { index, croppedBitmap ->
+        notNullBitmap.forEachIndexed { index, bitmap ->
             val filteredBitmap: Bitmap = try {
-                gpuImage.getBitmapWithFilterApplied(croppedBitmap)
+                gpuImage.getBitmapWithFilterApplied(bitmap)
             } catch (e: OutOfMemoryError) {
                 e.printStackTrace()
-                croppedBitmap
+                bitmap
             } catch (e: Exception) {
                 e.printStackTrace()
-                croppedBitmap
+                bitmap
             }
             textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
                 .addOnFailureListener {
                     filteredBitmap.recycle()
-                    croppedBitmap.recycle()
                     onError(
                         index == bitmapList.size - 1,
                         it.message ?: ERROR_MSG_IMAGE_PROCESS_DEFAULT,
@@ -80,11 +79,10 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                 }
                 .addOnSuccessListener { text ->
                     filteredBitmap.recycle()
-                    croppedBitmap.recycle()
                     val ktp = text.extractEktp()
                     ktpList.add(ktp)
                     if (ktpList.size == bitmapList.size) {
-                        filterResult(resultUri)
+                        filterResult(resultUri, bitmapList)
                     }
                 }
         }
@@ -97,11 +95,15 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
             } else {
                 uri?.let { filterResult(it) }
             }
+        } else {
+            //add dummy data to trigger filter result by ktp.size == source.size
+            ktpList.add(KTPModel())
         }
     }
 
     fun processExtractDataUri(uriList: List<Uri>) {
         listener.onStart()
+        val listCroppedImage = mutableListOf<Bitmap?>()
         uriList.forEachIndexed { index, uri ->
             BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
                 onError(index == uriList.size - 1, message, uri)
@@ -124,7 +126,8 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 objects.first().boundingBox.width(),
                                 objects.first().boundingBox.height()
                             )
-
+                        imageBitmap.recycle()
+                        listCroppedImage.add(croppedBitmap)
                         val filteredBitmap: Bitmap = try {
                             gpuImage.getBitmapWithFilterApplied(croppedBitmap)
                         } catch (e: OutOfMemoryError) {
@@ -137,8 +140,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
 
                         textRecognizer.process(InputImage.fromBitmap(filteredBitmap, 0))
                             .addOnFailureListener {
-                                imageBitmap.recycle()
-                                croppedBitmap.recycle()
+                                filteredBitmap.recycle()
                                 onError(
                                     index == uriList.size - 1,
                                     it.message ?: ERROR_MSG_IMAGE_PROCESS_DEFAULT,
@@ -146,7 +148,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 )
                             }
                             .addOnSuccessListener { text ->
-                                imageBitmap.recycle()
+                                filteredBitmap.recycle()
                                 val ktp = text.extractEktp()
                                 ktpList.add(ktp)
                                 if (ktpList.size == uriList.size) {
@@ -157,21 +159,22 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                             "ktpocr.jpg",
                                             removeBitmap = true
                                         )
-                                    filterResult(resultUri)
+                                    filterResult(resultUri, listCroppedImage)
                                 }
-                                croppedBitmap.recycle()
                             }
                     }
             }
         }
     }
 
-    private fun filterResult(uri: Uri) {
+    private fun filterResult(uri: Uri, bitmapList: List<Bitmap?>? = null) {
         val usedKtp = ktpList.first()
+        var indexBitmap = 0
         if (ktpList.size > 1) {
             for (i in 1 until ktpList.size) {
                 val nextKtp = ktpList[i]
                 if (usedKtp.confidence <= nextKtp.confidence) {
+                    indexBitmap = i
                     if (usedKtp.nik.isNullOrBlank()) {
                         usedKtp.nik = nextKtp.nik.takeIf { !it.isNullOrBlank() }
                     }
@@ -245,8 +248,17 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
             }
         }
 
+        val resultUri =
+            bitmapList?.getOrNull(indexBitmap)?.let {
+                BitmapUtils.saveBitmapToFile(
+                    it,
+                    context.filesDir.absolutePath,
+                    "ktpocr.jpg"
+                )
+            } ?: uri
+        bitmapList?.forEach { it?.recycle() }
         val ocrResult =
-            OCRResultModel(true, "Success", uri.path, usedKtp)
+            OCRResultModel(true, "Success", resultUri.path, usedKtp)
         listener.onFinish(ocrResult)
     }
 }
