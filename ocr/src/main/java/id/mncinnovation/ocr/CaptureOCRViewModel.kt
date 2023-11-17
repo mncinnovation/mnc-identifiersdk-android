@@ -9,29 +9,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CaptureOCRViewModel : ViewModel() {
-    private var _isCompleted = MutableLiveData<Boolean?>()
-    val isCompleted: LiveData<Boolean?> = _isCompleted
+    private var _currentState = MutableLiveData<StateCapture>()
+    val currentState: LiveData<StateCapture> = _currentState
 
     private var bitmapList = mutableListOf<Bitmap?>()
-    var isCapturing = false
     init {
-        _isCompleted.value = null
+        _currentState.value = StateCapture.READY
     }
     fun captureImage(bitmap: Bitmap?) {
-        if(bitmapList.size < MAX_CAPTURE && isCapturing && !bitmapList.contains(bitmap)) {
+        if(bitmapList.size < MAX_CAPTURE && !bitmapList.contains(bitmap)) {
             bitmapList.add(bitmap)
         }
         viewModelScope.launch {
             delay(500)
-            _isCompleted.value = bitmapList.size >= MAX_CAPTURE
-            isCapturing = bitmapList.size < MAX_CAPTURE
+            _currentState.value = if(bitmapList.size == MAX_CAPTURE) StateCapture.COMPLETED else StateCapture.SCANNING
         }
     }
     fun clearDataCapture() {
-        isCapturing = false
         bitmapList.forEach { it?.recycle() }
         bitmapList.clear()
-        _isCompleted.value = null
+        _currentState.value = StateCapture.READY
     }
 
     fun processExtract(extractDataOCR: ExtractDataOCR) {
@@ -41,4 +38,10 @@ class CaptureOCRViewModel : ViewModel() {
         const val MAX_CAPTURE = 6
         const val COUNTDOWN_TIME = 3
     }
+}
+
+enum class StateCapture {
+    READY,
+    SCANNING,
+    COMPLETED
 }

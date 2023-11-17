@@ -99,47 +99,54 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
         memoryUsageMonitor = MemoryUsageMonitor(this, getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager, lowMemoryThreshold = MNCIdentifierOCR.lowMemoryThreshold)
 
-        viewModel.isCompleted.observe(this) {
-            if(it == null) return@observe
-            if(it) {
-                val extractDataOCR = ExtractDataOCR(this@CaptureOCRActivity, object : ExtractDataOCRListener {
-                    override fun onStart() {
-                        showProgressDialog()
-                    }
+        viewModel.currentState.observe(this) {
+            when(it) {
+                StateCapture.COMPLETED -> {
+                     val extractDataOCR = ExtractDataOCR(this@CaptureOCRActivity, object : ExtractDataOCRListener {
+                        override fun onStart() {
+                            showProgressDialog()
+                        }
 
-                    override fun onFinish(result: OCRResultModel) {
-                        hideProgressDialog()
-                        if (MNCIdentifierOCR.cameraOnly == true) {
+                        override fun onFinish(result: OCRResultModel) {
+                            hideProgressDialog()
+                            if (MNCIdentifierOCR.cameraOnly == true) {
+                                val intent = Intent().apply {
+                                    putExtra(EXTRA_RESULT, result)
+                                }
+                                setResult(RESULT_OK, intent)
+                                finish()
+                            } else {
+                                val intent = Intent(
+                                    this@CaptureOCRActivity,
+                                    ConfirmationOCRActivity::class.java
+                                ).apply {
+                                    putExtra(EXTRA_RESULT, result)
+                                }
+                                resultLauncherConfirm.launch(intent)
+                            }
+                        }
+
+                        override fun onError(message: String?) {
+                            Log.e(TAG, "Failed extract ocr: $message")
+                            hideProgressDialog()
+
                             val intent = Intent().apply {
-                                putExtra(EXTRA_RESULT, result)
+                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
                             }
                             setResult(RESULT_OK, intent)
                             finish()
-                        } else {
-                            val intent = Intent(
-                                this@CaptureOCRActivity,
-                                ConfirmationOCRActivity::class.java
-                            ).apply {
-                                putExtra(EXTRA_RESULT, result)
-                            }
-                            resultLauncherConfirm.launch(intent)
                         }
-                    }
-
-                    override fun onError(message: String?) {
-                        Log.e(TAG, "Failed extract ocr: $message")
-                        hideProgressDialog()
-
-                        val intent = Intent().apply {
-                            putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    }
-                })
-                viewModel.processExtract(extractDataOCR)
-            } else {
-                viewModel.captureImage(croppedBitmap)
+                    })
+                    viewModel.processExtract(extractDataOCR)
+                }
+                StateCapture.SCANNING -> {
+                    viewModel.captureImage(croppedBitmap)
+                }
+                else -> {
+                    stopTimer()
+                    hideProgressDialog()
+                    dismissPopupScanDialog()
+                }
             }
         }
     }
@@ -189,7 +196,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     override fun onResume() {
         super.onResume()
-        viewModel.clearDataCapture()
         stopTimer()
         lightSensor?.startDetectingSensor()
     }
@@ -239,19 +245,16 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
 
     //Listener of CaptureKtpListener
     override fun onStatusChanged(status: Status, croppedBitmap : Bitmap?) {
-        if (viewModel.isCompleted.value == true) return
+        if (viewModel.currentState.value == StateCapture.COMPLETED) return
         if (status == Status.SCANNING) {
             this.croppedBitmap = croppedBitmap
-            if(viewModel.isCompleted.value == null) {
+            if(viewModel.currentState.value == StateCapture.READY) {
                 memoryUsageMonitor?.checkMemoryAndProceed {
                     showPopupHoldScanDialog()
                 }
             }
         } else {
             viewModel.clearDataCapture()
-            stopTimer()
-            hideProgressDialog()
-            dismissPopupScanDialog()
         }
     }
 
@@ -272,7 +275,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
     }
 
     private fun showPopupHoldScanDialog() {
-        if (timer != null || this@CaptureOCRActivity.isFinishing || viewModel.isCompleted.value == true) return
+        if (timer != null || this@CaptureOCRActivity.isFinishing) return
         val bindingPopup = PopupBottomsheetScanTimerOcrBinding.inflate(LayoutInflater.from(this))
         var counter = CaptureOCRViewModel.COUNTDOWN_TIME
 
