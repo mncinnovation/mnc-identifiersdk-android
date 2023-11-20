@@ -1,6 +1,7 @@
 package id.mncinnovation.ocr.analyzer
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -25,35 +26,44 @@ class CaptureOCRAnalyzer(private val listener: CaptureKtpListener) :
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
-        val originalBitmap = BitmapUtils.getBitmap(image)
-        if (originalBitmap != null) {
-            val inputImage = InputImage.fromMediaImage(
-                image.image!!,
-                image.imageInfo.rotationDegrees
-            )
-            objectDetector.process(inputImage)
-                .addOnSuccessListener { detectedObjects ->
-                    Log.d(
-                        TAG,
-                        detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
-                            ?: "Label Not Found"
+        val inputImage = InputImage.fromMediaImage(
+            image.image!!,
+            image.imageInfo.rotationDegrees
+        )
+        objectDetector.process(inputImage)
+            .addOnSuccessListener { detectedObjects ->
+                Log.d(
+                    TAG,
+                    detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text
+                        ?: "Label Not Found"
+                )
+                if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
+                        "Driver's license",
+                        "Passport"
                     )
-                    if (detectedObjects.firstOrNull()?.labels?.firstOrNull()?.text in listOf(
-                            "Driver's license",
-                            "Passport"
-                        )
-                    ) {
-                        listener.onStatusChanged(Status.SCANNING)
-                    } else {
-                        listener.onStatusChanged(Status.NOT_FOUND)
+                ) {
+                    val originBitmap = BitmapUtils.getBitmap(image)
+                    var cropedBitmap = originBitmap
+                    originBitmap?.let {
+                        cropedBitmap = if (detectedObjects.isEmpty()) it else
+                            Bitmap.createBitmap(
+                                it,
+                                detectedObjects.first().boundingBox.left,
+                                detectedObjects.first().boundingBox.top,
+                                detectedObjects.first().boundingBox.width(),
+                                detectedObjects.first().boundingBox.height()
+                            )
                     }
-                }.addOnFailureListener {
-                    listener.onCaptureFailed(it)
-                }.addOnCompleteListener {
-                    image.close()
-                }
 
-        }
+                    listener.onStatusChanged(Status.SCANNING, cropedBitmap)
+                } else {
+                    listener.onStatusChanged(Status.NOT_FOUND)
+                }
+            }.addOnFailureListener {
+                listener.onCaptureFailed(it)
+            }.addOnCompleteListener {
+                image.close()
+            }
     }
 
     companion object {

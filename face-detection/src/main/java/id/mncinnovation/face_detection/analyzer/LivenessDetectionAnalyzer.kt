@@ -32,6 +32,7 @@ class LivenessDetectionAnalyzer(
     private val startTimeMilis = System.currentTimeMillis()
     private var startDetectionTime: Long? = null
     private var originalBitmap: Bitmap? = null
+    private var originalBitmapList = mutableListOf<Bitmap?>()
     private val detectionResults: MutableList<LivenessResult.DetectionResult> = mutableListOf()
 
     init {
@@ -60,6 +61,7 @@ class LivenessDetectionAnalyzer(
         queueDetectionMode = listDetectionMode.toMutableList()
     }
 
+    private val isBlinkModeOnly get() = listDetectionMode.size == 1 && listDetectionMode.getOrNull(0) == DetectionMode.BLINK
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(image: ImageProxy) {
@@ -70,8 +72,12 @@ class LivenessDetectionAnalyzer(
         else{
             graphicOverlay.setImageSourceInfo(image.height, image.width, true)
         }
-
-        originalBitmap = BitmapUtils.getBitmap(image) ?: return
+        BitmapUtils.getBitmap(image)?.let {
+            originalBitmap = it
+            if(isBlinkModeOnly) {
+                originalBitmapList.add(it)
+            }
+        } ?: kotlin.run { return }
 
         val inputImage = InputImage.fromMediaImage(image.image!!,
             rotationDegrees)
@@ -191,11 +197,11 @@ class LivenessDetectionAnalyzer(
 
     private fun nextDetection() {
         currentDetectionMode()?.let { detectionMode ->
-            val fileUri = originalBitmap?.let { bitmap ->
+            val fileUri = (if(isBlinkModeOnly) originalBitmapList.getOrNull(originalBitmapList.size - 2) else originalBitmap)?.let { bitmap ->
                 saveBitmapToFile(
                     bitmap,
                     context.filesDir.absolutePath,
-                    "img_${detectionMode.name}.jpg")
+                    "img_${detectionMode.name}.jpg", true)
             }
             fileUri?.let { uri ->
                 detectionResults.add(LivenessResult.DetectionResult(detectionMode, uri, FileUtils(context).getPath(uri), startDetectionTime?.let { time -> System.currentTimeMillis()-time }))
@@ -203,6 +209,9 @@ class LivenessDetectionAnalyzer(
         }
         queueDetectionMode.removeFirst()
         if (queueDetectionMode.isEmpty()) {
+            if(originalBitmapList.isNotEmpty()){
+                originalBitmapList.forEach { it?.recycle() }
+            }
                 listener.onLiveDetectionSuccess(
                     LivenessResult(
                         true,
@@ -211,7 +220,7 @@ class LivenessDetectionAnalyzer(
                         detectionResults ))
         } else {
             startDetectionTime = System.currentTimeMillis()
-            listener.onStartDetection(queueDetectionMode.first())
+            currentDetectionMode()?.let { listener.onStartDetection(it) }
         }
     }
 
@@ -236,7 +245,7 @@ class LivenessDetectionAnalyzer(
         when (faceStatus) {
             FaceStatus.READY -> {
                 if(startDetectionTime == null) startDetectionTime = System.currentTimeMillis()
-                listener.onStartDetection(queueDetectionMode.first())
+                currentDetectionMode()?.let { listener.onStartDetection(it) }
             }
             FaceStatus.NOT_FOUND -> {
                 startHoldStillTimemilis = null
