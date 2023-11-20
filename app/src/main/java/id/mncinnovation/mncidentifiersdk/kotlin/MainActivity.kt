@@ -158,6 +158,7 @@ class MainActivity : AppCompatActivity() {
                 val selfieResult = MNCIdentifier.getSelfieResult(data)
                 selfieResult?.let { selfieWithKtpResult ->
                     if(selfieWithKtpResult.isSuccess) {
+                        binding.llResultSelfieWKtp.visibility = View.VISIBLE
                         selfieWithKtpResult.getBitmap(this) { message ->
                             handleError(message)
                         }?.let {
