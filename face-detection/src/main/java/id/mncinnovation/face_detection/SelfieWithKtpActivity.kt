@@ -10,10 +10,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -114,6 +116,7 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
         // ImageCapture
         captureUseCase = ImageCapture.Builder().apply {
             setCaptureMode(CAPTURE_MODE_MAXIMIZE_QUALITY)
+            setTargetResolution(Size(960,1280))
         }.build()
 
 
@@ -158,7 +161,7 @@ class SelfieWithKtpActivity : BaseCameraActivity(), FaceDetectionListener {
                             face.boundingBox.height())
                         val faceUri = BitmapUtils.saveBitmapToFile(croppedFace,
                             filesDir.absolutePath,
-                            "face${index+1}.jpg")
+                            "face${index+1}.jpg", true)
                         faceImages.add(faceUri)
                     }
                 }
