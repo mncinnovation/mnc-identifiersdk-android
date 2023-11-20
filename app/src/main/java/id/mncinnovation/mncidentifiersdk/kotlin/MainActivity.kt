@@ -13,8 +13,8 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
-import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.face_detection.analyzer.DetectionMode
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.mncidentifiersdk.BuildConfig
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
 import id.mncinnovation.ocr.ExtractDataOCRListener
@@ -167,6 +167,7 @@ class MainActivity : AppCompatActivity() {
                 val selfieResult = MNCIdentifier.getSelfieResult(data)
                 selfieResult?.let { selfieWithKtpResult ->
                     if(selfieWithKtpResult.isSuccess) {
+                        binding.llResultSelfieWKtp.visibility = View.VISIBLE
                         selfieWithKtpResult.getBitmap(this) { message, errorType ->
                             handleError(message, errorType)
                         }?.let {
@@ -209,13 +210,13 @@ class MainActivity : AppCompatActivity() {
                 val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { ktpResult ->
                     if (ktpResult.isSuccess) {
-                    ktpResult.getBitmapImage()?.let {
-                        binding.ivKtp.setImageBitmap(it)
-                    }
-                    binding.tvScanKtp.text = captureOCRResult.toString()
-                } else {
+                        ktpResult.getBitmapImage()?.let {
+                            binding.ivKtp.setImageBitmap(it)
+                        }
+                        binding.tvScanKtp.text = captureOCRResult.toString()
+                    } else {
                         handleError(ktpResult.errorMessage, ktpResult.errorType)
-                }
+                    }
             }
         }
     }
