@@ -166,12 +166,6 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         // Preview
         val previewUseCase = Preview.Builder().build()
 
-        // ImageCapture
-        val captureUseCase = ImageCapture.Builder().apply {
-            setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-        }.build()
-
-
         analysisUseCase = ImageAnalysis.Builder()
             .setTargetResolution(Size(1280,720))
             .build().also {
@@ -185,7 +179,7 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
             // A variable number of use-cases can be passed here -
             // camera provides access to CameraControl & CameraInfo
             camera = cameraProvider.bindToLifecycle(
-                this, cameraSelector, previewUseCase, analysisUseCase, captureUseCase
+                this, cameraSelector, previewUseCase, analysisUseCase
             )
             // Attach the viewfinder's surface provider to preview use case
             previewUseCase.setSurfaceProvider(previewView.surfaceProvider)
