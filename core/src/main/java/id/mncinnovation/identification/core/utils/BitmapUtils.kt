@@ -310,6 +310,7 @@ object BitmapUtils {
         bitmap: Bitmap,
         fileDirectory: String,
         fileName: String,
+        removeBitmap : Boolean = false,
         onError: (String, ResultErrorType) -> Unit,
     ): Uri {
         val file = createFile(fileDirectory, fileName)
@@ -325,7 +326,9 @@ object BitmapUtils {
             onError("Terjadi kesalahan pada saat scan gambar", ResultErrorType.EXCEPTION)
             e.printStackTrace()
         }
-
+        if(removeBitmap) {
+            bitmap.recycle()
+        }
         return Uri.fromFile(file)
     }
 

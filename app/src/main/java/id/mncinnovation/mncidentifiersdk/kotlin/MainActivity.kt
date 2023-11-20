@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
 import id.mncinnovation.identification.core.common.ResultErrorType
+import id.mncinnovation.face_detection.analyzer.DetectionMode
 import id.mncinnovation.mncidentifiersdk.BuildConfig
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
 import id.mncinnovation.ocr.ExtractDataOCRListener
@@ -33,6 +34,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        MNCIdentifier.setDetectionModeSequence(
+            false, listOf(
+                DetectionMode.HOLD_STILL,
+                DetectionMode.BLINK,
+            )
+        )
         MNCIdentifier.setLowMemoryThreshold(50) // for face detection
 
         with(binding) {
