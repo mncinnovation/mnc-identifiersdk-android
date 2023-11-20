@@ -15,23 +15,23 @@
  */
 package id.mncinnovation.identification.core.utils
 
-import androidx.annotation.RequiresApi
+import android.annotation.TargetApi
+import android.content.ContentResolver
+import android.graphics.*
+import android.media.Image.Plane
+import android.net.Uri
 import android.os.Build.VERSION_CODES
+import android.provider.MediaStore
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
-import android.content.ContentResolver
-import android.provider.MediaStore
-import android.media.Image.Plane
-import android.annotation.TargetApi
-import android.graphics.*
-import android.net.Uri
-import android.util.Log
 import androidx.exifinterface.media.ExifInterface
+import id.mncinnovation.identification.core.common.ResultErrorType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.lang.Exception
 import java.nio.ByteBuffer
 
 /** Utils functions for bitmap conversions.  */
@@ -40,18 +40,32 @@ object BitmapUtils {
 
     /** Converts NV21 format byte buffer to bitmap.  */
     private fun getBitmap(data: ByteBuffer, metadata: FrameMetadata): Bitmap? {
-        data.rewind()
-        val imageInBuffer = ByteArray(data.limit())
-        data[imageInBuffer, 0, imageInBuffer.size]
         try {
+            data.rewind()
+            val imageInBuffer = ByteArray(data.limit())
+            data[imageInBuffer, 0, imageInBuffer.size]
+
             val image = YuvImage(
-                imageInBuffer, ImageFormat.NV21, metadata.width, metadata.height, null)
+                imageInBuffer, ImageFormat.NV21, metadata.width, metadata.height, null
+            )
             val stream = ByteArrayOutputStream()
             image.compressToJpeg(Rect(0, 0, metadata.width, metadata.height), 80, stream)
             val bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
             stream.close()
-            return rotateBitmap(bmp, metadata.rotation, false, false)
+            return rotateBitmap(
+                bmp,
+                metadata.rotation,
+                false,
+                false,
+                onError = { message, errorType ->
+                    Log.e(TAG, message)
+                    Log.e("VisionProcessorBase", "Error: $message, Type: $errorType")
+                })
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            Log.e("VisionProcessorBase", "Error: " + e.message)
         } catch (e: Exception) {
+            e.printStackTrace()
             Log.e("VisionProcessorBase", "Error: " + e.message)
         }
         return null
@@ -61,42 +75,63 @@ object BitmapUtils {
     @RequiresApi(VERSION_CODES.KITKAT)
     @ExperimentalGetImage
     fun getBitmap(image: ImageProxy): Bitmap? {
-        val frameMetadata = FrameMetadata.Builder()
-            .setWidth(image.width)
-            .setHeight(image.height)
-            .setRotation(image.imageInfo.rotationDegrees)
-            .build()
-        val nv21Buffer = yuv420ThreePlanesToNV21(
-            image.image!!.planes, image.width, image.height)
-        return getBitmap(nv21Buffer, frameMetadata)
+        try {
+            val frameMetadata = FrameMetadata.Builder()
+                .setWidth(image.width)
+                .setHeight(image.height)
+                .setRotation(image.imageInfo.rotationDegrees)
+                .build()
+            val nv21Buffer = yuv420ThreePlanesToNV21(
+                image.image!!.planes, image.width, image.height
+            )
+            return getBitmap(nv21Buffer, frameMetadata)
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            Log.e("VisionProcessorBase", "Error: " + e.message)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("VisionProcessorBase", "Error: " + e.message)
+        }
+        return null
     }
 
     /** Rotates a bitmap if it is converted from a bytebuffer.  */
     private fun rotateBitmap(
-        bitmap: Bitmap, rotationDegrees: Int, flipX: Boolean, flipY: Boolean
-    ): Bitmap {
-        val matrix = Matrix()
+        bitmap: Bitmap, rotationDegrees: Int, flipX: Boolean, flipY: Boolean,
+        onError: (String, ResultErrorType) -> Unit
+    ): Bitmap? {
+        try {
+            val matrix = Matrix()
 
-        // Rotate the image back to straight.
-        matrix.postRotate(rotationDegrees.toFloat())
+            // Rotate the image back to straight.
+            matrix.postRotate(rotationDegrees.toFloat())
 
-        // Mirror the image along the X or Y axis.
-        matrix.postScale(if (flipX) -1.0f else 1.0f, if (flipY) -1.0f else 1.0f)
-        val rotatedBitmap =
-            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            // Mirror the image along the X or Y axis.
+            matrix.postScale(if (flipX) -1.0f else 1.0f, if (flipY) -1.0f else 1.0f)
+            val rotatedBitmap =
+                Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
 
-        // Recycle the old bitmap if it has changed.
-        if (rotatedBitmap != bitmap) {
-            bitmap.recycle()
+            // Recycle the old bitmap if it has changed.
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle()
+            }
+            return rotatedBitmap
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            onError("Terjadi kesalahan pada saat scan gambar", ResultErrorType.OOM)
+            return null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            onError("Terjadi kesalahan pada saat scan gambar", ResultErrorType.EXCEPTION)
+            return null
         }
-        return rotatedBitmap
     }
-//
-fun getBitmapFromContentUri(
-    contentResolver: ContentResolver,
-    imageUri: Uri,
-    onError: (String) -> Unit
-): Bitmap? {
+
+    fun getBitmapFromContentUri(
+        contentResolver: ContentResolver,
+        imageUri: Uri,
+        onError: (String, ResultErrorType) -> Unit
+    ): Bitmap? {
         try {
             val decodedBitmap =
                 MediaStore.Images.Media.getBitmap(contentResolver, imageUri) ?: return null
@@ -123,14 +158,14 @@ fun getBitmapFromContentUri(
                 else -> {
                 }
             }
-            return rotateBitmap(decodedBitmap, rotationDegrees, flipX, flipY)
+            return rotateBitmap(decodedBitmap, rotationDegrees, flipX, flipY, onError = onError)
         } catch (e: OutOfMemoryError) {
             e.printStackTrace()
-            onError("Terjadi kesalahan pada saat memproses gambar")
+            onError("Terjadi kesalahan pada saat memproses gambar", ResultErrorType.OOM)
             return null
         } catch (e: Exception) {
             e.printStackTrace()
-            onError("Terjadi kesalahan pada saat memproses gambar")
+            onError("Terjadi kesalahan pada saat memproses gambar", ResultErrorType.EXCEPTION)
             return null
         }
     }
@@ -152,6 +187,9 @@ fun getBitmapFromContentUri(
                 }
                 exif = ExifInterface(inputStream)
             }
+        } catch (e: OutOfMemoryError) {
+            e.printStackTrace()
+            return 0
         } catch (e: IOException) {
             Log.e(TAG, "failed to open file to read rotation meta data: $imageUri", e)
             return 0
@@ -268,15 +306,24 @@ fun getBitmapFromContentUri(
         }
     }
 
-
-    fun saveBitmapToFile(bitmap: Bitmap, fileDirectory: String, fileName: String, removeBitmap : Boolean = false): Uri {
+    fun saveBitmapToFile(
+        bitmap: Bitmap,
+        fileDirectory: String,
+        fileName: String,
+        removeBitmap : Boolean = false,
+        onError: (String, ResultErrorType) -> Unit,
+    ): Uri {
         val file = createFile(fileDirectory, fileName)
         try {
             val out = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             out.flush()
             out.close()
+        } catch (e: OutOfMemoryError) {
+            onError("Terjadi kesalahan pada saat scan gambar", ResultErrorType.OOM)
+            e.printStackTrace()
         } catch (e: Exception) {
+            onError("Terjadi kesalahan pada saat scan gambar", ResultErrorType.EXCEPTION)
             e.printStackTrace()
         }
         if(removeBitmap) {

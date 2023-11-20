@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import id.mncinnovation.face_detection.MNCIdentifier
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
 import id.mncinnovation.face_detection.analyzer.DetectionMode
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.mncidentifiersdk.BuildConfig
 import id.mncinnovation.mncidentifiersdk.databinding.ActivityMainBinding
 import id.mncinnovation.ocr.ExtractDataOCRListener
@@ -90,15 +91,18 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             override fun onFinish(result: OCRResultModel) {
-                                result.getBitmapImage()?.let { bitmap ->
-                                    binding.ivKtp.setImageBitmap(bitmap)
+                                if (result.isSuccess) {
+                                    result.getBitmapImage()?.let { bitmap ->
+                                        binding.ivKtp.setImageBitmap(bitmap)
+                                    }
+                                    binding.tvScanKtp.text = result.toString()
+                                } else {
+                                    handleError(result.errorMessage, result.errorType)
                                 }
-                                binding.tvScanKtp.text = result.toString()
-
                             }
 
-                            override fun onError(message: String?) {
-                                handleError(message)
+                            override fun onError(message: String?, errorType: ResultErrorType?) {
+                                handleError(message, errorType)
                             }
                         })
                 }
@@ -120,7 +124,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         binding.tvScanKtp.text = captureOCRResult.toString()
                     } else {
-                        handleError(ktpResult.errorMessage)
+                        handleError(ktpResult.errorMessage, ktpResult.errorType)
                     }
                 }
             }
@@ -146,6 +150,11 @@ class MainActivity : AppCompatActivity() {
                             )
                             adapter = livenessResultAdapter
                         }
+                    } else {
+                        Log.d(
+                            this.javaClass.name,
+                            "Error : ${it.errorMessage}, Type : ${it.errorType.toString()}"
+                        )
                     }
                 }
             }
@@ -159,13 +168,13 @@ class MainActivity : AppCompatActivity() {
                 selfieResult?.let { selfieWithKtpResult ->
                     if(selfieWithKtpResult.isSuccess) {
                         binding.llResultSelfieWKtp.visibility = View.VISIBLE
-                        selfieWithKtpResult.getBitmap(this) { message ->
-                            handleError(message)
+                        selfieWithKtpResult.getBitmap(this) { message, errorType ->
+                            handleError(message, errorType)
                         }?.let {
                             binding.ivSelfieWKtpOri.setImageBitmap(it)
                         }
-                        selfieWithKtpResult.getListFaceBitmap(this) { message ->
-                            handleError(message)
+                        selfieWithKtpResult.getListFaceBitmap(this) { message, errorType ->
+                            handleError(message, errorType)
                         }
                             .forEachIndexed { index, bitmap ->
                                 when (index) {
@@ -183,31 +192,31 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                     } else {
-                        handleError(selfieResult.errorMessage)
+                        handleError(selfieResult.errorMessage, selfieResult.errorType)
                     }
                 }
             }
         }
 
-    private fun handleError(errorMessage: String?) {
-        Log.d(this.javaClass.name, "Error : $errorMessage")
+    private fun handleError(errorMessage: String?, errorType: ResultErrorType?) {
+        Log.d(this.javaClass.name, "Error : $errorMessage, Type : ${errorType.toString()}")
         Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == 102){
-        if (resultCode == Activity.RESULT_OK) {
-            val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
-            captureOCRResult?.let { ktpResult ->
-                if (ktpResult.isSuccess){
-                    ktpResult.getBitmapImage()?.let {
-                        binding.ivKtp.setImageBitmap(it)
+        if (requestCode == 102) {
+            if (resultCode == Activity.RESULT_OK) {
+                val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
+                captureOCRResult?.let { ktpResult ->
+                    if (ktpResult.isSuccess) {
+                        ktpResult.getBitmapImage()?.let {
+                            binding.ivKtp.setImageBitmap(it)
+                        }
+                        binding.tvScanKtp.text = captureOCRResult.toString()
+                    } else {
+                        handleError(ktpResult.errorMessage, ktpResult.errorType)
                     }
-                    binding.tvScanKtp.text = captureOCRResult.toString()
-                } else {
-                    handleError(ktpResult.errorMessage)
-                }
             }
         }
     }

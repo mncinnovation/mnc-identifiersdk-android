@@ -10,6 +10,7 @@ import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import id.mncinnovation.identification.core.common.ERROR_MSG_IMAGE_PROCESS_DEFAULT
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.model.OCRResultModel
@@ -49,14 +50,17 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         listener.onStart()
         val notNullBitmap = bitmapList.filterNotNull()
         if (notNullBitmap.isEmpty()) {
-            onError(true, "Error extract from empty list of bitmap")
+            onError(true, "Error extract from empty list of bitmap", ResultErrorType.EXCEPTION)
             return
         }
         val resultUri =
             BitmapUtils.saveBitmapToFile(
                 notNullBitmap.last(),
                 context.filesDir.absolutePath,
-                "ktpocr.jpg"
+                "ktpocr.jpg",
+                onError = { message, errorType ->
+                    onError(true, message, ResultErrorType.EXCEPTION)
+                }
             )
         notNullBitmap.forEachIndexed { index, bitmap ->
             val filteredBitmap: Bitmap = try {
@@ -74,6 +78,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                     onError(
                         index == bitmapList.size - 1,
                         it.message ?: ERROR_MSG_IMAGE_PROCESS_DEFAULT,
+                        ResultErrorType.EXCEPTION,
                         resultUri
                     )
                 }
@@ -88,10 +93,10 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         }
     }
 
-    private fun onError(isLastPosition: Boolean, message: String, uri: Uri? = null) {
+    private fun onError(isLastPosition: Boolean, message: String, errorType: ResultErrorType, uri: Uri? = null) {
         if (isLastPosition) {
             if (ktpList.isEmpty()) {
-                listener.onError(message)
+                listener.onError(message, errorType)
             } else {
                 uri?.let { filterResult(it) }
             }
@@ -105,8 +110,8 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
         listener.onStart()
         val listCroppedImage = mutableListOf<Bitmap?>()
         uriList.forEachIndexed { index, uri ->
-            BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message ->
-                onError(index == uriList.size - 1, message, uri)
+            BitmapUtils.getBitmapFromContentUri(context.contentResolver, uri) { message, errorType ->
+                onError(index == uriList.size - 1, message, errorType, uri)
             }?.let { imageBitmap ->
                 objectDetector.process(InputImage.fromBitmap(imageBitmap, 0))
                     .addOnFailureListener {
@@ -114,6 +119,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                         onError(
                             index == uriList.size - 1,
                             it.message ?: ERROR_MSG_IMAGE_PROCESS_DEFAULT,
+                            ResultErrorType.EXCEPTION,
                             uri
                         )
                     }
@@ -144,6 +150,7 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                 onError(
                                     index == uriList.size - 1,
                                     it.message ?: ERROR_MSG_IMAGE_PROCESS_DEFAULT,
+                                    ResultErrorType.EXCEPTION,
                                     uri
                                 )
                             }
@@ -157,7 +164,15 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                                             croppedBitmap,
                                             context.filesDir.absolutePath,
                                             "ktpocr.jpg",
-                                            removeBitmap = true
+                                            removeBitmap = true,
+                                            onError = { message, errorType ->
+                                                onError(
+                                                    index == uriList.size - 1,
+                                                    message,
+                                                    errorType,
+                                                    uri
+                                                )
+                                            }
                                         )
                                     filterResult(resultUri, listCroppedImage)
                                 }
@@ -253,12 +268,15 @@ class ExtractDataOCR(private val context: Context, private val listener: Extract
                 BitmapUtils.saveBitmapToFile(
                     it,
                     context.filesDir.absolutePath,
-                    "ktpocr.jpg"
+                    "ktpocr.jpg",
+                    onError = { message, errorType ->
+                        onError(true, message, errorType, uri)
+                    }
                 )
             } ?: uri
         bitmapList?.forEach { it?.recycle() }
         val ocrResult =
-            OCRResultModel(true, "Success", resultUri.path, usedKtp)
+            OCRResultModel(true, "Success", errorType = null, resultUri.path, usedKtp)
         listener.onFinish(ocrResult)
     }
 }
@@ -281,5 +299,5 @@ interface ExtractDataOCRListener {
     /**
      * Function to listen onFailed process of extract data ocr
      */
-    fun onError(message: String?)
+    fun onError(message: String?, errorType: ResultErrorType?)
 }

@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import id.mncinnovation.face_detection.SelfieWithKtpActivity
 import id.mncinnovation.face_detection.model.LivenessResult
-import id.mncinnovation.identification.core.utils.BitmapUtils
 import id.mncinnovation.mncidentifiersdk.databinding.ItemLiveDetectionResultBinding
 
 class LivenessResultAdapter(val livenessResult: LivenessResult): RecyclerView.Adapter<LivenessResultAdapter.DetectionResultViewHolder>(){
@@ -27,9 +26,12 @@ class LivenessResultAdapter(val livenessResult: LivenessResult): RecyclerView.Ad
                 tvTitle.text = item.detectionMode.name
                 tvTime.text = item.timeMilis?.toString()
                 item.image?.let {
-                    livenessResult.getBitmap(holder.itemView.context, item.detectionMode, onError = { message ->
-                        Log.e(SelfieWithKtpActivity.TAG, message)
-                    })
+                    livenessResult.getBitmap(
+                        holder.itemView.context,
+                        item.detectionMode,
+                        onError = { message, errorType ->
+                            Log.e(SelfieWithKtpActivity.TAG, "Message: $message, Type: $errorType")
+                        })
                 }?.let {
                     ivResult.setImageBitmap(it)
                 }

@@ -80,6 +80,8 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
                     } else {  //Liveness Detection Error
                         //get Error Message
                         val errorMessage = result.errorMessage
+                        //get Error Type (OOM / Exception)
+                        val errorType = result.errorType
                     }
                 }
             }
@@ -105,6 +107,16 @@ MNCIdentifier.setDetectionModeSequence(
     )
 )
   ```
+
+### Low Memory Threshold
+
+If the memory stack allocation usage is lower than 50 mb (by default), a popup warning will appear before executing the image capture or object detection process. However, you can customize the threshold or you can also disable it by setting it to 0.
+
+```kotlin
+MNCIdentifier.setLowMemoryThreshold(50) // for face detection
+  ```
+
+![banner_ocr](/screenshots/low_memory_warning.png)
 
 ---
 
@@ -169,10 +181,11 @@ Optional configuration to show button flash at camera activity and show camera o
 
 - Default value ``withFlash`` is ``false``.
 - Default value ``cameraOnly`` is ``false``.
-
+- Default value ``lowMemoryThreshold`` is ``50``.
+  
 ```kotlin
 //call this function before startCapture
-MNCIdentifierOCR.config(withFlash = true, cameraOnly = true)
+MNCIdentifierOCR.config(withFlash = true, cameraOnly = true, lowMemoryThreshold = 70)
 ```
 
 Start to capture OCR result activity
@@ -200,12 +213,19 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
             CAPTURE_EKTP_REQUEST_CODE -> {
                 val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
                 captureOCRResult?.let { result ->
-                    result.getBitmapImage(this)?.let {
-                        //get image result
-                        binding.ivKtpCapture.setImageBitmap(it)
+                    if (result.isSuccess) {
+                        result.getBitmapImage(this)?.let {
+                            //get image result
+                            binding.ivKtpCapture.setImageBitmap(it)
+                        }
+                        //show all of data result
+                        binding.tvCaptureKtp.text = result.ktpModel.toString()
+                    } else {
+                        //get Error Message
+                        val errorMessage = result.errorMessage
+                        //get Error Type (OOM / Exception)
+                        val errorType = result.errorType
                     }
-                    //show all of data result
-                    binding.tvCaptureKtp.text = result.ktpModel.toString()
                 }
 
             }
@@ -220,10 +240,17 @@ private val resultLauncherOcr =
             val data = result.data
             val captureOCRResult = MNCIdentifierOCR.getOCRResult(data)
             captureOCRResult?.let { ocrResult ->
-                ocrResult.getBitmapImage(this)?.let {
-                    binding.ivKtp.setImageBitmap(it)
+                if (ocrResult.isSuccess) {
+                    ocrResult.getBitmapImage(this)?.let {
+                        binding.ivKtp.setImageBitmap(it)
+                    }
+                    binding.tvScanKtp.text = captureOCRResult.toString()
+                } else {
+                    //get Error Message
+                    val errorMessage = ocrResult.errorMessage
+                    //get Error Type (OOM / Exception)
+                    val errorType = ocrResult.errorType
                 }
-                binding.tvScanKtp.text = captureOCRResult.toString()
             }
         }
     }
@@ -250,6 +277,10 @@ MNCIdentifierOCR.startCapture(this@MainActivity, resultLauncherOcr)
                 }
                 binding.tvScanKtp.text = result.toString()
     
+            }
+
+            override fun onError(message: String?, errorType: ResultErrorType?) {
+                //handle on error here
             }
         })
 ```

@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
@@ -17,6 +18,7 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -25,6 +27,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import id.mncinnovation.identification.core.base.BaseCameraActivity
 import id.mncinnovation.identification.core.common.EXTRA_RESULT
+import id.mncinnovation.identification.core.common.ResultErrorType
 import id.mncinnovation.identification.core.common.toVisibilityOrGone
 import id.mncinnovation.identification.core.utils.MemoryUsageMonitor
 import id.mncinnovation.ocr.analyzer.CaptureKtpListener
@@ -35,6 +38,7 @@ import id.mncinnovation.ocr.model.KTPModel
 import id.mncinnovation.ocr.model.OCRResultModel
 import id.mncinnovation.ocr.utils.LightSensor
 import id.mncinnovation.ocr.utils.LightSensorListener
+import java.io.File
 import java.util.Timer
 import kotlin.concurrent.fixedRateTimer
 
@@ -126,12 +130,12 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
                             }
                         }
 
-                        override fun onError(message: String?) {
-                            Log.e(TAG, "Failed extract ocr: $message")
+                        override fun onError(message: String?, errorType: ResultErrorType?) {
+                            Log.e(TAG, "Failed extract ocr: $message $errorType")
                             hideProgressDialog()
 
                             val intent = Intent().apply {
-                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, null, KTPModel()))
+                                putExtra(EXTRA_RESULT, OCRResultModel(false, message, errorType, null, KTPModel()))
                             }
                             setResult(RESULT_OK, intent)
                             finish()
@@ -257,7 +261,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         setResult(
             RESULT_CANCELED,
             Intent().apply {
-                putExtra(EXTRA_RESULT, OCRResultModel(false, exception.message, null, KTPModel()))
+                putExtra(
+                    EXTRA_RESULT,
+                    OCRResultModel(false, exception.message, null, null, KTPModel())
+                )
             }
         )
         finish()
@@ -306,7 +313,10 @@ class CaptureOCRActivity : BaseCameraActivity(), CaptureKtpListener {
         setResult(
             RESULT_CANCELED,
             Intent().apply {
-                putExtra(EXTRA_RESULT, OCRResultModel(false, "Cancelled by user", null, KTPModel()))
+                putExtra(
+                    EXTRA_RESULT,
+                    OCRResultModel(false, "Cancelled by user", null, null, KTPModel())
+                )
             }
         )
         super.onBackPressed()

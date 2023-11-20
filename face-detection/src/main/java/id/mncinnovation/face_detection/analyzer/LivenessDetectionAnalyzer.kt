@@ -9,6 +9,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.*
+import id.mncinnovation.face_detection.SelfieWithKtpActivity
 import id.mncinnovation.face_detection.model.LivenessResult
 import id.mncinnovation.face_detection.utils.FileUtils
 import id.mncinnovation.identification.core.GraphicOverlay
@@ -201,7 +202,11 @@ class LivenessDetectionAnalyzer(
                 saveBitmapToFile(
                     bitmap,
                     context.filesDir.absolutePath,
-                    "img_${detectionMode.name}.jpg", true)
+                    "img_${detectionMode.name}.jpg",
+                    true,
+                    onError = { message, errorType ->
+                        Log.e(SelfieWithKtpActivity.TAG, "Error: $message, Type: $errorType")
+                    })
             }
             fileUri?.let { uri ->
                 detectionResults.add(LivenessResult.DetectionResult(detectionMode, uri, FileUtils(context).getPath(uri), startDetectionTime?.let { time -> System.currentTimeMillis()-time }))
@@ -216,8 +221,10 @@ class LivenessDetectionAnalyzer(
                     LivenessResult(
                         true,
                         "Sucess",
+                        null,
                         System.currentTimeMillis() - startTimeMilis,
-                        detectionResults ))
+                        detectionResults
+                    ))
         } else {
             startDetectionTime = System.currentTimeMillis()
             currentDetectionMode()?.let { listener.onStartDetection(it) }
